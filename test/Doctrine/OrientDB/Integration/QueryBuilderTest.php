@@ -301,6 +301,9 @@ class QueryBuilderTest extends TestCase
         $query->indexCount('index_name_2');
         $this->assertHttpStatus(500, $this->doQuery($query));
 
+        $query->unindex('name', 'Profile');
+        $this->assertHttpStatus(200, $this->doQuery($query));
+
         $query->unindex('in', 'OGraphEdge');
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
