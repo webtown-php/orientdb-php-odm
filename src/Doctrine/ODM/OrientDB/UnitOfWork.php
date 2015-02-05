@@ -5,7 +5,7 @@ namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\ODM\OrientDB\Mapping\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Persistence\ChangeSet;
 use Doctrine\ODM\OrientDB\Persistence\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
@@ -339,7 +339,7 @@ class UnitOfWork
      *
      * Lazily instantiates and returns the Hydrator
      *
-     * @return Hydrator
+     * @return \Doctrine\ODM\OrientDB\Hydration\Hydrator
      */
     public function getHydrator()
     {

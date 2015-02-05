@@ -20,13 +20,13 @@
 
 namespace Doctrine\ODM\OrientDB\Caster;
 
-use Doctrine\ODM\OrientDB\Mapping\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
+use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Validator\ValidationException;
 use Doctrine\OrientDB\Util\Inflector\Cached as Inflector;
-use Doctrine\ODM\OrientDB\Mapping;
-use Doctrine\ODM\OrientDB\Types\Rid;
 
 class Caster extends AbstractCaster
 {
@@ -40,7 +40,7 @@ class Caster extends AbstractCaster
     /**
      * Instantiates a new Caster.
      *
-     * @param Hydrator  $hydrator
+     * @param \Doctrine\ODM\OrientDB\Hydration\Hydrator  $hydrator
      * @param Inflector $inflector
      * @param mixed     $value
      * @param string    $dateClass  The class used to cast dates and datetimes
@@ -505,7 +505,7 @@ class Caster extends AbstractCaster
     /**
      * Returns the hydrator.
      *
-     * @return Hydrator
+     * @return \Doctrine\ODM\OrientDB\Hydration\Hydrator
      */
     protected function getHydrator()
     {

@@ -5,14 +5,14 @@ namespace Doctrine\ODM\OrientDB\Proxy;
 
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as BaseClassMetadata;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\Common\Proxy\Proxy as BaseProxy;
 use Doctrine\Common\Proxy\ProxyDefinition;
 use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
-use Doctrine\ODM\OrientDB\Mapping\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Manager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
-use Doctrine\Common\Proxy\Proxy as BaseProxy;
 
 /**
  * Class ProxyFactory
@@ -24,7 +24,7 @@ use Doctrine\Common\Proxy\Proxy as BaseProxy;
 class ProxyFactory extends AbstractProxyFactory
 {
 
-    /** @var Hydrator  */
+    /** @var \Doctrine\ODM\OrientDB\Hydration\Hydrator  */
     private $hydrator;
 
     /**

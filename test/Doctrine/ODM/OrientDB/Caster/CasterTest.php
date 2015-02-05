@@ -12,17 +12,17 @@
 
 namespace test\Doctrine\ODM\OrientDB\Caster;
 
+use Doctrine\ODM\OrientDB\Caster\Caster;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\OrientDB\Util\Inflector\Cached;
 use test\PHPUnit\TestCase;
-use Doctrine\ODM\OrientDB\Mapping;
-use Doctrine\ODM\OrientDB\Caster\Caster;
 
 class CasterTest extends TestCase
 {
     /**
-     * @var Mapping\Hydration\Hydrator
+     * @var \Doctrine\ODM\OrientDB\Hydration\Hydrator
      */
     private $hydrator;
     /**

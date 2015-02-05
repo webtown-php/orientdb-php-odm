@@ -1,20 +1,19 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Mapping\Hydration;
+namespace Doctrine\ODM\OrientDB\Hydration;
 
-use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
-use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
-use Doctrine\ODM\OrientDB\Proxy\Proxy;
-use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Exception;
 use Doctrine\ODM\OrientDB\Caster\Caster;
-use Doctrine\ODM\OrientDB\Types\Rid;
+use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property as PropertyAnnotation;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
+use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
+use Doctrine\ODM\OrientDB\Types\Rid;
+use Doctrine\ODM\OrientDB\UnitOfWork;
+use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Query;
-use Symfony\Component\Finder\Finder;
 
 /**
  * Class Hydrator
