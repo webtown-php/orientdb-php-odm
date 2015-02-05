@@ -97,13 +97,7 @@ class UnitOfWork
         $results = $binding->execute($query, $fetchPlan)->getResult();
 
         if (is_array($results) && $query->canHydrate()) {
-            $collection = $this->getHydrator()->hydrateCollection($results);
-
-            foreach ($collection as $entity) {
-                $this->persist($entity);
-            }
-
-            return $collection;
+            return $this->getHydrator()->hydrateCollection($results);
         }
 
         return true;
