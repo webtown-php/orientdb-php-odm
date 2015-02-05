@@ -18,6 +18,9 @@ use Doctrine\OrientDB\Binding\BindingParameters;
 use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use Doctrine\OrientDB\Binding\Adapter\CurlClientAdapter;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
+use Prophecy\Exception\Prediction\PredictionException;
+use Prophecy\PhpUnit\ProphecyTestCase;
+use Prophecy\Prophet;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -122,5 +125,50 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     public function assertTokens($expected, $got)
     {
         $this->assertEquals($expected, $got, 'The given command tokens do not match');
+    }
+
+    /**
+     * @var Prophet
+     */
+    private $prophet;
+
+    /**
+     * @param string|null $classOrInterface
+     * @return \Prophecy\Prophecy\ObjectProphecy
+     * @throws \LogicException
+     */
+    protected function prophesize($classOrInterface = null)
+    {
+        if (null === $this->prophet) {
+            throw new \LogicException(sprintf('The setUp method of %s must be called to initialize Prophecy.', __CLASS__));
+        }
+
+        return $this->prophet->prophesize($classOrInterface);
+    }
+
+    protected function setUp()
+    {
+        $this->prophet = new Prophet();
+    }
+
+    protected function assertPostConditions()
+    {
+        if ($this->prophet) {
+            $this->prophet->checkPredictions();
+        }
+    }
+
+    protected function tearDown()
+    {
+        $this->prophet = null;
+    }
+
+    protected function onNotSuccessfulTest(\Exception $e)
+    {
+        if ($e instanceof PredictionException) {
+            $e = new \PHPUnit_Framework_AssertionFailedError($e->getMessage(), $e->getCode(), $e);
+        }
+
+        return parent::onNotSuccessfulTest($e);
     }
 }
