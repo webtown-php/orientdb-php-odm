@@ -34,6 +34,9 @@ class ClassMetadata implements DoctrineMetadata
     protected $associations;
     protected $fields;
 
+    protected $setter;
+    protected $getter;
+
     /**
      * Instantiates a new Metadata for the given $className.
      *
@@ -41,7 +44,14 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function __construct($className)
     {
-        $this->class = $className;
+        $this->class  = $className;
+        $this->setter = function ($document, $property, $value) {
+            $document->$property = $value;
+        };
+
+        $this->getter = function ($document, $property) {
+            return $document->$property;
+        };
     }
 
     /**
@@ -347,7 +357,6 @@ class ClassMetadata implements DoctrineMetadata
 
     /**
      * Given a $property and its $value, sets that property on the given $document
-     * by using a closures if available, otherwise fall back to reflection.
      *
      * @param mixed $document
      * @param string $property
@@ -355,17 +364,20 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function setDocumentValue($document, $property, $value)
     {
-        if (method_exists('\Closure', 'bind')) {
-            $setter = \Closure::bind(function ($document, $property, $value) {
-                    $document->$property = $value;
-                }, null, $document
-            );
-            $setter($document, $property, $value);
-        } else {
-            $reflProperty = $this->getReflectionClass()->getProperty($property);
-            $reflProperty->setAccessible(true);
-            $reflProperty->setValue($document, $value);
-        }
+        $p = $this->setter->bindTo(null, $document);
+        $p($document, $property, $value);
+    }
+
+    /**
+     * Gets the value of the specified $property
+     *
+     * @param mixed $document
+     * @param string $property
+     */
+    public function getDocumentValue($document, $property)
+    {
+        $p = $this->getter->bindTo(null, $document);
+        return $p($document, $property);
     }
 
     /**

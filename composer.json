@@ -21,14 +21,21 @@
             "homepage": "http://clorophilla.net"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/stuartcarnie/athletic.git"
+        }
+    ],
     "autoload": {
         "psr-0": {
             "Doctrine\\OrientDB": "src/",
-            "Doctrine\\ODM\\OrientDB": "src/"
+            "Doctrine\\ODM\\OrientDB": "src/",
+            "Benchmarks": "benchmarks/"
         }
     },
     "require": {
-        "php": ">=5.3.3",
+        "php": ">=5.5.0",
         "doctrine/common": "~2.2",
         "symfony/finder": "~2.3",
         "symfony/class-loader": "~2.3",
@@ -36,6 +43,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "4.1.*"
+        ,"athletic/athletic": "2.x"
     },
     "config": {
         "bin-dir": "bin"
