@@ -506,6 +506,13 @@ class CasterTest extends TestCase
     }
 
     /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testThrowsInvalidArgumentExceptionForBadDateClass() {
+        $i = new Caster($this->hydrator, $this->inflector, null, '\Exception');
+    }
+
+    /**
      * @dataProvider getBinaries
      */
     public function testBinaryCasting($binary)
