@@ -202,7 +202,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      *
      * @param \ReflectionProperty $property
      *
-*@return \Doctrine\ODM\OrientDB\Mapping\Annotations\Property
+     * @return \Doctrine\ODM\OrientDB\Mapping\Annotations\Property
      */
     public function getPropertyAnnotation(\ReflectionProperty $property)
     {

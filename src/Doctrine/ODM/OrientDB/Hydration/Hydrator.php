@@ -260,7 +260,7 @@ class Hydrator
             if (property_exists($object, $property)) {
                 $value = $this->hydrateValue($object->$property, $annotation);
                 $hydratedData[$property] = $value;
-                $metadata->setDocumentValue($document, $documentProperty, $value);
+                $metadata->setFieldValue($document, $documentProperty, $value);
             }
         }
 

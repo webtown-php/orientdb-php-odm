@@ -5,6 +5,7 @@ namespace Doctrine\ODM\OrientDB\Persistence;
 
 use Doctrine\Common\Util\Inflector;
 use Doctrine\ODM\OrientDB\Caster\ReverseCaster;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
 
@@ -45,6 +46,7 @@ class SQLBatchPersister implements PersisterInterface
     {
         $queryWriter = new QueryWriter();
         foreach ($changeSet->getInserts() as $identifier => $item) {
+            /** @var ClassMetadata $metadata */
             $metadata = $this->metadataFactory->getMetadataFor(get_class($item['document']));
             $fields = $this->getCastedFields($item['changes']);
             $position = $queryWriter->addInsertQuery($identifier, $metadata->getOrientClass(), $fields);
@@ -91,7 +93,7 @@ class SQLBatchPersister implements PersisterInterface
                 $document = $map['document'];
                 $metadata = $map['metadata'];
 
-                $metadata->setDocumentValue($document, $metadata->getRidPropertyName(), $result->{'@rid'});
+                $metadata->setFieldValue($document, $metadata->getRidPropertyName(), $result->{'@rid'});
             }
         }
     }

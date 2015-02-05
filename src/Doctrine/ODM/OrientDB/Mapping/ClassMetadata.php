@@ -165,7 +165,7 @@ class ClassMetadata implements DoctrineMetadata
      *
      * This array includes identifier fields if present on this class.
      *
-     * @return Array
+     * @return string[]
      */
     public function getFieldNames()
     {
@@ -183,7 +183,7 @@ class ClassMetadata implements DoctrineMetadata
      *
      * This array includes identifier associations if present on this class.
      *
-     * @return Array
+     * @return string[]
      */
     public function getAssociationNames()
     {
@@ -293,14 +293,14 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function getIdentifierValues($object)
     {
-        return $this->getDocumentValue($object, $this->identifierPropertyName);
+        return $this->getFieldValue($object, $this->identifierPropertyName);
     }
 
     /**
      * Returns the association mapped for the given $field.
      *
      * @param   string $field
-     * @return  string
+     * @return  Annotations\Property
      */
     protected function getAssociation($field)
     {
@@ -321,6 +321,9 @@ class ClassMetadata implements DoctrineMetadata
         $this->associations = $associations;
     }
 
+    /**
+     * @param DataMapper\Annotations\Property[] $fields
+     */
     public function setFields(array $fields)
     {
         $this->fields = $fields;
@@ -361,7 +364,7 @@ class ClassMetadata implements DoctrineMetadata
      * @param string $property
      * @param string $value
      */
-    public function setDocumentValue($document, $property, $value)
+    public function setFieldValue($document, $property, $value)
     {
         $p = $this->setter->bindTo(null, $document);
         $p($document, $property, $value);
@@ -373,7 +376,7 @@ class ClassMetadata implements DoctrineMetadata
      * @param mixed $document
      * @param string $property
      */
-    public function getDocumentValue($document, $property)
+    public function getFieldValue($document, $property)
     {
         $p = $this->getter->bindTo(null, $document);
         return $p($document, $property);
@@ -426,9 +429,9 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Returns all the fields of the introspected class.
      *
-     * @return Array
+     * @return Annotations\Property[]
      */
-    protected function getFields()
+    public function getFields()
     {
         return $this->fields;
     }

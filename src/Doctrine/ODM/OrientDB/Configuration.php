@@ -24,14 +24,14 @@ class Configuration
     private $cache;
     private $annotationReader;
 
-    private $supportedPersisterStrategies = array('sql_batch');
+    private $supportedPersisterStrategies = ['sql_batch'];
 
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         $defaults = array(
             'proxy_namespace' => 'Doctrine\ODM\OrientDB\Proxy',
             'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS,
-            'document_dirs' => array()
+            'document_dirs' => []
         );
 
         $this->options = array_merge($defaults ,$options);

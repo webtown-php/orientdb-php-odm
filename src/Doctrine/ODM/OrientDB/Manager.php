@@ -320,19 +320,16 @@ class Manager implements ObjectManager
     }
 
     /**
-     * If an object is given, it is cleared from the uow,
-     * if not an entire new uow is created.
+     * Clears the DocumentManager.
      *
-     * @param $object
+     * All documents that are currently managed by this DocumentManager become
+     * detached.
+     *
+     * @param string|null $class if given, only documents of this type will be detached
      */
-    public function clear($object = null)
+    public function clear($class = null)
     {
-        if ($object) {
-            $this->uow->clear($object);
-        }
-
-        unset($this->uow);
-        $this->uow = new UnitOfWork($this);
+        $this->uow->clear($class);
     }
 
     /**

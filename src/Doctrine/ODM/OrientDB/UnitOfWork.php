@@ -4,7 +4,6 @@ namespace Doctrine\ODM\OrientDB;
 
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Persistence\ChangeSet;
 use Doctrine\ODM\OrientDB\Persistence\SQLBatchPersister;
@@ -46,7 +45,7 @@ class UnitOfWork
     private $hydrator;
     private $identityMap = [];
     private $newDocuments = [];
-    private $originalData = [];
+    private $originalDocumentData = [];
     private $documentUpdates = [];
     private $documentInserts = [];
     private $documentRemovals = [];
@@ -56,7 +55,19 @@ class UnitOfWork
     {
         $this->manager = $manager;
     }
-
+    /**
+     * Commits the UnitOfWork, executing all operations that have been postponed
+     * up to this point. The state of all managed documents will be synchronized with
+     * the database.
+     *
+     * The operations are executed in the following order:
+     *
+     * 1) All document insertions
+     * 2) All document updates
+     * 3) All document deletions
+     *
+     * @param object|array|null $document
+     */
     public function commit($document = null)
     {
         if (null === $document) {
@@ -73,11 +84,12 @@ class UnitOfWork
         $persister = $this->createPersister();
         $persister->process($changeSet);
 
+        // clean up
         $this->documentInserts
             = $this->documentUpdates
-            = array();
+            = $this->documentRemovals
+            = [];
     }
-
 
     public function execute(Query $query, $fetchPlan = null)
     {
@@ -141,7 +153,7 @@ class UnitOfWork
     public function getCollection(array $rids, $lazy = true, $fetchPlan = null)
     {
         if ($lazy) {
-            $proxies = array();
+            $proxies = [];
             foreach ($rids as $rid) {
                 $proxies[] = $this->getProxy(new Rid($rid), $lazy);
             }
@@ -161,7 +173,7 @@ class UnitOfWork
 
     public function attachOriginalData($rid, array $originalData)
     {
-        $this->originalData[$rid] = $originalData;
+        $this->originalDocumentData[$rid] = $originalData;
     }
 
     public function persist($document)
@@ -173,18 +185,25 @@ class UnitOfWork
         }
     }
 
-    public function clear($document)
+    /**
+     * Clears the UnitOfWork.
+     *
+     * @param string|null $class if given, only documents of this type will be detached.
+     *
+     * @throws \Exception if $class is not null (not implemented)
+     */
+    public function clear($class = null)
     {
-        if ($document instanceof Proxy) {
-            $rid = $this->getRid($document);
-            if (isset($this->identityMap[$rid])) {
-                unset($this->identityMap[$rid]);
-            }
+        if ($class === null) {
+            $this->identityMap
+                = $this->newDocuments
+                = $this->originalDocumentData
+                = $this->documentUpdates
+                = $this->documentInserts
+                = $this->documentRemovals
+                = $this->documentStates = [];
         } else {
-            $hash = spl_object_hash($document);
-            if (isset($this->newDocuments[$hash])) {
-                unset($this->newDocuments[$hash]);
-            }
+            throw new \Exception('not implemented');
         }
     }
 
@@ -205,9 +224,26 @@ class UnitOfWork
         throw new \Exception('not implemented');
     }
 
-    public function recomputeSingleDocumentChangeSet(ClassMetadata $class, $document) {
+    /**
+     * INTERNAL:
+     * Computes the changeset of an individual document, independently of the
+     * computeChangeSets() routine that is used at the beginning of a UnitOfWork#commit().
+     *
+     * The passed document must be a managed document. If the document already has a change set
+     * because this method is invoked during a commit cycle then the change sets are added.
+     * whereby changes detected in this method prevail.
+     *
+     * @ignore
+     * @param object $document The document for which to (re)calculate the change set.
+     * @throws \InvalidArgumentException If the passed document is not MANAGED.
+     */
+    public function recomputeSingleDocumentChangeSet($document) {
         $oid = spl_object_hash($document);
-        throw new \Exception('not implemented');
+        if ( ! isset($this->documentStates[$oid]) || $this->documentStates[$oid] !== self::STATE_MANAGED) {
+            throw new \InvalidArgumentException('document must be managed.');
+        }
+
+        $this->computeSingleDocumentChangeSet($document);
     }
 
     /**
@@ -245,46 +281,48 @@ class UnitOfWork
                 return;
             }
 
-            $originalData = isset($this->originalData[$identifier]) ? $this->originalData[$identifier] : null;
-            $changes = $this->extractChangeSet($document, $originalData);
+            $originalData = isset($this->originalDocumentData[$identifier]) ? $this->originalDocumentData[$identifier] : null;
+            $changes = $this->buildChangeSet($document, $originalData);
             if ($changes) {
-                $this->documentUpdates[$identifier] = array('changes' => $changes, 'document' => $document);
+                $this->documentUpdates[$identifier] = ['changes' => $changes, 'document' => $document];
             }
         } else {
-            $changes = $this->extractChangeSet($document);
+            $changes = $this->buildChangeSet($document);
             // identify the document by its hash to avoid duplicates
-            $identifier = spl_object_hash($document);
-            $this->documentInserts[$identifier] = array('changes' => $changes, 'document' => $document);
+            $oid = spl_object_hash($document);
+            $this->documentInserts[$oid] = ['changes' => $changes, 'document' => $document];
         }
     }
 
-    protected function extractChangeSet($document, array $originalData = null)
+    /**
+     * Built a change set from the original data for the specified document
+     *
+     * @param object $document
+     * @param array  $originalData
+     *
+     * @return array
+     * @internal
+     */
+    public function buildChangeSet($document, array $originalData = null)
     {
-        $changes = array();
+        $changes = [];
         $metadata = $this->getManager()->getClassMetadata(get_class($document));
-        foreach ($metadata->getReflectionFields() as $reflField) {
-            $fieldAnnotation = $metadata->getField($reflField->getName());
+        foreach ($metadata->getFields() as $propName => $fieldAnnotation) {
+            if ($fieldAnnotation->name === '@rid') continue;
 
-            // if the field isn't mapped we can just ignore it.
-            if (! $fieldAnnotation) {
-                continue;
-            }
-
+            $currentValue = $metadata->getFieldValue($document, $propName);
             $fieldName = $fieldAnnotation->name;
-            $currentValue = $reflField->getValue($document);
-
 
             /* if we don't know the original data, or it doesn't have the field, or the field's
              * value is different we count it as a change
              */
             if (! $originalData || ! isset($originalData[$fieldName]) || $originalData[$fieldName] !== $currentValue) {
-                $changes[] = array('field' => $fieldName, 'value' => $currentValue, 'annotation' => $fieldAnnotation);
+                $changes[] = ['field' => $fieldName, 'value' => $currentValue, 'annotation' => $fieldAnnotation];
             }
         }
 
         return $changes;
     }
-
 
     /**
      * Gets the rid of the proxy.
@@ -299,6 +337,83 @@ class UnitOfWork
 
         return $metadata->getIdentifierValues($proxy);
     }
+    /**
+     * Checks whether the UnitOfWork has any pending insertions.
+     *
+     * @return boolean true if this UnitOfWork has pending insertions
+     */
+    public function hasPendingInsertions() {
+        return !empty($this->documentInserts);
+    }
+
+    /**
+     * Calculates the size of the UnitOfWork. The size of the UnitOfWork is the
+     * number of documents in the identity map.
+     *
+     * @return integer
+     */
+    public function size()
+    {
+        return count($this->identityMap);
+    }
+
+    /**
+     * INTERNAL:
+     * Registers a document as managed.
+     *
+     * @param object $document The document.
+     * @param string $rid      The document RID
+     * @param array  $data     The original document data.
+     */
+    public function registerManaged($document, $rid, array $data) {
+        $oid                              = spl_object_hash($document);
+        $this->documentStates[$oid]       = self::STATE_MANAGED;
+        $this->originalDocumentData[$rid] = $data;
+        $this->addToIdentityMap($document);
+    }
+
+    /**
+     * Add the specified document to the identity map
+     *
+     * @param object $document
+     *
+     * @internal
+     */
+    public function addToIdentityMap($document) {
+        if ($document instanceof Proxy) {
+            $id = $this->getRid($document);
+        } else {
+            $id = spl_object_hash($document);
+        }
+
+        $this->identityMap[$id] = $document;
+    }
+
+    /**
+     * Gets the identity map of the UnitOfWork.
+     *
+     * @return array
+     */
+    public function getIdentityMap()
+    {
+        return $this->identityMap;
+    }
+
+    /**
+     * Gets the original data of a document. The original data is the data that was
+     * present at the time the document was reconstituted from the database.
+     *
+     * @param object $document
+     * @return array
+     */
+    public function getOriginalDocumentData($document) {
+        $oid = spl_object_hash($document);
+        if (isset($this->originalDocumentData[$oid])) {
+            return $this->originalDocumentData[$oid];
+        }
+
+        return [];
+    }
 
     /**
      * Executes a query against OrientDB to find the specified RID and finalizes the
@@ -312,7 +427,7 @@ class UnitOfWork
      */
     protected function load(Rid $rid, $fetchPlan = null)
     {
-        $results = $this->getHydrator()->load(array($rid->getValue()), $fetchPlan);
+        $results = $this->getHydrator()->load([$rid->getValue()], $fetchPlan);
 
         if (isset($results) && count($results)) {
             $record = is_array($results) ? array_shift($results) : $results;

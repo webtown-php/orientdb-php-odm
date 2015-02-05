@@ -27,14 +27,14 @@ class ClassMetadataEvent extends AthleticEvent
      * @iterations 10000
      */
     public function setDocumentValue() {
-        $this->md->setDocumentValue($this->doc, 'name', 'Cam');
+        $this->md->setFieldValue($this->doc, 'name', 'Cam');
     }
 
     /**
      * @iterations 10000
      */
     public function getDocumentValue() {
-        $res = $this->md->getDocumentValue($this->doc, 'name');
+        $res = $this->md->getFieldValue($this->doc, 'name');
     }
 }
 
