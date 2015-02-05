@@ -42,6 +42,10 @@ class Mapped
      * @ODM\Property(name="multiassoc",type="linkset")
      */
     protected $multiassoc;
+
+    function __construct($rid = null) {
+        $this->rid = $rid;
+    }
 }
 
 class ClassMetadataTest extends TestCase
@@ -73,6 +77,11 @@ class ClassMetadataTest extends TestCase
     function testGetIdentifier()
     {
         $this->assertEquals(array('rid'), $this->metadata->getIdentifier());
+    }
+
+    function testGetIdentifierValues() {
+        $i = new Mapped('#1:1');
+        $this->assertEquals('#1:1', $this->metadata->getIdentifierValues($i));
     }
 
     function testGetReflectionClass()

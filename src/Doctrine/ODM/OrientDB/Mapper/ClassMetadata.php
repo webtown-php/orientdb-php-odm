@@ -293,8 +293,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function getIdentifierValues($object)
     {
-        $fields = $this->getReflectionFields();
-        return $fields[$this->identifierPropertyName]->getValue($object);
+        return $this->getDocumentValue($object, $this->identifierPropertyName);
     }
 
     /**
