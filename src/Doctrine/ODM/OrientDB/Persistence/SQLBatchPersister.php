@@ -117,7 +117,7 @@ class SQLBatchPersister implements PersisterInterface
     /**
      * Casts a value according to how it was annotated.
      *
-     * @param  \Doctrine\ODM\OrientDB\Mapper\Annotations\Property  $annotation
+     * @param  \Doctrine\ODM\OrientDB\Mapping\Annotations\Property  $annotation
      * @param  mixed                                               $propertyValue
      * @return mixed
      */

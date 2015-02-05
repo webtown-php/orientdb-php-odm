@@ -5,8 +5,8 @@ namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
-use Doctrine\ODM\OrientDB\Mapper\Annotations\Reader;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Reader;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\OrientDB\Util\Inflector\Cached as Inflector;
 
 /**

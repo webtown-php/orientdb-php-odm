@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Mapper;
+namespace Doctrine\ODM\OrientDB\Mapping;
 
 
 use Doctrine\Common\Cache\Cache;

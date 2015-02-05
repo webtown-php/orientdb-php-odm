@@ -1,17 +1,17 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Mapper\Hydration;
+namespace Doctrine\ODM\OrientDB\Mapping\Hydration;
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
-use Doctrine\ODM\OrientDB\Mapper\ClusterMap;
+use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Exception;
 use Doctrine\ODM\OrientDB\Caster\Caster;
 use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
-use Doctrine\ODM\OrientDB\Mapper\Annotations\Property as PropertyAnnotation;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Property as PropertyAnnotation;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\OrientDB\Query\Query;
 use Symfony\Component\Finder\Finder;
@@ -200,9 +200,10 @@ class Hydrator
     /**
      * Casts a value according to how it was annotated.
      *
-     * @param  \Doctrine\ODM\OrientDB\Mapper\Annotations\Property  $annotation
+     * @param  \Doctrine\ODM\OrientDB\Mapping\Annotations\Property  $annotation
      * @param  mixed                                               $propertyValue
-     * @return mixed
+     *
+*@return mixed
      */
     protected function castProperty($annotation, $propertyValue)
     {

@@ -20,12 +20,12 @@
 
 namespace Doctrine\ODM\OrientDB\Caster;
 
-use Doctrine\ODM\OrientDB\Mapper\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Mapping\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Validator\ValidationException;
 use Doctrine\OrientDB\Util\Inflector\Cached as Inflector;
-use Doctrine\ODM\OrientDB\Mapper;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\Types\Rid;
 
 class Caster extends AbstractCaster

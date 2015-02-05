@@ -4,7 +4,8 @@ namespace Doctrine\ODM\OrientDB;
 
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
-use Doctrine\ODM\OrientDB\Mapper\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\ODM\OrientDB\Mapping\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Persistence\ChangeSet;
 use Doctrine\ODM\OrientDB\Persistence\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
@@ -20,6 +21,27 @@ use Doctrine\OrientDB\Query\Query;
  */
 class UnitOfWork
 {
+    /**
+     * A document is in MANAGED state when its persistence is managed by a DocumentManager.
+     */
+    const STATE_MANAGED = 1;
+    /**
+     * A document is new if it has just been instantiated (i.e. using the "new" operator)
+     * and is not (yet) managed by a DocumentManager.
+     */
+    const STATE_NEW = 2;
+    /**
+     * A detached document is an instance with a persistent identity that is not
+     * (or no longer) associated with a DocumentManager (and a UnitOfWork).
+     */
+    const STATE_DETACHED = 3;
+    /**
+     * A removed document instance is an instance with a persistent identity,
+     * associated with a DocumentManager, whose persistent state has been
+     * deleted (or is scheduled for deletion).
+     */
+    const STATE_REMOVED = 4;
+
     private $manager;
     private $hydrator;
     private $identityMap = [];
@@ -28,6 +50,7 @@ class UnitOfWork
     private $documentUpdates = [];
     private $documentInserts = [];
     private $documentRemovals = [];
+    private $documentStates = [];
 
     public function __construct(Manager $manager)
     {
@@ -65,7 +88,7 @@ class UnitOfWork
             $collection = $this->getHydrator()->hydrateCollection($results);
 
             foreach ($collection as $entity) {
-                $this->attach($entity);
+                $this->persist($entity);
             }
 
             return $collection;
@@ -141,7 +164,7 @@ class UnitOfWork
         $this->originalData[$rid] = $originalData;
     }
 
-    public function attach($document)
+    public function persist($document)
     {
         if ($document instanceof Proxy) {
             $this->identityMap[$this->getRid($document)] = $document;
@@ -165,10 +188,26 @@ class UnitOfWork
         }
     }
 
-    public function markForRemoval(Proxy $proxy)
+    /**
+     * @param Proxy $proxy
+     */
+    public function remove(Proxy $proxy)
     {
         $rid = $this->getRid($proxy);
-        $this->documentRemovals[$rid] = array('document' => $proxy);
+        $this->documentRemovals[$rid] = ['document' => $proxy];
+    }
+
+    /**
+     * @param object $document
+     */
+    public function refresh($document) {
+        $rid = $this->getRid($document);
+        throw new \Exception('not implemented');
+    }
+
+    public function recomputeSingleDocumentChangeSet(ClassMetadata $class, $document) {
+        $oid = spl_object_hash($document);
+        throw new \Exception('not implemented');
     }
 
     /**

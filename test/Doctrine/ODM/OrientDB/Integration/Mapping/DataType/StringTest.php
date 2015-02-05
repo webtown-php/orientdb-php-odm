@@ -1,7 +1,7 @@
 <?php
 
 /**
- * DoubleTest
+ * StringTest
  *
  * @package    Doctrine\ODM\OrientDB
  * @subpackage Test
@@ -10,22 +10,21 @@
  * @version
  */
 
-namespace test\Doctrine\ODM\OrientDB\Integration\Mapper\DataType;
+namespace test\Doctrine\ODM\OrientDB\Integration\Mapping\DataType;
 
 use test\PHPUnit\TestCase;
 
 /**
  * @group integration
  */
-class DoubleTest extends TestCase
+class StringTest extends TestCase
 {
-
-    public function testHydrationOfADoubleProperty()
+    public function testHydratingAStringProperty()
     {
         $manager = $this->createManager();
-        //MapPoint
-        $point = $manager->find("#".$this->getClassId('MapPoint').":0");
+        //Country
+        $country = $manager->find('#'.$this->getClassId('Country').':0');
 
-        $this->assertInternalType('float', $point->y);
+        $this->assertInternalType('string', $country->name);
     }
 }

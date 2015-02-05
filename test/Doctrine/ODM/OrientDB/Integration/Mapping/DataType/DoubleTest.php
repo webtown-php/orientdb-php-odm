@@ -1,7 +1,7 @@
 <?php
 
 /**
- * FloatTest
+ * DoubleTest
  *
  * @package    Doctrine\ODM\OrientDB
  * @subpackage Test
@@ -10,16 +10,17 @@
  * @version
  */
 
-namespace test\Doctrine\ODM\OrientDB\Integration\Mapper\DataType;
+namespace test\Doctrine\ODM\OrientDB\Integration\Mapping\DataType;
 
 use test\PHPUnit\TestCase;
 
 /**
  * @group integration
  */
-class FloatTest extends TestCase
+class DoubleTest extends TestCase
 {
-    public function testHydrationOfAFloatProperty()
+
+    public function testHydrationOfADoubleProperty()
     {
         $manager = $this->createManager();
         //MapPoint

@@ -14,7 +14,7 @@ namespace test\Doctrine\ODM\OrientDB;
 
 use test\PHPUnit\TestCase;
 use Doctrine\ODM\OrientDB\Manager;
-use Doctrine\ODM\OrientDB\Mapper;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\Repository;
 use Doctrine\ODM\OrientDB\Types\Rid;
 

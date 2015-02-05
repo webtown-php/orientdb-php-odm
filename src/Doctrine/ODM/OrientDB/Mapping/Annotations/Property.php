@@ -17,7 +17,7 @@
  * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
  */
 
-namespace Doctrine\ODM\OrientDB\Mapper\Annotations;
+namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
 
 /**
  * @Annotation

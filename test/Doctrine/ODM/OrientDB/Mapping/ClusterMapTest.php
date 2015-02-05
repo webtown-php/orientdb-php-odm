@@ -1,9 +1,9 @@
 <?php
 
-namespace test\Doctrine\ODM\OrientDB\Mapper;
+namespace test\Doctrine\ODM\OrientDB\Mapping;
 
 
-use Doctrine\ODM\OrientDB\Mapper\ClusterMap;
+use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Types\Rid;
 use test\PHPUnit\TestCase;
 
@@ -93,7 +93,7 @@ class ClusterMapTest extends TestCase
     }
 
     /**
-     * @expectedException \Doctrine\ODM\OrientDB\Mapper\MappingException
+     * @expectedException \Doctrine\ODM\OrientDB\Mapping\MappingException
      */
     public function testIdentifyClassNotFound()
     {

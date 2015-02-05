@@ -33,7 +33,7 @@ use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Query\Query;
 use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadataFactory as MetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 
 class Manager implements ObjectManager
 {
@@ -185,7 +185,7 @@ class Manager implements ObjectManager
      *
      * @param   string $class
      *
-     * @return \Doctrine\ODM\OrientDB\Mapper\ClassMetadata
+     * @return \Doctrine\ODM\OrientDB\Mapping\ClassMetadata
      */
     public function getClassMetadata($class)
     {
@@ -283,33 +283,40 @@ class Manager implements ObjectManager
     }
 
     /**
-     * @todo to implement/test
+     * Tells the Manager to make an instance managed and persistent.
      *
-     * @param $document
+     * The document will be entered into the database at or before transaction
+     * commit or as a result of the flush operation.
+     *
+     * @param object $document
      */
     public function persist($document)
     {
-        $this->getUnitOfWork()->attach($document);
+        if ( ! is_object($document)) {
+            throw new \InvalidArgumentException(gettype($document));
+        }
+        $this->getUnitOfWork()->persist($document);
     }
 
     /**
      * @todo to implement/test
      *
-     * @param $object
+     * @param object $object
      */
     public function remove($object)
     {
-        $this->getUnitOfWork()->markForRemoval($object);
+        $this->getUnitOfWork()->remove($object);
     }
 
     /**
-     * @todo to implement/test
+     * Refreshes the persistent state of a document from the database,
+     * overriding any local changes that have not yet been persisted.
      *
-     * @param \stdClass $object
+     * @param object $object
      */
     public function refresh($object)
     {
-        throw new \Exception();
+        $this->getUnitOfWork()->refresh($object);
     }
 
     /**

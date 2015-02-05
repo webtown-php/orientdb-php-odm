@@ -10,13 +10,13 @@
  * @version
  */
 
-namespace test\Doctrine\ODM\OrientDB\Mapper;
+namespace test\Doctrine\ODM\OrientDB\Mapping;
 
-use Doctrine\ODM\OrientDB\Mapper\Annotations\Property;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use test\PHPUnit\TestCase;
-use Doctrine\ODM\OrientDB\Mapper;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadata;
-use Doctrine\ODM\OrientDB\Mapper\Annotations as ODM;
+use Doctrine\ODM\OrientDB\Mapping;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
 * @ODM\Document(class="Mapped")
@@ -71,7 +71,7 @@ class ClassMetadataTest extends TestCase
 
     function testGetName()
     {
-        $this->assertEquals('test\Doctrine\ODM\OrientDB\Mapper\Mapped', $this->metadata->getName());
+        $this->assertEquals(Mapped::class, $this->metadata->getName());
     }
 
     function testGetIdentifier()

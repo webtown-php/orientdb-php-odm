@@ -1,9 +1,10 @@
 <?php
 
-namespace test\Doctrine\ODM\OrientDB\Integration\Mapper;
+namespace test\Doctrine\ODM\OrientDB\Integration\Mapping;
 
 
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\ReaderInterface;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use test\PHPUnit\TestCase;
 
 class ClassMetadataFactoryTest extends TestCase
@@ -30,7 +31,7 @@ class ClassMetadataFactoryTest extends TestCase
     public function testGettingTheDirectoriesInWhichTheMapperLooksForPOPOs()
     {
         $metadataFactory = new ClassMetadataFactory(
-            $this->getMock('\Doctrine\ODM\OrientDB\Mapper\Annotations\ReaderInterface'),
+            $this->getMock(ReaderInterface::class),
             $this->getMock('\Doctrine\Common\Cache\Cache')
         );
 

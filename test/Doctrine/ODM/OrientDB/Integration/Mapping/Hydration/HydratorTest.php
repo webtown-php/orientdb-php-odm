@@ -1,6 +1,6 @@
 <?php
 
-namespace test\Doctrine\ODM\OrientDB\Integration\Mapper\Hydration;
+namespace test\Doctrine\ODM\OrientDB\Integration\Mapping\Hydration;
 
 
 use test\PHPUnit\TestCase;

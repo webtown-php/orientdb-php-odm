@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Doctrine\ODM\OrientDB\Mapper;
+namespace Doctrine\ODM\OrientDB\Mapping;
 
-use Doctrine\ODM\OrientDB\Mapper as DataMapper;
+use Doctrine\ODM\OrientDB\Mapping as DataMapper;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineMetadata;
 
 /**
@@ -314,7 +314,7 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
-     * @param \Doctrine\ODM\OrientDB\Mapper\Annotations\Property[] $associations
+     * @param \Doctrine\ODM\OrientDB\Mapping\Annotations\Property[] $associations
      */
     public function setAssociations(array $associations)
     {

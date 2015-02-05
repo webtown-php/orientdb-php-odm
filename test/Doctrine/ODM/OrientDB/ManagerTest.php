@@ -13,6 +13,7 @@
 
 namespace test\Doctrine\ODM\OrientDB;
 
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Query;
 use Doctrine\ODM\OrientDB\Manager;
@@ -50,7 +51,7 @@ class ManagerTest extends TestCase
         $manager = $this->createTestManager();
         $metadata = $manager->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
 
-        $this->assertInstanceOf('Doctrine\ODM\OrientDB\Mapper\ClassMetadata', $metadata);
+        $this->assertInstanceOf(ClassMetadata::class, $metadata);
     }
 
     public function testManagerActsAsAProxyForExecutingQueries()

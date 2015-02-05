@@ -9,9 +9,9 @@ use Doctrine\Common\Proxy\ProxyDefinition;
 use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
-use Doctrine\ODM\OrientDB\Mapper\Hydration\Hydrator;
+use Doctrine\ODM\OrientDB\Mapping\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Manager;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\Common\Proxy\Proxy as BaseProxy;
 
 /**

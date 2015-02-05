@@ -19,12 +19,14 @@
  * @author     Tamás Millián <tamas.millian@gmail.com>
  */
 
-namespace Doctrine\ODM\OrientDB\Mapper;
+namespace Doctrine\ODM\OrientDB\Mapping;
 
 use Doctrine\Common\Cache\Cache;
-use Doctrine\ODM\OrientDB\Mapper;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory as ClassMetadataFactoryInterface;
-use Doctrine\ODM\OrientDB\Mapper\Annotations\ReaderInterface as AnnotationReaderInterface;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\ReaderInterface as AnnotationReaderInterface;
 use Doctrine\ODM\OrientDB\OClassNotFoundException;
 use Symfony\Component\Finder\Finder;
 
@@ -33,8 +35,8 @@ use Symfony\Component\Finder\Finder;
  */
 class ClassMetadataFactory implements ClassMetadataFactoryInterface
 {
-    const ANNOTATION_PROPERTY_CLASS = 'Doctrine\ODM\OrientDB\Mapper\Annotations\Property';
-    const ANNOTATION_CLASS_CLASS    = 'Doctrine\ODM\OrientDB\Mapper\Annotations\Document';
+    const ANNOTATION_PROPERTY_CLASS = Property::class;
+    const ANNOTATION_CLASS_CLASS    = Document::class;
 
     protected $annotationReader;
     protected $cache;
@@ -178,7 +180,8 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      * Returns the annotation of a class.
      *
      * @param  string   $class
-     * @return \Doctrine\ODM\OrientDB\Mapper\Annotations\Document
+     *
+*@return \Doctrine\ODM\OrientDB\Mapping\Annotations\Document
      */
     public function getClassAnnotation($class)
     {
@@ -198,7 +201,8 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      * Returns the annotation of a property.
      *
      * @param \ReflectionProperty $property
-     * @return \Doctrine\ODM\OrientDB\Mapper\Annotations\Property
+     *
+*@return \Doctrine\ODM\OrientDB\Mapping\Annotations\Property
      */
     public function getPropertyAnnotation(\ReflectionProperty $property)
     {

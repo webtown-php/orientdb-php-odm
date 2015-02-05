@@ -3,8 +3,8 @@
 namespace Doctrine\ODM\OrientDB\Persistence;
 
 
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadata;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 
 /**
  * Class QueryWriter

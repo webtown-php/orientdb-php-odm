@@ -12,7 +12,7 @@ namespace test\PHPUnit;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ODM\OrientDB\Configuration;
 use Doctrine\ODM\OrientDB\Manager;
-use Doctrine\ODM\OrientDB\Mapper;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\OrientDB\Binding\HttpBinding;
 use Doctrine\OrientDB\Binding\BindingParameters;
 use Doctrine\OrientDB\Binding\HttpBindingResultInterface;

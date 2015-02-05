@@ -1,9 +1,9 @@
 <?php
 
-namespace Benchmarks\Doctrine\ODM\OrientDB\Mapper;
+namespace Benchmarks\Doctrine\ODM\OrientDB\Mapping;
 
 use Athletic\AthleticEvent;
-use Doctrine\ODM\OrientDB\Mapper\ClassMetadata;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 
 class ClassMetadataEvent extends AthleticEvent
 {

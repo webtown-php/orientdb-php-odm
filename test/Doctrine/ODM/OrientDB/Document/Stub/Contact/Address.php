@@ -2,7 +2,7 @@
 
 namespace test\Doctrine\ODM\OrientDB\Document\Stub\Contact;
 
-use Doctrine\ODM\OrientDB\Mapper\Annotations as ODM;
+use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
 * @ODM\Document(class="Address")

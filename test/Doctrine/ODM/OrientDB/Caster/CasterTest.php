@@ -13,15 +13,16 @@
 namespace test\Doctrine\ODM\OrientDB\Caster;
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\OrientDB\Util\Inflector\Cached;
 use test\PHPUnit\TestCase;
-use Doctrine\ODM\OrientDB\Mapper;
+use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\Caster\Caster;
 
 class CasterTest extends TestCase
 {
     /**
-     * @var Mapper\Hydration\Hydrator
+     * @var Mapping\Hydration\Hydrator
      */
     private $hydrator;
     /**
@@ -636,7 +637,7 @@ class CasterTest extends TestCase
      */
     public function testEmbeddedSetCasting($expected,$embeddedSet)
     {
-        $property = $this->getMock('Doctrine\ODM\OrientDB\Mapper\Annotations\Property', null, array(array('cast' => 'embedded')));
+        $property = $this->getMock(Property::class, null, array(array('cast' => 'embedded')));
 
         $this->caster->setProperty('annotation', $property);
 
@@ -648,7 +649,7 @@ class CasterTest extends TestCase
      */
     public function testEmbeddedMapCasting($expected,$embeddedSet)
     {
-        $property = $this->getMock('Doctrine\ODM\OrientDB\Mapper\Annotations\Property', null, array(array('cast' => 'embedded')));
+        $property = $this->getMock(Property::class, null, array(array('cast' => 'embedded')));
 
         $this->caster->setProperty('annotation', $property);
 
@@ -660,7 +661,7 @@ class CasterTest extends TestCase
      */
     public function testEmbeddedListCasting($expected,$embeddedSet)
     {
-        $property = $this->getMock('Doctrine\ODM\OrientDB\Mapper\Annotations\Property', null, array(array('cast' => 'embedded')));
+        $property = $this->getMock(Property::class, null, array(array('cast' => 'embedded')));
 
         $this->caster->setProperty('annotation', $property);
 

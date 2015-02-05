@@ -20,7 +20,7 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapper\Annotations as ODM;
+use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
 * @ODM\Document(class="Post")

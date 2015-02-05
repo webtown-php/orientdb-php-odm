@@ -10,7 +10,7 @@
  * @version
  */
 
-namespace test\Doctrine\ODM\OrientDB\Integration\Mapper\DataType;
+namespace test\Doctrine\ODM\OrientDB\Integration\Mapping\DataType;
 
 use test\PHPUnit\TestCase;
 
