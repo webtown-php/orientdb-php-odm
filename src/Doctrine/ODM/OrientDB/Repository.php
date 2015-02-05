@@ -49,7 +49,7 @@ class Repository implements ObjectRepository
      *
      * @param string $method
      * @param array $arguments
-     * @return method
+     * @return mixed
      * @throws RuntimeException
      */
     public function __call($method, $arguments)
@@ -82,7 +82,13 @@ class Repository implements ObjectRepository
      * Finds an object by its primary key / identifier.
      *
      * @param string $rid The identifier.
+     * @param string $fetchPlan
+     *
      * @return object The object.
+     * @throws Caster\CastingMismatchException
+     * @throws Exception
+     * @throws OClassNotFoundException
+     * @throws \Exception
      */
     public function find($rid, $fetchPlan = '*:0')
     {
@@ -119,11 +125,14 @@ class Repository implements ObjectRepository
      * an UnexpectedValueException if certain values of the sorting or limiting details are
      * not supported.
      *
-     * @param array $criteria
+     * @param array      $criteria
      * @param array|null $orderBy
-     * @param int|null $limit
-     * @param int|null $offset
-     * @return mixed The objects.
+     * @param int|null   $limit
+     * @param int|null   $offset
+     * @param string     $fetchPlan
+     *
+     * @return ArrayCollection The objects.
+     * @throws Exception
      */
     public function findBy(array $criteria, array $orderBy = array(), $limit = null, $offset = null, $fetchPlan = '*:0')
     {

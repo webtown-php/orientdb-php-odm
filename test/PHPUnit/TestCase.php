@@ -111,16 +111,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $status = $response->getStatusCode();
         $message = $message ?: $response->getBody();
 
-        return $this->assertSame($expected, $status, $message);
+        $this->assertSame($expected, $status, $message);
     }
 
     public function assertCommandGives($expected, $got)
     {
-        return $this->assertEquals($expected, $got, 'The raw command does not match the given SQL query');
+        $this->assertEquals($expected, $got, 'The raw command does not match the given SQL query');
     }
 
     public function assertTokens($expected, $got)
     {
-        return $this->assertEquals($expected, $got, 'The given command tokens do not match');
+        $this->assertEquals($expected, $got, 'The given command tokens do not match');
     }
 }

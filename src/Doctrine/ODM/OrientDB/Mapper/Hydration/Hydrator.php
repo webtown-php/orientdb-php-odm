@@ -111,7 +111,7 @@ class Hydrator
     /**
      * Hydrates an array of documents.
      *
-     * @param  Array $json
+     * @param  array $collection
      * @return ArrayCollection
      */
     public function hydrateCollection(array $collection)
@@ -345,7 +345,7 @@ class Hydrator
     {
         if (!method_exists($caster, $method)) {
             $message  = sprintf(
-                'You are trying to map a property wich seems not to have a standard type (%s). Do you have a typo in your annotation?'.
+                'You are trying to map a property which seems not to have a standard type (%s). Do you have a typo in your annotation?'.
                 'If you think everything\'s ok, go check on %s class which property types are supported.',
                 $annotationType,
                 get_class($caster)

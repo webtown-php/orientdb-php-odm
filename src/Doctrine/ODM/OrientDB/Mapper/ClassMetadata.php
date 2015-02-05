@@ -393,7 +393,7 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Returns the reflection property associated with the $property.
      *
-     * @param   string $field
+     * @param   string $property
      * @return  Annotations\Property
      */
     protected function getFieldByProperty($property)

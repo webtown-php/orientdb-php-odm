@@ -13,15 +13,25 @@
 namespace test\Doctrine\ODM\OrientDB\Caster;
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\OrientDB\Util\Inflector\Cached;
 use test\PHPUnit\TestCase;
 use Doctrine\ODM\OrientDB\Mapper;
 use Doctrine\ODM\OrientDB\Caster\Caster;
-use Doctrine\ODM\OrientDB\Types\Rid;
 
 class CasterTest extends TestCase
 {
+    /**
+     * @var Mapper\Hydration\Hydrator
+     */
     private $hydrator;
+    /**
+     * @var Cached
+     */
     private $inflector;
+
+    /**
+     * @var Caster
+     */
     private $caster;
 
     public function setup()

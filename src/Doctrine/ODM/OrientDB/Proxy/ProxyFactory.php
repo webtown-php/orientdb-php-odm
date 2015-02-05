@@ -46,11 +46,13 @@ class ProxyFactory extends AbstractProxyFactory
      * Initializes a new instance of the <tt>ProxyFactory</tt> class that is
      * connected to the given <tt>DocumentManager</tt>.
      *
-     * @param \Doctrine\ODM\OrientDB\Manager $documentManager The DocumentManager the new factory works for.
-     * @param string $proxyDir The directory to use for the proxy classes. It
+     * @param Manager $manager
+     * @param string  $proxyDir                                      The directory to use for the proxy classes. It
      *                                                               must exist.
-     * @param string $proxyNamespace The namespace to use for the proxy classes.
-     * @param integer $autoGenerate Whether to automatically generate proxy classes.
+     * @param string  $proxyNamespace                                The namespace to use for the proxy classes.
+     * @param int     $autoGenerate                                  Whether to automatically generate proxy classes.
+     *
+     * @internal param Manager $documentManager The DocumentManager the new factory works for.
      */
     public function __construct(Manager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER)
     {

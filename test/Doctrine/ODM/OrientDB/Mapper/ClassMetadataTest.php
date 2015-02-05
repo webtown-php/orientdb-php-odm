@@ -46,9 +46,14 @@ class Mapped
 
 class ClassMetadataTest extends TestCase
 {
+    /**
+     * @var ClassMetadata
+     */
+    private $metadata;
+
     public function setup()
     {
-        $this->metadata = new ClassMetadata('test\Doctrine\ODM\OrientDB\Mapper\Mapped');
+        $this->metadata = new ClassMetadata(Mapped::class);
 
         $this->metadata->setIdentifier('rid');
         $this->metadata->setFields(array(
@@ -110,17 +115,17 @@ class ClassMetadataTest extends TestCase
         $this->assertEquals(array('field'), $this->metadata->getFieldNames());
     }
 
-    function testgetAssociationNames()
+    function testGetAssociationNames()
     {
         $this->assertEquals(array('assoc', 'multiassoc'), $this->metadata->getAssociationNames());
     }
 
-    function testgetTypeOfField()
+    function testGetTypeOfField()
     {
         $this->assertEquals('string', $this->metadata->getTypeOfField('field'));
     }
 
-    function testgetAssociationTargetClass()
+    function testGetAssociationTargetClass()
     {
         $this->assertEquals(null, $this->metadata->getAssociationTargetClass('OMNOMNOMNOMN'));
     }

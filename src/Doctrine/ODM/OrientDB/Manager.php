@@ -232,6 +232,11 @@ class Manager implements ObjectManager
         return $this->inflector;
     }
 
+    /**
+     * Returns the unit of work associated with this manager
+     *
+     * @return UnitOfWork
+     */
     public function getUnitOfWork()
     {
         return $this->uow;

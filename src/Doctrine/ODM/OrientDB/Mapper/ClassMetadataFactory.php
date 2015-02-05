@@ -65,7 +65,10 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     /**
      * @to implement and test
      *
+     * @param string $className
+     *
      * @return ClassMetadata
+     * @throws MappingException
      */
     public function getMetadataFor($className)
     {
@@ -81,6 +84,10 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
 
     /**
      * @to implement and test
+     *
+     * @param string $className
+     *
+     * @return bool
      */
     public function hasMetadataFor($className)
     {
@@ -105,6 +112,9 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
 
     /**
      * @to implement and test
+     *
+     * @param string        $className
+     * @param ClassMetadata $metadata
      */
     public function setMetadataFor($className, $metadata)
     {
@@ -147,7 +157,6 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     {
         $absPath    = realpath($file);
         $namespaces = explode('/', $absPath);
-        $start      = false;
         $i          = 0;
         $chunk      = explode('\\', $namespace);
         $namespace  = array_shift($chunk);

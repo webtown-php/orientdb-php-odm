@@ -31,8 +31,8 @@ abstract class AbstractCaster implements CasterInterface
     }
 
     /**
-     * Assigns the class used to cast dates and datetimes.
-     * If the $class is a subclass of \DateTime, it uses it, it uses \DateTime
+     * Assigns the class used to cast dates and datetime values.
+     * If the $class is a subclass of \DateTimeInterface, it uses it, it uses \DateTime
      * otherwise.
      *
      * @param string $class
@@ -41,8 +41,8 @@ abstract class AbstractCaster implements CasterInterface
     {
         $refClass = new \ReflectionClass($class);
 
-        if (!($refClass->getName() === 'DateTime' || $refClass->isSubclassOf('DateTime'))) {
-            throw new \InvalidArgumentException("The class used to cast DATE and DATETIME values must be derived from DateTime.");
+        if (!$refClass->implementsInterface(\DateTimeInterface::class)) {
+            throw new \InvalidArgumentException("The class used to cast DATE and DATETIME values must be derived from \\DateTimeInterface");
         }
 
         $this->dateClass = $class;
@@ -82,6 +82,10 @@ abstract class AbstractCaster implements CasterInterface
 
     /**
      * Throws an exception whenever $value can not be casted as $expectedType.
+     *
+     * @param string $expectedType
+     *
+     * @throws CastingMismatchException
      */
     protected function raiseMismatch($expectedType)
     {

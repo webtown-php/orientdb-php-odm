@@ -83,6 +83,7 @@ class ReverseCaster extends AbstractCaster
      */
     public function castDate()
     {
+        /** @var \DateTimeInterface $dateClass */
         $dateClass = $this->getDateClass();
         if ($this->value instanceof $dateClass) {
             return $this->value->getTimestamp() * 1000; //ODB takes milliseconds accuracy

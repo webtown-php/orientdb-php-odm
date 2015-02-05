@@ -407,7 +407,9 @@ class Caster extends AbstractCaster
      * Given a $type, it casts each element of the value array with a method.
      *
      * @param  string $type
+     *
      * @return Array
+     * @throws Exception
      */
     protected function castArrayOf($type)
     {
@@ -430,8 +432,8 @@ class Caster extends AbstractCaster
     /**
      * Casts embedded arrays, given the $cast property of the internal
      * annotation.
-     *
      * @return Array
+     * @throws Exception
      */
     public function castEmbeddedArrays()
     {
@@ -511,9 +513,12 @@ class Caster extends AbstractCaster
     }
 
 
-
     /**
-     * @todo phpdoc
+     * @param callable $castFunction
+     * @param          $expectedType
+     *
+     * @return mixed
+     * @throws CastingMismatchException
      */
     protected function handleMismatch(\Closure $castFunction, $expectedType)
     {

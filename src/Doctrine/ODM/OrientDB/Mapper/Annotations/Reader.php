@@ -52,7 +52,7 @@ class Reader implements ReaderInterface
 
         $this->reader = new CachedReader(new AnnotationReader, $cacheReader);
 
-        AnnotationRegistry::registerAutoloadNamespace("Doctrine\OrientDB");
+        AnnotationRegistry::registerAutoloadNamespace("Doctrine\\OrientDB");
         AnnotationRegistry::registerFile( __DIR__ . '/Document.php');
         AnnotationRegistry::registerFile( __DIR__ . '/Property.php');
     }
@@ -109,8 +109,9 @@ class Reader implements ReaderInterface
     /**
      * Gets the annotations applied to a method.
      *
-     * @param ReflectionMethod $property The name or ReflectionMethod of the method from which
-     * the annotations should be read.
+     * @param ReflectionMethod $method The name or ReflectionMethod of the method from which
+     *                                 the annotations should be read.
+     *
      * @return array An array of Annotations.
      */
     public function getMethodAnnotations(\ReflectionMethod $method)
@@ -122,8 +123,9 @@ class Reader implements ReaderInterface
      * Gets a method annotation.
      *
      * @param ReflectionMethod $method
-     * @param string $annotation The name of the annotation.
-     * @return The Annotation or null, if the requested annotation does not exist.
+     * @param string           $annotation The name of the annotation.
+     *
+     * @return \Doctrine\Common\Annotations\Annotation The Annotation or null, if the requested annotation does not exist.
      */
     public function getMethodAnnotation(\ReflectionMethod $method, $annotation)
     {
@@ -143,7 +145,7 @@ class Reader implements ReaderInterface
     /**
      * Creates a new instance of a cache provider.
      *
-     * @return Doctrine\Common\Cache\CacheProvider
+     * @return \Doctrine\Common\Cache\CacheProvider
      */
     protected function createCacheProvider()
     {

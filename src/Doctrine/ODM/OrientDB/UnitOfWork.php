@@ -136,9 +136,9 @@ class UnitOfWork
 
     }
 
-    public function attachOriginalData($rid, array $orignalData)
+    public function attachOriginalData($rid, array $originalData)
     {
-        $this->originalData[$rid] = $orignalData;
+        $this->originalData[$rid] = $originalData;
     }
 
     public function attach($document)

@@ -12,20 +12,23 @@
 /**
  * Class Reader
  *
- * @package    Doctrine\ODM
- * @subpackage OrientDB
+ * @package     Doctrine\ODM
+ * @subpackage  OrientDB
  * @author      Alessandro Nadalin <alessandro.nadalin@gmail.com>
  */
 
 namespace Doctrine\ODM\OrientDB\Mapper\Annotations;
+
+use Doctrine\Common\Annotations\Annotation;
 
 interface ReaderInterface
 {
     /**
      * Gets the annotations applied to a class.
      *
-     * @param ReflectionClass $class The ReflectionClass of the class from which
-     * the class annotations should be read.
+     * @param \ReflectionClass $class The ReflectionClass of the class from which
+     *                                the class annotations should be read.
+     *
      * @return array An array of Annotations.
      */
     public function getClassAnnotations(\ReflectionClass $class);
@@ -33,18 +36,20 @@ interface ReaderInterface
     /**
      * Gets a class annotation.
      *
-     * @param ReflectionClass $class The ReflectionClass of the class from which
-     * the class annotations should be read.
-     * @param string $annotation The name of the annotation.
-     * @return The Annotation or null, if the requested annotation does not exist.
+     * @param \ReflectionClass $class      The ReflectionClass of the class from which
+     *                                     the class annotations should be read.
+     * @param string           $annotation The name of the annotation.
+     *
+     * @return Annotation The Annotation or null, if the requested annotation does not exist.
      */
     public function getClassAnnotation(\ReflectionClass $class, $annotation);
 
     /**
      * Gets the annotations applied to a property.
      *
-     * @param string|ReflectionProperty $property The name or ReflectionProperty of the property
-     * from which the annotations should be read.
+     * @param string|\ReflectionProperty $property The name or ReflectionProperty of the property
+     *                                             from which the annotations should be read.
+     *
      * @return array An array of Annotations.
      */
     public function getPropertyAnnotations(\ReflectionProperty $property);
@@ -52,17 +57,19 @@ interface ReaderInterface
     /**
      * Gets a property annotation.
      *
-     * @param ReflectionProperty $property
-     * @param string $annotation The name of the annotation.
-     * @return The Annotation or null, if the requested annotation does not exist.
+     * @param \ReflectionProperty $property
+     * @param string              $annotation The name of the annotation.
+     *
+     * @return Annotation The Annotation or null, if the requested annotation does not exist.
      */
     public function getPropertyAnnotation(\ReflectionProperty $property, $annotation);
 
     /**
      * Gets the annotations applied to a method.
      *
-     * @param ReflectionMethod $property The name or ReflectionMethod of the method from which
-     * the annotations should be read.
+     * @param \ReflectionMethod $method The name or ReflectionMethod of the method from which
+     *                                  the annotations should be read.
+     *
      * @return array An array of Annotations.
      */
     public function getMethodAnnotations(\ReflectionMethod $method);
@@ -70,9 +77,10 @@ interface ReaderInterface
     /**
      * Gets a method annotation.
      *
-     * @param ReflectionMethod $method
-     * @param string $annotation The name of the annotation.
-     * @return The Annotation or null, if the requested annotation does not exist.
+     * @param \ReflectionMethod $method
+     * @param string            $annotation The name of the annotation.
+     *
+     * @return Annotation The Annotation or null, if the requested annotation does not exist.
      */
     public function getMethodAnnotation(\ReflectionMethod $method, $annotation);
 }
