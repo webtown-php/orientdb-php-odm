@@ -23,12 +23,12 @@ class PersistenceTest extends TestCase
         $this->manager->persist($document);
         $this->manager->flush();
         $this->manager->clear();
-        $this->assertNotNull($document->rid);
+        $this->assertNotNull($document->getRid());
 
-        $proxy = $this->manager->find($document->rid);
+        $proxy = $this->manager->find($document->getRid());
         $this->assertEquals('SinglePersistTest', $proxy->name);
 
-        return $document->rid;
+        return $document->getRid();
     }
 
     /**

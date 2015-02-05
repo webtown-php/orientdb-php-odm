@@ -268,6 +268,9 @@ class Hydrator
         if (isset($object->{'@rid'})) {
             $this->getUnitOfWork()->attachOriginalData($object->{'@rid'}, $hydratedData);
         }
+        if ($document instanceof Proxy) {
+            $document->__setInitialized(true);
+        }
 
         return $document;
     }
@@ -305,7 +308,6 @@ class Hydrator
                 }
             }
         }
-
         return $value;
     }
 

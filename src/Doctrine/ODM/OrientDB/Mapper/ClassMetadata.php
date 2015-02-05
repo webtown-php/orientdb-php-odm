@@ -109,12 +109,12 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Checks if the given field is a mapped property for this class.
      *
-     * @param string $fieldName
+     * @param string $property The name of the property to which the field is mapped
      * @return boolean
      */
-    public function hasField($fieldName)
+    public function hasField($property)
     {
-        return (bool) $this->getField($fieldName);
+        return (bool) $this->getFieldByProperty($property);
     }
 
     /**
@@ -236,6 +236,9 @@ class ClassMetadata implements DoctrineMetadata
     {
         $this->reflFields = array();
         foreach ($this->getReflectionProperties() as $property) {
+            if (in_array($property->name, $this->getIdentifierFieldNames())) {
+                $property->setAccessible(true);
+            }
             $this->reflFields[$property->getName()] = $property;
         }
     }
@@ -373,6 +376,23 @@ class ClassMetadata implements DoctrineMetadata
     protected function getAssociations()
     {
         return $this->associations;
+    }
+
+    /**
+     * Returns the reflection property associated with the $property.
+     *
+     * @param   string $field
+     * @return  Annotations\Property
+     */
+    protected function getFieldByProperty($property)
+    {
+        foreach ($this->getFields() as $key => $annotatedField) {
+            if ($property === $key) {
+                return $annotatedField;
+            }
+        }
+
+        return null;
     }
 
     /**
