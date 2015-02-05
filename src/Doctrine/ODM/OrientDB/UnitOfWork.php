@@ -22,12 +22,12 @@ class UnitOfWork
 {
     private $manager;
     private $hydrator;
-    private $proxies = array();
-    private $newDocuments = array();
-    private $originalData = array();
-    private $documentUpdates = array();
-    private $documentInserts = array();
-    private $documentRemovals = array();
+    private $identityMap = [];
+    private $newDocuments = [];
+    private $originalData = [];
+    private $documentUpdates = [];
+    private $documentInserts = [];
+    private $documentRemovals = [];
 
     public function __construct(Manager $manager)
     {
@@ -74,9 +74,16 @@ class UnitOfWork
         return true;
     }
 
-    public function hasProxy(Rid $rid)
+    /**
+     * Checks whether an entity identified by the $rid is registered in the identity map of this UnitOfWork.
+     *
+     * @param Rid $rid
+     *
+     * @return boolean
+     */
+    public function isInIdentityMap(Rid $rid)
     {
-        return isset($this->proxies[$rid->getValue()]);
+        return isset($this->identityMap[$rid->getValue()]);
     }
 
     /**
@@ -88,17 +95,17 @@ class UnitOfWork
      */
     public function getProxy(Rid $rid, $lazy = true, $fetchPlan = null)
     {
-        if (! $this->hasProxy($rid)) {
+        if (! $this->isInIdentityMap($rid)) {
             if ($lazy) {
                 $proxy = $this->getHydrator()->hydrateRid($rid);
             } else {
                 $proxy = $this->load($rid, $fetchPlan);
             }
 
-            $this->proxies[$rid->getValue()] = $proxy;
+            $this->identityMap[$rid->getValue()] = $proxy;
         }
 
-        return $this->proxies[$rid->getValue()];
+        return $this->identityMap[$rid->getValue()];
     }
 
     /**
@@ -137,7 +144,7 @@ class UnitOfWork
     public function attach($document)
     {
         if ($document instanceof Proxy) {
-            $this->proxies[$this->getRid($document)] = $document;
+            $this->identityMap[$this->getRid($document)] = $document;
         } else {
             $this->newDocuments[spl_object_hash($document)] = $document;
         }
@@ -147,8 +154,8 @@ class UnitOfWork
     {
         if ($document instanceof Proxy) {
             $rid = $this->getRid($document);
-            if (isset($this->proxies[$rid])) {
-                unset($this->proxies[$rid]);
+            if (isset($this->identityMap[$rid])) {
+                unset($this->identityMap[$rid]);
             }
         } else {
             $hash = spl_object_hash($document);
@@ -169,7 +176,7 @@ class UnitOfWork
      */
     protected function computeChangeSets()
     {
-        foreach ($this->proxies as $proxy) {
+        foreach ($this->identityMap as $proxy) {
             $this->computeSingleDocumentChangeSet($proxy);
         }
 
