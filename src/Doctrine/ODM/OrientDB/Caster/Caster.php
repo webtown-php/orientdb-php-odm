@@ -20,39 +20,33 @@
 
 namespace Doctrine\ODM\OrientDB\Caster;
 
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ODM\OrientDB\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Validator\ValidationException;
-use Doctrine\OrientDB\Util\Inflector\Cached as Inflector;
 
 class Caster extends AbstractCaster
 {
     protected $value;
-    protected $inflector;
-    protected $trueValues   = array(1, '1', 'true');
-    protected $falseValues  = array(0, '0', 'false');
-
-
+    protected $trueValues   = [1, '1', 'true'];
+    protected $falseValues  = [0, '0', 'false'];
 
     /**
      * Instantiates a new Caster.
      *
      * @param \Doctrine\ODM\OrientDB\Hydration\Hydrator  $hydrator
-     * @param Inflector $inflector
      * @param mixed     $value
      * @param string    $dateClass  The class used to cast dates and datetimes
      */
     public function __construct(
         Hydrator $hydrator,
-        Inflector $inflector,
         $value = null,
         $dateClass = '\DateTime'
     ) {
         $this->hydrator = $hydrator;
-        $this->inflector = $inflector;
         $this->assignDateClass($dateClass);
 
         if ($value) {
@@ -156,7 +150,7 @@ class Caster extends AbstractCaster
     }
 
     /**
-     * Casts the internal value to an integer cmprehended between a range of
+     * Casts the internal value to an integer comprehended between a range of
      * accepted integers.
      *
      * @return integer
@@ -414,8 +408,8 @@ class Caster extends AbstractCaster
     protected function castArrayOf($type)
     {
         $results = array();
-        $method  = 'cast' . $this->inflector->camelize($type);
-        $innerCaster = new self($this->getHydrator(), $this->inflector);
+        $method  = 'cast' . Inflector::camelize($type);
+        $innerCaster = new self($this->getHydrator());
 
         if (!method_exists($innerCaster, $method)) {
             throw new Exception(sprintf('Method %s for %s not found', $method, get_class($innerCaster)));

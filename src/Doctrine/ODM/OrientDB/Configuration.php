@@ -7,7 +7,6 @@ use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Reader;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
-use Doctrine\OrientDB\Util\Inflector\Cached as Inflector;
 
 /**
  * Class Configuration
@@ -20,7 +19,6 @@ class Configuration
 {
     private $options;
     private $metadataFactory;
-    private $inflector;
     private $cache;
     private $annotationReader;
 
@@ -28,11 +26,11 @@ class Configuration
 
     public function __construct(array $options = [])
     {
-        $defaults = array(
+        $defaults = [
             'proxy_namespace' => 'Doctrine\ODM\OrientDB\Proxy',
             'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS,
             'document_dirs' => []
-        );
+        ];
 
         $this->options = array_merge($defaults ,$options);
     }
@@ -76,16 +74,6 @@ class Configuration
         }
 
         return $this->metadataFactory;
-    }
-
-    public function getInflector()
-    {
-        if (! $this->inflector) {
-            $this->inflector = isset($this->options['inflector']) ?
-                $this->options['inflector'] : new Inflector();
-        }
-
-        return $this->inflector;
     }
 
     public function getCache()

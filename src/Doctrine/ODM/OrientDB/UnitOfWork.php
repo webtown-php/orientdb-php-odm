@@ -459,16 +459,11 @@ class UnitOfWork
         return $this->hydrator;
     }
 
-    protected function getInflector()
-    {
-        return $this->getManager()->getInflector();
-    }
-
     protected function createPersister()
     {
         $strategy = $this->manager->getConfiguration()->getPersisterStrategy();
         if ('sql_batch' === $strategy) {
-            return new SQLBatchPersister($this, $this->getInflector());
+            return new SQLBatchPersister($this);
         }
     }
 }

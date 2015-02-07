@@ -2,6 +2,7 @@
 
 namespace Doctrine\ODM\OrientDB\Hydration;
 
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ODM\OrientDB\Caster\Caster;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
@@ -31,7 +32,6 @@ class Hydrator
     protected $proxyFactory;
     protected $metadataFactory;
     protected $enableMismatchesTolerance = false;
-    protected $inflector;
     protected $binding;
     protected $uow;
     protected $cache;
@@ -48,11 +48,10 @@ class Hydrator
 
         $this->proxyFactory    = $manager->getProxyFactory();
         $this->metadataFactory = $manager->getMetadataFactory();
-        $this->inflector       = $manager->getInflector();
         $this->binding         = $manager->getBinding();
         $this->uow             = $uow;
         $this->clusterMap      = new ClusterMap($this->binding, $manager->getCache());
-        $this->caster          = new Caster($this, $this->inflector);
+        $this->caster          = new Caster($this);
 
         $this->enableMismatchesTolerance($manager->getConfiguration()->getMismatchesTolerance());
     }
@@ -209,7 +208,7 @@ class Hydrator
         $propertyId = $this->getCastedPropertyCacheKey($annotation->type, $propertyValue);
 
         if (!isset($this->castedProperties[$propertyId])) {
-            $method = 'cast' . $this->inflector->camelize($annotation->type);
+            $method = 'cast' . Inflector::camelize($annotation->type);
 
             $this->getCaster()->setValue($propertyValue);
             $this->getCaster()->setProperty('annotation', $annotation);

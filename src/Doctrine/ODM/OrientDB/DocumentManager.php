@@ -22,6 +22,7 @@
 namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\Common\Cache\Cache;
+use Doctrine\Common\EventManager;
 use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
@@ -45,20 +46,17 @@ class DocumentManager implements ObjectManager
     protected $uow;
 
     /**
-     * Instatiates a new Mapper, injecting the $mapper that will be used to
+     * Instantiates a new DocumentMapper, injecting the $mapper that will be used to
      * hydrate record retrieved through the $binding.
      *
      * @param BindingInterface $binding
      * @param Configuration $configuration
      */
-    public function __construct(
-        BindingInterface $binding,
-        Configuration $configuration
-    )
+    public function __construct(BindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null)
     {
-        $this->configuration   = $configuration;
         $this->binding         = $binding;
-        $this->inflector       = $configuration->getInflector();
+        $this->configuration   = $configuration;
+        $this->eventManager    = $eventManager ?: new EventManager();
         $this->metadataFactory = $configuration->getMetadataFactory();
         $this->cache           = $configuration->getCache();
         $this->uow             = new UnitOfWork($this);
@@ -223,16 +221,6 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the Inflector associated with this manager.
-     *
-     * @return Inflector
-     */
-    public function getInflector()
-    {
-        return $this->inflector;
-    }
-
-    /**
      * Returns the unit of work associated with this manager
      *
      * @return UnitOfWork
@@ -247,7 +235,7 @@ class DocumentManager implements ObjectManager
      *
      * @param  string $className
      *
-*@return DocumentRepository
+     * @return DocumentRepository
      */
     public function getRepository($className)
     {

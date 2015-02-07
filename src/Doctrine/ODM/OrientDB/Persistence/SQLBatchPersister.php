@@ -2,8 +2,7 @@
 
 namespace Doctrine\ODM\OrientDB\Persistence;
 
-
-use Doctrine\Common\Util\Inflector;
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ODM\OrientDB\Caster\ReverseCaster;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\UnitOfWork;
@@ -21,15 +20,13 @@ class SQLBatchPersister implements PersisterInterface
     protected $metadataFactory;
     protected $caster;
     protected $binding;
-    protected $inflector;
     protected $queryDocumentMap = array();
 
-    public function __construct(UnitOfWork $uow, Inflector $inflector)
+    public function __construct(UnitOfWork $uow)
     {
         $manager = $uow->getManager();
         $this->metadataFactory = $manager->getMetadataFactory();
         $this->binding = $manager->getBinding();
-        $this->inflector = $inflector;
         $this->caster = new ReverseCaster();
     }
 
@@ -125,7 +122,7 @@ class SQLBatchPersister implements PersisterInterface
      */
     protected function castProperty($annotation, $propertyValue)
     {
-        $method = 'cast' . $this->inflector->camelize($annotation->type);
+        $method = 'cast' . Inflector::camelize($annotation->type);
 
         $this->caster->setValue($propertyValue);
         $this->caster->setProperty('annotation', $annotation);
