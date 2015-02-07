@@ -13,10 +13,13 @@
 
 namespace test\Doctrine\ODM\OrientDB;
 
+use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\OrientDB\Binding\BindingInterface;
+use Doctrine\OrientDB\Binding\BindingResultInterface;
 use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Query;
-use Doctrine\ODM\OrientDB\Manager;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Types\Rid;
 
 class ManagerTest extends TestCase
@@ -30,18 +33,18 @@ class ManagerTest extends TestCase
             "out": ["#20:1"]
         }]');
 
-        $result = $this->getMock('Doctrine\OrientDB\Binding\BindingResultInterface');
+        $result = $this->getMock(BindingResultInterface::class);
         $result->expects($this->any())
                ->method('getResult')
                ->will($this->returnValue($rawResult));
 
-        $binding = $this->getMock('Doctrine\OrientDB\Binding\BindingInterface');
+        $binding = $this->getMock(BindingInterface::class);
         $binding->expects($this->any())
                 ->method('execute')
                 ->will($this->returnValue($result));
 
         $configuration = $this->getConfiguration(array('document_dirs' => array('test/Doctrine/ODM/OrientDB/Document/Stub' => 'test')));
-        $manager = new Manager($binding, $configuration);
+        $manager = new DocumentManager($binding, $configuration);
 
         return $manager;
     }
@@ -79,6 +82,6 @@ class ManagerTest extends TestCase
         $this->assertInstanceOf('test\Doctrine\ODM\OrientDB\Document\Stub\CityRepository',$cityRepository);
 
         $addressRepository = $manager->getRepository('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
-        $this->assertInstanceOf('\Doctrine\ODM\OrientDB\Repository',$addressRepository);
+        $this->assertInstanceOf(DocumentRepository::class,$addressRepository);
     }
 }

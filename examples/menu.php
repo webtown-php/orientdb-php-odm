@@ -17,7 +17,7 @@ $binding = new HttpBinding($parameters);
 $mapper = new ODM\Mapper(__DIR__ . '/../examples/proxies');
 $mapper->setDocumentDirectories(array(__DIR__.'/../examples/' => 'Domain'));
 
-$manager = new ODM\Manager($mapper, $binding);
+$manager = new ODM\DocumentManager($mapper, $binding);
 $menus = $manager->getRepository('Domain\Menu');
 
 foreach ($menus->findAll() as $menu) {

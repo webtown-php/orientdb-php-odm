@@ -266,7 +266,7 @@ class Hydrator
 
         // attach the original data for non-embedded documents
         if (isset($object->{'@rid'})) {
-            $this->getUnitOfWork()->attachOriginalData($object->{'@rid'}, $hydratedData);
+            $this->uow->registerManaged($document, $object->{'@rid'}, $hydratedData);
         }
         if ($document instanceof Proxy) {
             $document->__setInitialized(true);

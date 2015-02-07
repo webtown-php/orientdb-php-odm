@@ -35,7 +35,7 @@ use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 
-class Manager implements ObjectManager
+class DocumentManager implements ObjectManager
 {
     protected $configuration;
     protected $binding;
@@ -246,7 +246,8 @@ class Manager implements ObjectManager
      * Returns the Repository class associated with the $class.
      *
      * @param  string $className
-     * @return Repository
+     *
+*@return DocumentRepository
      */
     public function getRepository($className)
     {
@@ -256,7 +257,7 @@ class Manager implements ObjectManager
             return new $repositoryClass($className, $this);
         }
 
-        return new Repository($className, $this);
+        return new DocumentRepository($className, $this);
     }
 
     /**

@@ -51,7 +51,7 @@ class UnitOfWork
     private $documentRemovals = [];
     private $documentStates = [];
 
-    public function __construct(Manager $manager)
+    public function __construct(DocumentManager $manager)
     {
         $this->manager = $manager;
     }
@@ -437,7 +437,7 @@ class UnitOfWork
     /**
      * Returns the manager the UnitOfWork is attached to
      *
-     * @return Manager
+     * @return DocumentManager
      */
     public function getManager()
     {

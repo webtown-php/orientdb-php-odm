@@ -11,7 +11,7 @@ namespace test\PHPUnit;
 
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ODM\OrientDB\Configuration;
-use Doctrine\ODM\OrientDB\Manager;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\OrientDB\Binding\HttpBinding;
 use Doctrine\OrientDB\Binding\BindingParameters;
@@ -96,7 +96,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
         $binding = new HttpBinding($parameters);
-        $manager = new Manager($binding, $config);
+        $manager = new DocumentManager($binding, $config);
 
         return $manager;
     }

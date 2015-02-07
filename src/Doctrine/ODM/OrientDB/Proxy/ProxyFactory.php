@@ -11,7 +11,7 @@ use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Hydration\Hydrator;
-use Doctrine\ODM\OrientDB\Manager;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 
 /**
@@ -46,7 +46,7 @@ class ProxyFactory extends AbstractProxyFactory
      * Initializes a new instance of the <tt>ProxyFactory</tt> class that is
      * connected to the given <tt>DocumentManager</tt>.
      *
-     * @param Manager $manager
+     * @param DocumentManager $manager
      * @param string  $proxyDir                                      The directory to use for the proxy classes. It
      *                                                               must exist.
      * @param string  $proxyNamespace                                The namespace to use for the proxy classes.
@@ -54,7 +54,7 @@ class ProxyFactory extends AbstractProxyFactory
      *
      * @internal param Manager $documentManager The DocumentManager the new factory works for.
      */
-    public function __construct(Manager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER)
+    public function __construct(DocumentManager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER)
     {
         $this->metadataFactory = $manager->getMetadataFactory();
         $this->uow        = $manager->getUnitOfWork();

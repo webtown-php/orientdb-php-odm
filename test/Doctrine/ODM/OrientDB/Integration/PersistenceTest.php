@@ -3,14 +3,14 @@
 namespace test\Doctrine\ODM\OrientDB\Integration;
 
 
-use Doctrine\ODM\OrientDB\Manager;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use test\Integration\Document\Country;
 use test\PHPUnit\TestCase;
 
 class PersistenceTest extends TestCase
 {
     /**
-     * @var Manager
+     * @var DocumentManager
      */
     protected $manager;
 

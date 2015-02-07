@@ -27,7 +27,7 @@ use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\Common\Util\Inflector;
 use RuntimeException;
 
-class Repository implements ObjectRepository
+class DocumentRepository implements ObjectRepository
 {
     protected $manager;
     protected $className;
@@ -36,9 +36,9 @@ class Repository implements ObjectRepository
      * Instantiates a new repository.
      *
      * @param string $className type
-     * @param Manager $manager
+     * @param DocumentManager $manager
      */
-    public function __construct($className, Manager $manager)
+    public function __construct($className, DocumentManager $manager)
     {
         $this->className = $className;
         $this->manager = $manager;
@@ -209,7 +209,7 @@ class Repository implements ObjectRepository
     /**
      * Returns the manager associated with this repository.
      *
-     * @return Manager
+     * @return DocumentManager
      */
     protected function getManager()
     {

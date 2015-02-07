@@ -13,9 +13,9 @@
 namespace test\Doctrine\ODM\OrientDB;
 
 use test\PHPUnit\TestCase;
-use Doctrine\ODM\OrientDB\Manager;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping;
-use Doctrine\ODM\OrientDB\Repository;
+use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Types\Rid;
 
 class RepositoryTest extends TestCase
@@ -47,7 +47,7 @@ class RepositoryTest extends TestCase
 
         $manager = $this->prepareManager($binding);
 
-        $repository = new Repository('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address', $manager);
+        $repository = new DocumentRepository('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address', $manager);
 
         return $repository;
     }
@@ -55,7 +55,7 @@ class RepositoryTest extends TestCase
     protected function prepareManager($binding)
     {
         $configuration = $this->getConfiguration(array('document_dirs' => array('test/Doctrine/ODM/OrientDB/Document/Stub' => 'test')));
-        return new Manager($binding, $configuration);
+        return new DocumentManager($binding, $configuration);
     }
 
     public function testFindAll()
@@ -87,7 +87,7 @@ class RepositoryTest extends TestCase
      */
     public function testYouCantCallWhateverMethodOfARepository()
     {
-        $repository = new Repository('My\\Class', $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters())));
+        $repository = new DocumentRepository('My\\Class', $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters())));
         $documents  = $repository->findOn();
     }
 
@@ -96,7 +96,7 @@ class RepositoryTest extends TestCase
      */
     public function testYouCanOnlyPassObjectsHavingGetRidMethodAsArgumentsOfFindSomeBySomething()
     {
-        $repository = new Repository('My\\Class', $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters())));
+        $repository = new DocumentRepository('My\\Class', $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters())));
         $documents  = $repository->findOneByJeex(new \stdClass());
     }
 }
