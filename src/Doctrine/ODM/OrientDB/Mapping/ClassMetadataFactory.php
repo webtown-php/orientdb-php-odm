@@ -51,11 +51,25 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * @throws \Doctrine\ODM\OrientDB\OClassNotFoundException
      */
     public function getMetadataForOClass($OClass) {
-        /** @var ClassMetadata[] $all */
-        $all = $this->getAllMetadata();
-        foreach ($all as $md) {
-            if ($OClass === $md->getOrientClass()) {
-                return $md;
+        $cache = $this->getCacheDriver();
+        if ($cache) {
+            if (!($cached = $cache->fetch('oclassmap' . $this->cacheSalt))) {
+                $cached = [];
+                /** @var ClassMetadata $md */
+                foreach ($this->getAllMetadata() as $md) {
+                    $cached[$md->getOrientClass()] = $md->getName();
+                }
+                $cache->save('oclassmap' . $this->cacheSalt, $cached);
+            }
+            if (isset($cached[$OClass])) {
+                return $this->getMetadataFor($cached[$OClass]);
+            }
+        } else {
+            /** @var ClassMetadata $md */
+            foreach ($this->getAllMetadata() as $md) {
+                if ($OClass === $md->getOrientClass()) {
+                    return $md;
+                }
             }
         }
 
