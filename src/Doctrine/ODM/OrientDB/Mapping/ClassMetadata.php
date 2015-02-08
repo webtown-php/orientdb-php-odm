@@ -61,10 +61,14 @@ class ClassMetadata implements DoctrineMetadata
      */
     public $rootEntityName;
 
-    protected $reflClass;
-    protected $reflFields;
+    /**
+     * @var string identifier property name
+     */
+    public $identifier;
 
-    protected $identifierPropertyName;
+    protected $reflClass;
+
+    protected $reflFields;
     protected $associationMappings;
     protected $fields;
 
@@ -102,14 +106,14 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     public function setIdentifier($propertyName) {
-        $this->identifierPropertyName = $propertyName;
+        $this->identifier = $propertyName;
     }
 
     /**
      * @inheritdoc
      */
     public function getIdentifier() {
-        return [$this->identifierPropertyName];
+        return [$this->identifier];
     }
 
     /**
@@ -118,7 +122,7 @@ class ClassMetadata implements DoctrineMetadata
      * @return string
      */
     public function getRidPropertyName() {
-        return $this->identifierPropertyName;
+        return $this->identifier;
     }
 
     /**
@@ -220,7 +224,7 @@ class ClassMetadata implements DoctrineMetadata
      * @inheritdoc
      */
     public function getIdentifierFieldNames() {
-        return [$this->identifierPropertyName];
+        return [$this->identifier];
     }
 
     /**
@@ -241,7 +245,7 @@ class ClassMetadata implements DoctrineMetadata
      * @inheritdoc
      */
     public function getIdentifierValues($object) {
-        return $this->getFieldValue($object, $this->identifierPropertyName);
+        return $this->getFieldValue($object, $this->identifier);
     }
 
     public function mapField(array $mapping) {
