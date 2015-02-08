@@ -7,6 +7,8 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata as ClassMetadataInfo;
 use Doctrine\Common\Persistence\Mapping\ReflectionService;
 use Doctrine\ODM\OrientDB\Configuration;
 use Doctrine\ODM\OrientDB\DocumentManager;
+use Doctrine\ODM\OrientDB\Event\LoadClassMetadataEventArgs;
+use Doctrine\ODM\OrientDB\Events;
 use Doctrine\ODM\OrientDB\OClassNotFoundException;
 
 class ClassMetadataFactory extends AbstractClassMetadataFactory
@@ -165,6 +167,11 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             $this->driver->loadMetadataForClass($class->getName(), $class);
         } catch (\ReflectionException $ex) {
             throw MappingException::reflectionFailure($class->getName(), $ex);
+        }
+
+        if ($this->evm->hasListeners(Events::loadClassMetadata)) {
+            $eventArgs = new LoadClassMetadataEventArgs($class, $this->dm);
+            $this->evm->dispatchEvent(Events::loadClassMetadata, $eventArgs);
         }
     }
 

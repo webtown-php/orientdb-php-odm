@@ -97,6 +97,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             $paths = [__DIR__ . '/../Integration/Document'];
         }
         $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver($paths));
+        $config->setMetadataCacheImpl(new ArrayCache());
 
         $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
         $binding = new HttpBinding($parameters);
