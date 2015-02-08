@@ -13,10 +13,6 @@ use Doctrine\ODM\OrientDB\OClassNotFoundException;
 
 class ClassMetadataFactory extends AbstractClassMetadataFactory
 {
-    public static $singleAssociations    = ['link'];
-    public static $multipleAssociations  = ['linklist', 'linkset', 'linkmap'];
-    public static $associationTypes      = [];
-
     /** @var DocumentManager The DocumentManager instance */
     private $dm;
 
@@ -28,18 +24,6 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 
     /** @var \Doctrine\Common\EventManager The event manager instance */
     private $evm;
-
-    /**
-     * Returns all the possible association types.
-     * e.g. linklist, linkmap, link...
-     *
-     * @return Array
-     */
-    public static function getAssociationTypes()
-    {
-        return static::$associationTypes ?:
-            (self::$associationTypes = array_merge(static::$singleAssociations, static::$multipleAssociations));
-    }
 
     /**
      * Tries to find the PHP class mapping Doctrine\OrientDB's $OClass in each of the
