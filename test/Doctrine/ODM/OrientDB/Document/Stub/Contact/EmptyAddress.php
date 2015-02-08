@@ -13,12 +13,12 @@ class EmptyAddress
     public $rid;
     
     /**
-     * @Property(type="string", notnull="false")
+     * @Property(type="string", nullable=true)
      */
     public $string;
     
     /**
-     * @Property(type="integer", notnull="false")
+     * @Property(type="integer", nullable=true)
      */
     public $integer;
 }

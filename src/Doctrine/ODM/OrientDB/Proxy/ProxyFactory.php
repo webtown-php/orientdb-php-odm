@@ -52,8 +52,6 @@ class ProxyFactory extends AbstractProxyFactory
      *                                                               must exist.
      * @param string          $proxyNamespace                        The namespace to use for the proxy classes.
      * @param int             $autoGenerate                          Whether to automatically generate proxy classes.
-     *
-     * @internal param Manager $documentManager The DocumentManager the new factory works for.
      */
     public function __construct(DocumentManager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER) {
         $this->metadataFactory = $manager->getMetadataFactory();
@@ -87,11 +85,10 @@ class ProxyFactory extends AbstractProxyFactory
      * Generates a closure capable of initializing a proxy
      *
      * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
+     * @param Hydrator                                           $hydrator
      * @param \ReflectionProperty                                $reflectionId
      *
-     * @return \Closure
-     *
-     * @throws \Doctrine\ODM\OrientDB\DocumentNotFoundException
+     * @return callable
      */
     private function createInitializer(
         BaseClassMetadata $classMetadata,
@@ -153,11 +150,10 @@ class ProxyFactory extends AbstractProxyFactory
      * Generates a closure capable of finalizing a cloned proxy
      *
      * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
+     * @param Hydrator                                           $hydrator
      * @param \ReflectionProperty                                $reflectionId
      *
-     * @return \Closure
-     *
-     * @throws \Doctrine\ODM\OrientDB\DocumentNotFoundException
+     * @return callable
      */
     private function createCloner(
         BaseClassMetadata $classMetadata,

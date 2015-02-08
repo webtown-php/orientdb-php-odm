@@ -23,25 +23,20 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  * @Target("PROPERTY")
+ * @Attributes({
+ *    @Attribute("type",     required = false, type = "string"),
+ *    @Attribute("cast",     required = false, type = "string"),
+ *    @Attribute("nullable", required = false, type = "bool"  ),
+ * })
  */
 class Property extends AbstractProperty
 {
     public $type;
     public $cast;
-    public $notnull;
+    public $nullable = false;
 
     public function getCast()
     {
         return $this->cast;
-    }
-    
-    /**
-     * Defines whether an hydrated property can be null.
-     * 
-     * @return bool
-     */
-    public function isNullable()
-    {
-        return $this->notnull === "false";
     }
 }

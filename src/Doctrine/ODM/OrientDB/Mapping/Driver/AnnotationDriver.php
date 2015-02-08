@@ -111,7 +111,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
             'fieldName' => $fieldName,
             'name'      => $prop->name,
             'type'      => $prop->type,
-            'nullable'  => $prop->isNullable(),
+            'nullable'  => $prop->nullable,
             'cast'      => $prop->getCast(),
         ];
 

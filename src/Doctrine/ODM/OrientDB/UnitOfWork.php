@@ -41,7 +41,7 @@ class UnitOfWork
      */
     const STATE_REMOVED = 4;
 
-    private $manager;
+    private $dm;
     private $hydrator;
     private $identityMap = [];
     private $newDocuments = [];
@@ -52,7 +52,7 @@ class UnitOfWork
     private $documentStates = [];
 
     public function __construct(DocumentManager $manager) {
-        $this->manager = $manager;
+        $this->dm = $manager;
     }
 
     /**
@@ -91,7 +91,7 @@ class UnitOfWork
     }
 
     public function execute(Query $query, $fetchPlan = null) {
-        $binding = $this->getManager()->getBinding();
+        $binding = $this->dm->getBinding();
         $results = $binding->execute($query, $fetchPlan)->getResult();
 
         if (is_array($results) && $query->canHydrate()) {
@@ -290,7 +290,7 @@ class UnitOfWork
      */
     public function buildChangeSet($document, array $originalData = null) {
         $changes  = [];
-        $metadata = $this->getManager()->getClassMetadata(get_class($document));
+        $metadata = $this->dm->getClassMetadata(get_class($document));
         foreach ($metadata->fieldMappings as $fieldName => $mapping) {
             $propName = $mapping['name'];
             if ($propName === '@rid') continue;
@@ -316,7 +316,7 @@ class UnitOfWork
      * @return string
      */
     protected function getRid(Proxy $proxy) {
-        $metadata = $this->getManager()->getClassMetadata(get_class($proxy));
+        $metadata = $this->dm->getClassMetadata(get_class($proxy));
 
         return $metadata->getIdentifierValues($proxy);
     }
@@ -422,16 +422,6 @@ class UnitOfWork
         return null;
     }
 
-
-    /**
-     * Returns the manager the UnitOfWork is attached to
-     *
-     * @return DocumentManager
-     */
-    public function getManager() {
-        return $this->manager;
-    }
-
     /**
      *
      * Lazily instantiates and returns the Hydrator
@@ -440,16 +430,16 @@ class UnitOfWork
      */
     public function getHydrator() {
         if (!$this->hydrator) {
-            $this->hydrator = new Hydrator($this);
+            $this->hydrator = new Hydrator($this->dm);
         }
 
         return $this->hydrator;
     }
 
     protected function createPersister() {
-        $strategy = $this->manager->getConfiguration()->getPersisterStrategy();
+        $strategy = $this->dm->getConfiguration()->getPersisterStrategy();
         if ('sql_batch' === $strategy) {
-            return new SQLBatchPersister($this);
+            return new SQLBatchPersister($this->dm);
         }
     }
 }

@@ -6,6 +6,7 @@ use Doctrine\Common\Inflector\Inflector;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Caster\Caster;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
@@ -41,19 +42,17 @@ class Hydrator
     protected $clusterMap;
 
     /**
-     * @param UnitOfWork $uow
+     * @param DocumentManager $dm
      */
-    public function __construct(UnitOfWork $uow) {
-        $manager = $uow->getManager();
-
-        $this->proxyFactory    = $manager->getProxyFactory();
-        $this->metadataFactory = $manager->getMetadataFactory();
-        $this->binding         = $manager->getBinding();
-        $this->uow             = $uow;
-        $this->clusterMap      = new ClusterMap($this->binding, $manager->getConfiguration()->getMetadataCacheImpl());
+    public function __construct(DocumentManager $dm) {
+        $this->proxyFactory    = $dm->getProxyFactory();
+        $this->metadataFactory = $dm->getMetadataFactory();
+        $this->binding         = $dm->getBinding();
+        $this->uow             = $dm->getUnitOfWork();
+        $this->clusterMap      = new ClusterMap($this->binding, $dm->getConfiguration()->getMetadataCacheImpl());
         $this->caster          = new Caster($this);
 
-        $this->enableMismatchesTolerance($manager->getConfiguration()->getMismatchesTolerance());
+        $this->enableMismatchesTolerance($dm->getConfiguration()->getMismatchesTolerance());
     }
 
     /**
