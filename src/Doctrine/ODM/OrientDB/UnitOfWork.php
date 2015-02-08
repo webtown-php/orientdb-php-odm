@@ -301,17 +301,17 @@ class UnitOfWork
     {
         $changes = [];
         $metadata = $this->getManager()->getClassMetadata(get_class($document));
-        foreach ($metadata->getFields() as $propName => $fieldAnnotation) {
-            if ($fieldAnnotation->name === '@rid') continue;
+        foreach ($metadata->fieldMappings as $fieldName => $mapping) {
+            $propName = $mapping['name'];
+            if ($propName === '@rid') continue;
 
-            $currentValue = $metadata->getFieldValue($document, $propName);
-            $fieldName = $fieldAnnotation->name;
+            $currentValue = $metadata->getFieldValue($document, $fieldName);
 
             /* if we don't know the original data, or it doesn't have the field, or the field's
              * value is different we count it as a change
              */
-            if (! $originalData || ! isset($originalData[$fieldName]) || $originalData[$fieldName] !== $currentValue) {
-                $changes[] = ['field' => $fieldName, 'value' => $currentValue, 'annotation' => $fieldAnnotation];
+            if (! $originalData || ! isset($originalData[$propName]) || $originalData[$propName] !== $currentValue) {
+                $changes[] = ['field' => $propName, 'value' => $currentValue, 'mapping' => $mapping];
             }
         }
 

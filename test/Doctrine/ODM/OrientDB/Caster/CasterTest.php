@@ -31,7 +31,7 @@ class CasterTest extends TestCase
     private $caster;
 
     public function setup() {
-        $manager        = $this->createManager();
+        $manager        = $this->createDocumentManager();
         $this->hydrator = $manager->getUnitOfWork()->getHydrator();
         $this->caster   = new Caster($this->hydrator);
     }
@@ -541,7 +541,7 @@ class CasterTest extends TestCase
         $countryRid = '#' . $this->getClassId('Country') . ':0';;
 
         return [
-            [new ArrayCollection(['hello' => $this->createManager()
+            [new ArrayCollection(['hello' => $this->createDocumentManager()
                                                             ->getReference($countryRid)]), ['hello' => $countryRid]],
             [new ArrayCollection(['hello' => $address]), ['hello' => $orientDocument]],
         ];
@@ -570,9 +570,7 @@ class CasterTest extends TestCase
      * @dataProvider getEmbeddedSet
      */
     public function testEmbeddedSetCasting($expected, $embeddedSet) {
-        $property = $this->getMock(Property::class, null, [['cast' => 'embedded']]);
-
-        $this->caster->setProperty('annotation', $property);
+        $this->caster->setProperty('mapping', ['cast' => 'embedded']);
 
         $this->assertEquals($expected, $this->caster->setValue($embeddedSet)->castEmbeddedSet());
     }
@@ -581,9 +579,7 @@ class CasterTest extends TestCase
      * @dataProvider getEmbeddedSet
      */
     public function testEmbeddedMapCasting($expected, $embeddedSet) {
-        $property = $this->getMock(Property::class, null, [['cast' => 'embedded']]);
-
-        $this->caster->setProperty('annotation', $property);
+        $this->caster->setProperty('mapping', ['cast' => 'embedded']);
 
         $this->assertEquals($expected, $this->caster->setValue($embeddedSet)->castEmbeddedMap());
     }
@@ -592,9 +588,7 @@ class CasterTest extends TestCase
      * @dataProvider getEmbeddedSet
      */
     public function testEmbeddedListCasting($expected, $embeddedSet) {
-        $property = $this->getMock(Property::class, null, [['cast' => 'embedded']]);
-
-        $this->caster->setProperty('annotation', $property);
+        $this->caster->setProperty('mapping', ['cast' => 'embedded']);
 
         $this->assertEquals($expected, $this->caster->setValue($embeddedSet)->castEmbeddedList());
     }

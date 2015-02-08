@@ -165,9 +165,9 @@ interface CasterInterface
      * Defines properties that can be internally used by the caster.
      *
      * @param string    $key
-     * @param mixed     $property
+     * @param array     $mapping
      */
-    public function setProperty($key, $property);
+    public function setProperty($key, array $mapping);
 
     /**
      * Sets the internal value to work with.

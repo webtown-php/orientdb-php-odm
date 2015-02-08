@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Persistence;
 
 use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Caster\ReverseCaster;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\UnitOfWork;
@@ -22,12 +23,11 @@ class SQLBatchPersister implements PersisterInterface
     protected $binding;
     protected $queryDocumentMap = array();
 
-    public function __construct(UnitOfWork $uow)
-    {
-        $manager = $uow->getManager();
+    public function __construct(UnitOfWork $uow) {
+        $manager               = $uow->getManager();
         $this->metadataFactory = $manager->getMetadataFactory();
-        $this->binding = $manager->getBinding();
-        $this->caster = new ReverseCaster();
+        $this->binding         = $manager->getBinding();
+        $this->caster          = new ReverseCaster();
     }
 
 
@@ -39,14 +39,13 @@ class SQLBatchPersister implements PersisterInterface
      *
      * @throws \Exception
      */
-    public function process(ChangeSet $changeSet)
-    {
+    public function process(ChangeSet $changeSet) {
         $queryWriter = new QueryWriter();
         foreach ($changeSet->getInserts() as $identifier => $item) {
             /** @var ClassMetadata $metadata */
-            $metadata = $this->metadataFactory->getMetadataFor(get_class($item['document']));
-            $fields = $this->getCastedFields($item['changes']);
-            $position = $queryWriter->addInsertQuery($identifier, $metadata->getOrientClass(), $fields);
+            $metadata                          = $this->metadataFactory->getMetadataFor(ClassUtils::getClass($item['document']));
+            $fields                            = $this->getCastedFields($item['changes']);
+            $position                          = $queryWriter->addInsertQuery($identifier, $metadata->getOrientClass(), $fields);
             $this->queryDocumentMap[$position] = array('document' => $item['document'], 'metadata' => $metadata);
         }
 
@@ -56,23 +55,23 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         foreach ($changeSet->getRemovals() as $identifier => $item) {
-            $metadata = $this->metadataFactory->getMetadataFor(get_class($item['document']));
+            $metadata = $this->metadataFactory->getMetadataFor(ClassUtils::getClass($item['document']));
             $queryWriter->addDeleteQuery($identifier, $metadata->getOrientClass());
         }
 
         $queries = $queryWriter->getQueries();
-        if (! $queries) {
+        if (!$queries) {
             // nothing to do
             return;
         }
         if ($this->binding instanceof HttpBindingInterface) {
-            $batch = array(
+            $batch   = array(
                 'transaction' => true,
-                'operations' => array(
+                'operations'  => array(
                     array(
-                        'type' => 'script',
+                        'type'     => 'script',
                         'language' => 'sql',
-                        'script' => $queryWriter->getQueries()
+                        'script'   => $queryWriter->getQueries()
                     )
                 )
             );
@@ -86,7 +85,7 @@ class SQLBatchPersister implements PersisterInterface
         // set the RID on the created documents
         foreach ($results as $position => $result) {
             if (isset($this->queryDocumentMap[$position])) {
-                $map = $this->queryDocumentMap[$position];
+                $map      = $this->queryDocumentMap[$position];
                 $document = $map['document'];
                 $metadata = $map['metadata'];
 
@@ -103,11 +102,10 @@ class SQLBatchPersister implements PersisterInterface
      *
      * @return array
      */
-    protected function getCastedFields(array $changes)
-    {
-        $castedChanges = array();
+    protected function getCastedFields(array $changes) {
+        $castedChanges = [];
         foreach ($changes as $change) {
-            $castedChanges[$change['field']] = $this->castProperty($change['annotation'], $change['value']);
+            $castedChanges[$change['field']] = $this->castProperty($change['mapping'], $change['value']);
         }
 
         return $castedChanges;
@@ -116,16 +114,16 @@ class SQLBatchPersister implements PersisterInterface
     /**
      * Casts a value according to how it was annotated.
      *
-     * @param  \Doctrine\ODM\OrientDB\Mapping\Annotations\Property  $annotation
-     * @param  mixed                                               $propertyValue
+     * @param  array $mapping
+     * @param  mixed $propertyValue
+     *
      * @return mixed
      */
-    protected function castProperty($annotation, $propertyValue)
-    {
-        $method = 'cast' . Inflector::camelize($annotation->type);
+    protected function castProperty($mapping, $propertyValue) {
+        $method = 'cast' . Inflector::camelize($mapping['type']);
 
         $this->caster->setValue($propertyValue);
-        $this->caster->setProperty('annotation', $annotation);
+        $this->caster->setProperty('annotation', $mapping);
 
         return $this->caster->$method();
     }

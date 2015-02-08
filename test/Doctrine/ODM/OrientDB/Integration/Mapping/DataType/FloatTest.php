@@ -21,7 +21,7 @@ class FloatTest extends TestCase
 {
     public function testHydrationOfAFloatProperty()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         //MapPoint
         $point = $manager->find("#".$this->getClassId('MapPoint').":0");
 

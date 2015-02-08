@@ -28,7 +28,7 @@ class IntegerTest extends TestCase
 
     public function testHydrationOfAnIntegerProperty()
     {
-        $manager = $this->createManager(array(
+        $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
@@ -41,7 +41,7 @@ class IntegerTest extends TestCase
      */
     public function testAnExceptionIsRaisedWhenAnIntegerPropertyIsNotAnInteger()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         //attention 6-th record can change
         $post = $manager->find("#".$this->postId.":6");
@@ -49,7 +49,7 @@ class IntegerTest extends TestCase
 
     public function testMismatchedAttributesAreConvertedIfTheMapperToleratesMismatches()
     {
-        $manager = $this->createManager(array(
+        $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 

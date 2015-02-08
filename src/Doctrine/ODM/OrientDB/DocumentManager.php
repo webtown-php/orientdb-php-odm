@@ -25,6 +25,7 @@ use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\ODM\OrientDB\Types\Rid;
@@ -40,8 +41,10 @@ class DocumentManager implements ObjectManager
 {
     protected $configuration;
     protected $binding;
+    /**
+     * @var ClassMetadataFactory
+     */
     protected $metadataFactory;
-    protected $cache;
     protected $proxyFactory;
     protected $uow;
 
@@ -50,15 +53,25 @@ class DocumentManager implements ObjectManager
      * hydrate record retrieved through the $binding.
      *
      * @param BindingInterface $binding
-     * @param Configuration $configuration
+     * @param Configuration    $configuration
+     * @param EventManager     $eventManager
+     *
+     * @throws ConfigurationException
      */
     public function __construct(BindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null)
     {
         $this->binding         = $binding;
         $this->configuration   = $configuration;
         $this->eventManager    = $eventManager ?: new EventManager();
-        $this->metadataFactory = $configuration->getMetadataFactory();
-        $this->cache           = $configuration->getCache();
+
+        $metadataFactoryClassName = $this->configuration->getClassMetadataFactoryName();
+        $this->metadataFactory = new $metadataFactoryClassName();
+        $this->metadataFactory->setDocumentManager($this);
+        $this->metadataFactory->setConfiguration($this->configuration);
+        if ($cacheDriver = $this->configuration->getMetadataCacheImpl()) {
+            $this->metadataFactory->setCacheDriver($cacheDriver);
+        }
+
         $this->uow             = new UnitOfWork($this);
         /**
          * this must be the last since it will require the Manager to be constructed already.
@@ -191,16 +204,6 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the Metadata factory associated with this manager.
-     *
-     * @return MetadataFactory
-     */
-    public function getMetadataFactory()
-    {
-        return $this->metadataFactory;
-    }
-
-    /**
      * Returns the ProxyFactory associated with this manager.
      *
      * @return ProxyFactory
@@ -211,13 +214,23 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the Cache.
+     * Gets the EventManager used by the DocumentManager.
      *
-     * @return Cache
+     * @return \Doctrine\Common\EventManager
      */
-    public function getCache()
+    public function getEventManager()
     {
-        return $this->cache;
+        return $this->eventManager;
+    }
+
+    /**
+     * Returns the Metadata factory associated with this manager.
+     *
+     * @return MetadataFactory
+     */
+    public function getMetadataFactory()
+    {
+        return $this->metadataFactory;
     }
 
     /**

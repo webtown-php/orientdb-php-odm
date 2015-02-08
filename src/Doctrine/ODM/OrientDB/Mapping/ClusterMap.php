@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Mapping;
 
 
+use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Binding\BindingInterface;
@@ -27,10 +28,9 @@ class ClusterMap
     protected $map;
     protected $databaseName;
 
-    public function __construct(BindingInterface $binding, Cache $cache)
-    {
-        $this->binding = $binding;
-        $this->cache   = $cache;
+    public function __construct(BindingInterface $binding, Cache $cache = null) {
+        $this->binding      = $binding;
+        $this->cache        = $cache ?: new ArrayCache();
         $this->databaseName = $binding->getDatabaseName();
     }
 
@@ -43,10 +43,9 @@ class ClusterMap
      * @throws MappingException
      * @return string
      */
-    public function identifyClass(Rid $rid)
-    {
-        $map = $this->getMap();
-        $splitRid = explode(':', ltrim($rid->getValue(), '#'));
+    public function identifyClass(Rid $rid) {
+        $map       = $this->getMap();
+        $splitRid  = explode(':', ltrim($rid->getValue(), '#'));
         $clusterId = $splitRid[0];
 
         foreach ($map as $class => $clusters) {
@@ -63,9 +62,8 @@ class ClusterMap
      *
      * @return array
      */
-    protected function getMap()
-    {
-        if (! $this->map) {
+    protected function getMap() {
+        if (!$this->map) {
             $this->load();
         }
 
@@ -79,9 +77,8 @@ class ClusterMap
      * cache-warmup task.
      *
      */
-    public function generateMap()
-    {
-        $map = array();
+    public function generateMap() {
+        $map      = [];
         $database = $this->binding->getDatabase()->getData();
 
         foreach ($database->classes as $class) {
@@ -96,8 +93,7 @@ class ClusterMap
      * Tries to load the map from cache,
      * otherwise generates it.
      */
-    protected function load()
-    {
+    protected function load() {
         if ($this->cache->contains($this->getCacheKey())) {
             $this->map = $this->cache->fetch($this->getCacheKey());
         } else {
@@ -105,8 +101,7 @@ class ClusterMap
         }
     }
 
-    protected function getCacheKey()
-    {
+    protected function getCacheKey() {
         return sprintf(static::CACHE_KEY, $this->databaseName);
     }
 

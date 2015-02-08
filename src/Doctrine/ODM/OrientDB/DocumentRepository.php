@@ -21,6 +21,7 @@
 namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\Query\Query;
 use Doctrine\OrientDB\Exception;
 use Doctrine\Common\Persistence\ObjectRepository;
@@ -134,12 +135,12 @@ class DocumentRepository implements ObjectRepository
      * @return ArrayCollection The objects.
      * @throws Exception
      */
-    public function findBy(array $criteria, array $orderBy = array(), $limit = null, $offset = null, $fetchPlan = '*:0')
+    public function findBy(array $criteria, array $orderBy = [], $limit = null, $offset = null, $fetchPlan = '*:0')
     {
         $results = array();
 
         foreach ($this->getOrientClasses() as $mappedClass) {
-            $query = new Query(array($mappedClass));
+            $query = new Query([$mappedClass]);
 
             foreach ($criteria as $key => $value) {
                 $query->andWhere("$key = ?", $value);
@@ -220,12 +221,13 @@ class DocumentRepository implements ObjectRepository
      * Returns the OrientDB classes which are mapper by the
      * Repository's $className.
      *
-     * @return Array
+     * @return array
      */
     protected function getOrientClasses()
     {
-        $classAnnotation = $this->getManager()->getMetadataFactory()->getClassAnnotation($this->getClassName());
+        /** @var ClassMetadata $metadata */
+        $metadata = $this->getManager()->getClassMetadata($this->className);
 
-        return explode(',', $classAnnotation->class);
+        return explode(',', $metadata->getOrientClass());
     }
 }

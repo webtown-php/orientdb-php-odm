@@ -18,11 +18,13 @@
  */
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
+use Doctrine\Common\Annotations\Annotation;
 
 /**
  * @Annotation
+ * @Target("CLASS")
  */
-class Document extends \Doctrine\Common\Annotations\Annotation
+class Document extends Annotation
 {
     public $class;
 }

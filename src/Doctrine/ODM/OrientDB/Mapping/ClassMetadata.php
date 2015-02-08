@@ -11,8 +11,8 @@
 
 namespace Doctrine\ODM\OrientDB\Mapping;
 
-use Doctrine\ODM\OrientDB\Mapping as DataMapper;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineMetadata;
+use Doctrine\ODM\OrientDB\Mapping as DataMapper;
 
 /**
  * Class ClassMetadata
@@ -25,14 +25,55 @@ use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineMetadata;
  */
 class ClassMetadata implements DoctrineMetadata
 {
+    /**
+     * Identifies a link.
+     */
+    const LINK = 0x01;
+    const LINK_LIST = 0x02;
+    const LINK_SET = 0x04;
+    const LINK_MAP = 0x08;
+
+    /**
+     * Combined bitmask for single-valued associations.
+     */
+    const TO_ONE = 0x01;
+
+    /**
+     * Combined bitmask for collection-valued associations.
+     */
+    const TO_MANY = 0x0E;
+
     protected $orientClass;
-    protected $class;
-    protected $refClass;
+
+    /**
+     * READ-ONLY: The name of the entity class.
+     *
+     * @var string
+     */
+    public $name;
+
+    /**
+     * READ-ONLY: The name of the entity class that is at the root of the mapped entity inheritance
+     * hierarchy. If the entity is not part of a mapped inheritance hierarchy this is the same
+     * as {@link $entityName}.
+     *
+     * @var string
+     */
+    public $rootEntityName;
+
+    protected $reflClass;
     protected $reflFields;
 
     protected $identifierPropertyName;
-    protected $associations;
+    protected $associationMappings;
     protected $fields;
+
+    /**
+     * READONLY
+     *
+     * @var array
+     */
+    public $fieldMappings = [];
 
     protected $setter;
     protected $getter;
@@ -40,11 +81,10 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Instantiates a new Metadata for the given $className.
      *
-     * @param string        $className
+     * @param string $className
      */
-    public function __construct($className)
-    {
-        $this->class  = $className;
+    public function __construct($className) {
+        $this->name   = $className;
         $this->setter = function ($document, $property, $value) {
             $document->$property = $value;
         };
@@ -55,197 +95,120 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
-     * Get fully-qualified class name of this persistent class.
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function getName()
-    {
-        return $this->class;
+    public function getName() {
+        return $this->name;
     }
 
-    public function setIdentifier($property)
-    {
-        $this->identifierPropertyName = $property;
+    public function setIdentifier($propertyName) {
+        $this->identifierPropertyName = $propertyName;
     }
 
     /**
-     * Gets the mapped identifier field name.
-     *
-     * The returned structure is an array of the identifier field names.
-     *
-     * @return array
+     * @inheritdoc
      */
-    public function getIdentifier()
-    {
-        return array($this->identifierPropertyName);
+    public function getIdentifier() {
+        return [$this->identifierPropertyName];
     }
 
     /**
-     * PHP 5.3, no array dereferencing..
+     * RID property name
      *
      * @return string
      */
-    public function getRidPropertyName()
-    {
+    public function getRidPropertyName() {
         return $this->identifierPropertyName;
     }
 
     /**
-     * Gets the ReflectionClass instance for this mapped class.
-     *
-     * @return \ReflectionClass
+     * @inheritdoc
      */
-    public function getReflectionClass()
-    {
-        if (!$this->refClass) {
-            $this->refClass = new \ReflectionClass($this->getName());
-        }
-
-        return $this->refClass;
+    public function getReflectionClass() {
+        return $this->reflClass;
     }
 
     /**
-     * Checks if the given field name is a mapped identifier for this class.
-     *
-     * @param string $fieldName
-     * @return boolean
+     * @inheritdoc
      */
-    public function isIdentifier($fieldName)
-    {
+    public function isIdentifier($fieldName) {
         return ($fieldName === '@rid');
     }
 
     /**
-     * Checks if the given field is a mapped property for this class.
-     *
-     * @param string $property The name of the property to which the field is mapped
-     * @return boolean
+     * @inheritdoc
      */
-    public function hasField($property)
-    {
-        return (bool) $this->getFieldByProperty($property);
+    public function hasField($fieldName) {
+        return isset($this->fieldMappings[$fieldName]);
     }
 
     /**
-     * Checks if the given field is a mapped association for this class.
-     *
-     * @param string $fieldName
-     * @return boolean
+     * @inheritdoc
      */
-    public function hasAssociation($fieldName)
-    {
-        return (bool) $this->getAssociation($fieldName);
+    public function hasAssociation($fieldName) {
+        return isset($this->associationMappings[$fieldName]);
     }
 
     /**
-     * Checks if the given field is a mapped single valued association for this class.
-     *
-     * @param string $fieldName
-     * @return boolean
+     * @inheritdoc
      */
-    public function isSingleValuedAssociation($fieldName)
-    {
-        return $this->isValuedAssociation($fieldName, ClassMetadataFactory::$singleAssociations);
+    public function isSingleValuedAssociation($fieldName) {
+        return isset($this->associationMappings[$fieldName])
+            && ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
     }
 
     /**
-     * Checks if the given field is a mapped collection valued association for this class.
-     *
-     * @param string $fieldName
-     * @return boolean
+     * @inheritdoc
      */
-    public function isCollectionValuedAssociation($fieldName)
-    {
-        return $this->isValuedAssociation($fieldName, ClassMetadataFactory::$multipleAssociations);
+    public function isCollectionValuedAssociation($fieldName) {
+        return isset($this->associationMappings[$fieldName])
+        && !($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
     }
 
     /**
-     * A numerically indexed list of field names of this persistent class.
-     *
-     * This array includes identifier fields if present on this class.
-     *
-     * @return string[]
+     * @inheritdoc
      */
-    public function getFieldNames()
-    {
-        $names = array();
-
-        foreach ($this->getFields() as $field) {
-            $names[] = $field->name;
-        }
-
-        return $names;
+    public function getFieldNames() {
+        return array_keys($this->fieldMappings);
     }
 
     /**
-     * A numerically indexed list of association names of this persistent class.
-     *
-     * This array includes identifier associations if present on this class.
-     *
-     * @return string[]
+     * @inheritdoc
      */
-    public function getAssociationNames()
-    {
-        $names = array();
-
-        foreach ($this->getAssociations() as $field) {
-            $names[] = $field->name;
-        }
-
-        return $names;
+    public function getAssociationNames() {
+        return array_keys($this->associationMappings);
     }
 
     /**
-     * Returns a type name of this field.
-     *
-     * This type names can be implementation specific but should at least include the php types:
-     * integer, string, boolean, float/double, datetime.
-     *
-     * @param   string $fieldName
-     * @return  string
+     * @inheritdoc
      */
-    public function getTypeOfField($fieldName)
-    {
-        if ($field = $this->getField($fieldName)) {
-            return $field->type;
-        }
+    public function getTypeOfField($fieldName) {
+        return isset($this->fieldMappings[$fieldName])
+            ? $this->fieldMappings[$fieldName]['type']
+            : null;
+    }
 
+    /**
+     * @inheritdoc
+     */
+    public function getAssociationTargetClass($assocName) {
         return null;
-    }
-
-    /**
-     * Returns the target class name of the given association.
-     *
-     * @param   string $assocName
-     * @return  string
-     */
-    public function getAssociationTargetClass($assocName)
-    {
-        return null;
-    }
-
-    public function getReflectionProperties()
-    {
-        return $this->getReflectionClass()->getProperties();
     }
 
     /**
      * @return \ReflectionProperty[]
      */
-    public function getReflectionFields()
-    {
-        if (! $this->reflFields) {
+    public function getReflectionProperties() {
+        if (!$this->reflFields) {
             $this->discoverReflectionFields();
         }
 
         return $this->reflFields;
     }
 
-    protected function discoverReflectionFields()
-    {
+    protected function discoverReflectionFields() {
         $this->reflFields = array();
-        foreach ($this->getReflectionProperties() as $property) {
+        foreach ($this->getReflectionClass()->getProperties() as $property) {
             if (in_array($property->name, $this->getIdentifierFieldNames())) {
                 $property->setAccessible(true);
             }
@@ -254,118 +217,115 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @return array
+     * @inheritdoc
      */
-    public function getIdentifierFieldNames()
-    {
-        return array($this->identifierPropertyName);
+    public function getIdentifierFieldNames() {
+        return [$this->identifierPropertyName];
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @param string $assocName
-     * @return boolean
+     * @inheritdoc
      */
-    public function isAssociationInverseSide($assocName)
-    {
+    public function isAssociationInverseSide($assocName) {
         throw new \Exception('to be implemented');
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @param string $assocName
-     * @return string
+     * @inheritdoc
      */
-    public function getAssociationMappedByTargetField($assocName)
-    {
+    public function getAssociationMappedByTargetField($assocName) {
         throw new \Exception('to be implemented');
     }
 
     /**
-     * @todo to test
-     *
-     * @param object $object
-     * @return array
+     * @inheritdoc
      */
-    public function getIdentifierValues($object)
-    {
+    public function getIdentifierValues($object) {
         return $this->getFieldValue($object, $this->identifierPropertyName);
     }
 
+    public function mapField(array $mapping) {
+//        $this->_validateAndCompleteFieldMapping($mapping);
+        $this->assertFieldNotMapped($mapping['fieldName']);
+
+        $this->fieldMappings[$mapping['fieldName']] = $mapping;
+    }
+
     /**
-     * Returns the association mapped for the given $field.
+     * Adds a link mapping.
      *
-     * @param   string $field
-     * @return  Annotations\Property
+     * @param array $mapping The mapping.
      */
-    protected function getAssociation($field)
-    {
-        foreach ($this->getAssociations() as $association) {
-            if ($association->name === $field) {
-                return $association;
-            }
-        }
-
-        return null;
+    public function mapLink(array $mapping) {
+        $mapping['type'] = self::LINK;
+        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
+        $this->_storeAssociationMapping($mapping);
     }
 
     /**
-     * @param \Doctrine\ODM\OrientDB\Mapping\Annotations\Property[] $associations
-     */
-    public function setAssociations(array $associations)
-    {
-        $this->associations = $associations;
-    }
-
-    /**
-     * @param DataMapper\Annotations\Property[] $fields
-     */
-    public function setFields(array $fields)
-    {
-        $this->fields = $fields;
-    }
-
-    /**
-     * Returns the ODB field name mapped to the property
-     * or null if it is not mapped to a field.
+     * Adds a link-set mapping.
      *
-     * @param string $property
-     *
-     * @return string|null
+     * @param array $mapping The mapping.
      */
-    public function getFieldNameForProperty($property)
-    {
-        $mappedField = $this->getField($property);
-        if ($mappedField) {
-            return $mappedField->name ? :$property;
-        }
-
-        return null;
+    public function mapLinkList(array $mapping) {
+        $mapping['type'] = self::LINK_LIST;
+        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
+        $this->_storeAssociationMapping($mapping);
     }
 
-    public function setOrientClass($orientClass)
-    {
+    /**
+     * Adds a link-set mapping.
+     *
+     * @param array $mapping The mapping.
+     */
+    public function mapLinkSet(array $mapping) {
+        $mapping['type'] = self::LINK_SET;
+        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
+        $this->_storeAssociationMapping($mapping);
+    }
+
+    /**
+     * Adds a link-set mapping.
+     *
+     * @param array $mapping The mapping.
+     */
+    public function mapLinkMap(array $mapping) {
+        $mapping['type'] = self::LINK_MAP;
+        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
+        $this->_storeAssociationMapping($mapping);
+    }
+
+    /**
+     * Stores the association mapping.
+     *
+     * @param array $assocMapping
+     *
+     * @return void
+     *
+     * @throws MappingException
+     */
+    protected function _storeAssociationMapping(array $assocMapping) {
+        $sourceFieldName = $assocMapping['fieldName'];
+        $this->assertFieldNotMapped($sourceFieldName);
+        $this->associationMappings[$sourceFieldName] = $assocMapping;
+    }
+
+    public function setOrientClass($orientClass) {
         $this->orientClass = $orientClass;
     }
 
-    public function getOrientClass()
-    {
+    public function getOrientClass() {
         return $this->orientClass;
     }
 
     /**
      * Given a $property and its $value, sets that property on the given $document
      *
-     * @param mixed $document
+     * @param mixed  $document
      * @param string $property
      * @param string $value
      */
-    public function setFieldValue($document, $property, $value)
-    {
+    public function setFieldValue($document, $property, $value) {
         $p = $this->setter->bindTo(null, $document);
         $p($document, $property, $value);
     }
@@ -373,82 +333,42 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Gets the value of the specified $property
      *
-     * @param mixed $document
+     * @param mixed  $document
      * @param string $property
      */
-    public function getFieldValue($document, $property)
-    {
+    public function getFieldValue($document, $property) {
         $p = $this->getter->bindTo(null, $document);
+
         return $p($document, $property);
     }
 
     /**
-     * Returns all the possible associations mapped in the introspected class.
+     * Initializes a new ClassMetadata instance that will hold the object-relational mapping
+     * metadata of the class with the given name.
      *
-     * @return Array
+     * @param \Doctrine\Common\Persistence\Mapping\ReflectionService $reflService The reflection service.
+     *
+     * @return void
      */
-    protected function getAssociations()
-    {
-        return $this->associations;
-    }
+    public function initializeReflection($reflService) {
+        $this->reflClass = $reflService->getClass($this->name);
 
-    /**
-     * Returns the reflection property associated with the $property.
-     *
-     * @param   string $property
-     * @return  Annotations\Property
-     */
-    protected function getFieldByProperty($property)
-    {
-        foreach ($this->getFields() as $key => $annotatedField) {
-            if ($property === $key) {
-                return $annotatedField;
-            }
+        if ($this->reflClass) {
+            $this->name = $this->rootEntityName = $this->reflClass->getName();
         }
-
-        return null;
     }
 
     /**
-     * Returns the annotation associated with the $field.
+     * @param string $fieldName
      *
-     * @param   string $field
-     * @return  Annotations\Property
+     * @throws MappingException
      */
-    public function getField($field)
-    {
-        foreach ($this->getFields() as $annotatedField) {
-            if ($annotatedField->name === $field) {
-                return $annotatedField;
-            }
-        }
+    private function assertFieldNotMapped($fieldName) {
+        if (isset($this->fieldMappings[$fieldName]) ||
+            isset($this->associationMappings[$fieldName])
+        ) {
 
-        return null;
-    }
-
-    /**
-     * Returns all the fields of the introspected class.
-     *
-     * @return Annotations\Property[]
-     */
-    public function getFields()
-    {
-        return $this->fields;
-    }
-
-    /**
-     * Checks whether the $field is mapped as an association.
-     *
-     * @param   string  $field
-     * @param   array   $associationTypes
-     * @return  boolean
-     */
-    protected function isValuedAssociation($field, Array $associationTypes)
-    {
-        $association = $this->getAssociation($field);
-
-        if ($association) {
-            return in_array($association->type, $associationTypes);
+            throw MappingException::duplicateFieldMapping($this->name, $fieldName);
         }
     }
 

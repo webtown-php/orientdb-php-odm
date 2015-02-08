@@ -20,20 +20,18 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="Address")
+* @Document(class="Address")
 */
 class Address
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
 
     /**
-     * @ODM\Property(type="link")
+     * @Property(type="link")
      */
     protected $city;
 

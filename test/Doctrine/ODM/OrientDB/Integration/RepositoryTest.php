@@ -28,7 +28,7 @@ class RepositoryTest extends TestCase
 
     protected function createRepository($class)
     {
-        $manager = $this->createManager(array(
+        $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 

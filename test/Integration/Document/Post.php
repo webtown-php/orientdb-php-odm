@@ -20,30 +20,28 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="Post")
+* @Document(class="Post")
 */
 class Post
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
 
     /**
-     * @ODM\Property(type="link_list")
+     * @Property(type="link_list")
      */
     public $comments;
 
     /**
-     * @ODM\Property(name="id", type="integer")
+     * @Property(name="id", type="integer")
      */
     public $id;
 
     /**
-     * @ODM\Property(type="integer")
+     * @Property(type="integer")
      */
     public $title;
 

@@ -54,8 +54,9 @@ class RepositoryTest extends TestCase
 
     protected function prepareManager($binding)
     {
-        $configuration = $this->getConfiguration(array('document_dirs' => array('test/Doctrine/ODM/OrientDB/Document/Stub' => 'test')));
-        return new DocumentManager($binding, $configuration);
+        $config = $this->getConfiguration();
+        $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Document/Stub']));
+        return new DocumentManager($binding, $config);
     }
 
     public function testFindAll()

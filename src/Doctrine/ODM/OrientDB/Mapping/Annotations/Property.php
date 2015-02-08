@@ -18,13 +18,14 @@
  */
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
+use Doctrine\Common\Annotations\Annotation;
 
 /**
  * @Annotation
+ * @Target("PROPERTY")
  */
-class Property extends \Doctrine\Common\Annotations\Annotation
+class Property extends AbstractProperty
 {
-    public $name;
     public $type;
     public $cast;
     public $notnull;

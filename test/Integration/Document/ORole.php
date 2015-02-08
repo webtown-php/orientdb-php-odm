@@ -20,20 +20,18 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="ORole")
+* @Document(class="ORole")
 */
 class ORole
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
 
     /**
-     * @ODM\Property(type="byte")
+     * @Property(type="byte")
      */
     public $mode;
 }

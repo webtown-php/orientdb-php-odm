@@ -22,7 +22,7 @@ class DoubleTest extends TestCase
 
     public function testHydrationOfADoubleProperty()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         //MapPoint
         $point = $manager->find("#".$this->getClassId('MapPoint').":0");
 

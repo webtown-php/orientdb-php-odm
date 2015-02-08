@@ -16,7 +16,7 @@ use Doctrine\OrientDB\Query\Query;
 /**
  * @group integration
  */
-class ManagerTest extends TestCase
+class DocumentManagerTest extends TestCase
 {
     public $postId;
     public $addressId;
@@ -32,9 +32,9 @@ class ManagerTest extends TestCase
      */
     public function testGettingARelatedCollectionViaLazyLoading()
     {
-        $manager = $this->createManager(array(
+        $manager = $this->createDocumentManager([
             'mismatches_tolerance' => true,
-        ));
+        ]);
 
         $post       = $manager->find($this->postId.':0', '*:0');
         $comments   = $post->getComments();
@@ -47,7 +47,7 @@ class ManagerTest extends TestCase
      */
     public function testExecutionOfASelect()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
         $addresses = $manager->execute($query);
@@ -61,7 +61,7 @@ class ManagerTest extends TestCase
      */
     public function testFindingARecordWithAnExecuteReturnsAnArrayHowever()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query(array($this->addressId.':0'));
         $addresses = $manager->execute($query);
@@ -75,7 +75,7 @@ class ManagerTest extends TestCase
      */
     public function testExecutionOfAnUpdate()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
         $query->update('Address')->set(array('my' => 'yours'))->where('@rid = ?', $this->addressId.':30');
@@ -91,7 +91,7 @@ class ManagerTest extends TestCase
      */
     public function testAnExceptionGetsRaisedWhenExecutingAWrongQuery()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
         $query->update('Address')->set(array())->where('@rid = ?', '1:10000');
@@ -104,7 +104,7 @@ class ManagerTest extends TestCase
      */
     public function testFindingARecord()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $address = $manager->find($this->addressId.':0');
 
         $this->assertInstanceOf('test\Integration\Document\Address', $address);
@@ -115,7 +115,7 @@ class ManagerTest extends TestCase
      */
     public function testFindingARecordWithAFetchPlan()
     {
-        $manager = $this->createManager(array(
+        $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
@@ -129,7 +129,7 @@ class ManagerTest extends TestCase
      */
     public function testGettingARelatedRecord()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $address = $manager->find($this->addressId.':0');
 
         $this->assertInstanceOf('test\Integration\Document\Country', $address->getCity());
@@ -140,7 +140,7 @@ class ManagerTest extends TestCase
      */
     public function testGettingARelatedCollection()
     {
-        $manager = $this->createManager(array(
+        $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
@@ -156,9 +156,7 @@ class ManagerTest extends TestCase
      */
     public function testLookingForANonMappedTypeRaisesAnException()
     {
-        $manager = $this->createManager(array(
-            'document_dirs' => array('./docs' => '\\'),
-        ));
+        $manager = $this->createDocumentManager([], ['./docs']);
 
         $manager->find($this->postId.':0');
     }
@@ -168,7 +166,7 @@ class ManagerTest extends TestCase
      */
     public function testFindingANonExistingRecord()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $address = $manager->find($this->postId.':2000');
 
@@ -180,7 +178,7 @@ class ManagerTest extends TestCase
      */
     public function testFindingSomeRecords()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $addresses = $manager->findRecords(array($this->addressId.':0', $this->addressId.':1'));
 
@@ -193,7 +191,7 @@ class ManagerTest extends TestCase
      */
     public function testFindingSomeGoodAndSomeWrongRecordsReturnsGoodRecords()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $manager->findRecords(array($this->postId.':0', $this->postId.':700000'));
     }
 
@@ -202,7 +200,7 @@ class ManagerTest extends TestCase
      */
     public function testExecutingASelectOfASingleRecordReturnsAnArrayWithOneRecord()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
         $query->where('@rid = ?', $this->addressId.':0');
@@ -218,7 +216,7 @@ class ManagerTest extends TestCase
      */
     public function testExecutionWithNoOutput()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query();
         $query->update('Address')->set(array('type' => 'Residence'));

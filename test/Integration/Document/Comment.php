@@ -20,15 +20,13 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="Comment")
+* @Document(class="Comment")
 */
 class Comment
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
 }

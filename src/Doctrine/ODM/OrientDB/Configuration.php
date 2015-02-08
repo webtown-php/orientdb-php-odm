@@ -3,10 +3,16 @@
 namespace Doctrine\ODM\OrientDB;
 
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
+use Doctrine\Common\Annotations\CachedReader;
+use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\Cache;
+use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\Reader;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\Driver\AnnotationDriver;
 
 /**
  * Class Configuration
@@ -17,10 +23,7 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
  */
 class Configuration
 {
-    private $options;
-    private $metadataFactory;
-    private $cache;
-    private $annotationReader;
+    private $_attributes;
 
     private $supportedPersisterStrategies = ['sql_batch'];
 
@@ -29,77 +32,190 @@ class Configuration
         $defaults = [
             'proxy_namespace' => 'Doctrine\ODM\OrientDB\Proxy',
             'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS,
-            'document_dirs' => []
+            'document_dirs' => [],
         ];
 
-        $this->options = array_merge($defaults ,$options);
+        $this->_attributes = array_merge($defaults ,$options);
     }
 
-    public function getOptions()
+    /**
+     * Adds a namespace under a certain alias.
+     *
+     * @param string $alias
+     * @param string $namespace
+     */
+    public function addDocumentNamespace($alias, $namespace)
     {
-        return $this->options;
+        $this->_attributes['documentNamespaces'][$alias] = $namespace;
+    }
+
+    /**
+     * Resolves a registered namespace alias to the full namespace.
+     *
+     * @param string $documentNamespaceAlias
+     * @return string
+     * @throws MongoDBException
+     */
+    public function getDocumentNamespace($documentNamespaceAlias)
+    {
+        if ( ! isset($this->_attributes['documentNamespaces'][$documentNamespaceAlias])) {
+            throw MongoDBException::unknownDocumentNamespace($documentNamespaceAlias);
+        }
+
+        return trim($this->_attributes['documentNamespaces'][$documentNamespaceAlias], '\\');
+    }
+
+    /**
+     * Retrieves the list of registered document namespace aliases.
+     *
+     * @return array
+     */
+    public function getDocumentNamespaces()
+    {
+        return $this->_attributes['documentNamespaces'];
+    }
+
+    /**
+     * Set the document alias map
+     *
+     * @param array $documentNamespaces
+     * @return void
+     */
+    public function setDocumentNamespaces(array $documentNamespaces)
+    {
+        $this->_attributes['documentNamespaces'] = $documentNamespaces;
+    }
+
+    public function getAttributes()
+    {
+        return $this->_attributes;
     }
 
     public function getProxyDirectory()
     {
-        if (! isset($this->options['proxy_dir'])) {
+        if (! isset($this->_attributes['proxy_dir'])) {
             throw ConfigurationException::missingKey('proxy_dir');
         }
 
-        return $this->options['proxy_dir'];
+        return $this->_attributes['proxy_dir'];
     }
 
     public function getProxyNamespace()
     {
-        return $this->options['proxy_namespace'];
+        return $this->_attributes['proxy_namespace'];
     }
 
     public function getAutoGenerateProxyClasses()
     {
-        return isset($this->options['proxy_autogenerate_policy']) ? $this->options['proxy_autogenerate_policy'] : null;
+        return isset($this->_attributes['proxy_autogenerate_policy']) ? $this->_attributes['proxy_autogenerate_policy'] : null;
     }
 
     public function getMismatchesTolerance()
     {
-        return isset($this->options['mismatches_tolerance']) ? $this->options['mismatches_tolerance'] : false;
+        return isset($this->_attributes['mismatches_tolerance']) ? $this->_attributes['mismatches_tolerance'] : false;
     }
 
-    public function getMetadataFactory()
+    /**
+     * Set the class metadata factory class name.
+     *
+     * @param string $cmfName
+     */
+    public function setClassMetadataFactoryName($cmfName)
     {
-        if (! $this->metadataFactory) {
-            $this->metadataFactory = isset($this->options['metadata_factory']) ?
-                $this->options['metadata_factory'] : new ClassMetadataFactory($this->getAnnotationReader(), $this->getCache());
-
-            $this->metadataFactory->setDocumentDirectories($this->options['document_dirs']);
-        }
-
-        return $this->metadataFactory;
+        $this->_attributes['classMetadataFactoryName'] = $cmfName;
     }
 
-    public function getCache()
+    /**
+     * Gets the class metadata factory class name.
+     *
+     * @return string
+     */
+    public function getClassMetadataFactoryName()
     {
-        if (! $this->cache) {
-            $this->cache = isset($this->options['cache']) ?
-                $this->options['cache'] : new ArrayCache();
+        if ( ! isset($this->_attributes['classMetadataFactoryName'])) {
+            $this->_attributes['classMetadataFactoryName'] = ClassMetadataFactory::class;
         }
-
-        return $this->cache;
+        return $this->_attributes['classMetadataFactoryName'];
     }
 
-    public function getAnnotationReader()
+    /**
+     * Sets the cache driver implementation that is used for metadata caching.
+     *
+     * @param MappingDriver $driverImpl
+     * @todo Force parameter to be a Closure to ensure lazy evaluation
+     *       (as soon as a metadata cache is in effect, the driver never needs to initialize).
+     */
+    public function setMetadataDriverImpl(MappingDriver $driverImpl)
     {
-        if (! $this->annotationReader) {
-            $this->annotationReader = isset($this->options['annotation_reader']) ?
-                $this->options['annotation_reader'] : new Reader();
+        $this->_attributes['metadataDriverImpl'] = $driverImpl;
+    }
+
+    /**
+     * Add a new default annotation driver with a correctly configured annotation reader. If $useSimpleAnnotationReader
+     * is true, the notation `@Document` will work, otherwise, the notation `@ODM\Document` will be supported.
+     *
+     * @param array $paths
+     * @param bool  $useSimpleAnnotationReader
+     *
+     * @return AnnotationDriver
+     */
+    public function newDefaultAnnotationDriver($paths = array(), $useSimpleAnnotationReader = true)
+    {
+        AnnotationRegistry::registerFile(__DIR__ . '/Mapping/Annotations/DoctrineAnnotations.php');
+
+        if ($useSimpleAnnotationReader) {
+            // Register the ORM Annotations in the AnnotationRegistry
+            $reader = new SimpleAnnotationReader();
+            $reader->addNamespace('Doctrine\ODM\OrientDB\Mapping\Annotations');
+            $cachedReader = new CachedReader($reader, new ArrayCache());
+
+            return new AnnotationDriver($cachedReader, (array) $paths);
         }
 
-        return $this->annotationReader;
+        return new AnnotationDriver(
+            new CachedReader(new AnnotationReader(), new ArrayCache()),
+            (array) $paths
+        );
+    }
+
+    /**
+     * Gets the cache driver implementation that is used for the mapping metadata.
+     *
+     * @return MappingDriver
+     */
+    public function getMetadataDriverImpl()
+    {
+        return isset($this->_attributes['metadataDriverImpl'])
+            ? $this->_attributes['metadataDriverImpl']
+            : null;
+    }
+
+    /**
+     * Gets the cache driver implementation that is used for metadata caching.
+     *
+     * @return \Doctrine\Common\Cache\Cache
+     */
+    public function getMetadataCacheImpl()
+    {
+        return isset($this->_attributes['metadataCacheImpl'])
+            ? $this->_attributes['metadataCacheImpl']
+            : null;
+    }
+
+    /**
+     * Sets the cache driver implementation that is used for metadata caching.
+     *
+     * @param \Doctrine\Common\Cache\Cache $cacheImpl
+     */
+    public function setMetadataCacheImpl(Cache $cacheImpl)
+    {
+        $this->_attributes['metadataCacheImpl'] = $cacheImpl;
     }
 
     public function getPersisterStrategy()
     {
-        if (isset($this->options['persister_strategy'])) {
-            $strategy = $this->options['persister_strategy'];
+        if (isset($this->_attributes['persister_strategy'])) {
+            $strategy = $this->_attributes['persister_strategy'];
             if (! in_array($strategy, $this->supportedPersisterStrategies)) {
                 throw ConfigurationException::invalidPersisterStrategy($strategy, $this->supportedPersisterStrategies);
             }

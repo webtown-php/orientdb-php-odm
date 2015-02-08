@@ -9,6 +9,7 @@
 
 namespace test\PHPUnit;
 
+use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ODM\OrientDB\Configuration;
 use Doctrine\ODM\OrientDB\DocumentManager;
@@ -78,21 +79,24 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return __DIR__ . '/../../test/proxies/Doctrine/OrientDB/Proxy/test';
     }
 
-    protected function getConfiguration(array $opts = array())
+    protected function getConfiguration(array $opts = [])
     {
         return new Configuration(array_merge(
-            array(
+            [
                 'proxy_dir' => $this->getProxyDirectory(),
                 'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_ALWAYS,
-                'document_dirs' => array(__DIR__.'/../../test/Integration/Document' => 'test')
-            ),
+            ],
             $opts
         ));
     }
 
-    protected function createManager(Array $opts = array())
+    protected function createDocumentManager(array $opts = [], $paths = [])
     {
         $config = $this->getConfiguration($opts);
+        if (empty($paths)) {
+            $paths = [__DIR__ . '/../Integration/Document'];
+        }
+        $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver($paths));
 
         $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
         $binding = new HttpBinding($parameters);
@@ -101,9 +105,20 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return $manager;
     }
 
+    protected function createAnnotationDriver($paths = null, $alias = null) {
+        // Register the ORM Annotations in the AnnotationRegistry
+        $reader = new \Doctrine\Common\Annotations\SimpleAnnotationReader();
+        $reader->addNamespace('Doctrine\ODM\OrientDB\Mapping\Annotations');
+        $reader = new \Doctrine\Common\Annotations\CachedReader($reader, new ArrayCache());
+
+        \Doctrine\Common\Annotations\AnnotationRegistry::registerFile(
+            __DIR__ . '/../../src/Doctrine/ODM/OrientDB/Mapping/Annotations/DoctrineAnnotations.php');
+        return new Mapping\Driver\AnnotationDriver($reader, (array)$paths);
+    }
+
     protected function ensureProxy(\stdClass $orientDocument)
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         return $manager->getUnitOfWork()->getHydrator()->hydrate($orientDocument);
     }

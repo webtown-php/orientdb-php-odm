@@ -20,9 +20,8 @@ use Doctrine\OrientDB\Binding\BindingResultInterface;
 use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Query;
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\Types\Rid;
 
-class ManagerTest extends TestCase
+class DocumentManagerTest extends TestCase
 {
     protected function createTestManager()
     {
@@ -43,7 +42,8 @@ class ManagerTest extends TestCase
                 ->method('execute')
                 ->will($this->returnValue($result));
 
-        $configuration = $this->getConfiguration(array('document_dirs' => array('test/Doctrine/ODM/OrientDB/Document/Stub' => 'test')));
+        $configuration = $this->getConfiguration();
+        $configuration->setMetadataDriverImpl($configuration->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Document/Stub']));
         $manager = new DocumentManager($binding, $configuration);
 
         return $manager;
@@ -76,7 +76,7 @@ class ManagerTest extends TestCase
 
     public function testProvidingRightRepositoryClass()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $cityRepository = $manager->getRepository('test\Doctrine\ODM\OrientDB\Document\Stub\City');
 
         $this->assertInstanceOf('test\Doctrine\ODM\OrientDB\Document\Stub\CityRepository',$cityRepository);

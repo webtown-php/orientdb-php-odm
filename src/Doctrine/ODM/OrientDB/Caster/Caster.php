@@ -31,8 +31,8 @@ use Doctrine\OrientDB\Query\Validator\ValidationException;
 class Caster extends AbstractCaster
 {
     protected $value;
-    protected $trueValues   = [1, '1', 'true'];
-    protected $falseValues  = [0, '0', 'false'];
+    protected $trueValues   = array(1, '1', 'true');
+    protected $falseValues  = array(0, '0', 'false');
 
     /**
      * Instantiates a new Caster.
@@ -407,14 +407,14 @@ class Caster extends AbstractCaster
      */
     protected function castArrayOf($type)
     {
-        $results = array();
-        $method  = 'cast' . Inflector::camelize($type);
+        $method  = 'cast' . Inflector::classify($type);
         $innerCaster = new self($this->getHydrator());
 
         if (!method_exists($innerCaster, $method)) {
             throw new Exception(sprintf('Method %s for %s not found', $method, get_class($innerCaster)));
         }
 
+        $results = [];
         foreach ($this->value as $key => $value) {
             $innerCaster->setValue($value);
             $results[$key] = $innerCaster->$method();
@@ -431,13 +431,13 @@ class Caster extends AbstractCaster
      */
     public function castEmbeddedArrays()
     {
-        $annotation = $this->getProperty('annotation');
+        $mapping = $this->getProperty('mapping');
 
-        if (!$annotation) {
-            throw new Exception("Cannot cast a collection using a caster without an associated annotation object");
+        if (!$mapping) {
+            throw new Exception("Cannot cast a collection using a caster without an associated mapping object");
         }
 
-        $listType = $annotation->getCast();
+        $listType = $mapping['cast'];
 
         if ($listType == "link") {
             return $this->getHydrator()->hydrateCollection($this->value);
@@ -447,7 +447,7 @@ class Caster extends AbstractCaster
             return $this->castArrayOf($listType);
         } catch (Exception $exception) {
             $message = "It seems like you are trying to hydrate an embedded property without specifying its type.\n".
-                       "Please add the 'cast' (eg cast='boolean') to the annotation.";
+                       "Please add the 'cast' (eg cast='boolean') to the mapping.";
 
             throw new Exception($message, null, $exception);
         }
@@ -472,7 +472,7 @@ class Caster extends AbstractCaster
     protected function convertJsonCollectionToArray()
     {
         if (!is_array($this->value) && is_object($this->value)) {
-            $orientObjects = array();
+            $orientObjects = [];
 
             $refClass = new \ReflectionObject($this->value);
             $properties = $refClass->getProperties(\ReflectionProperty::IS_PUBLIC);

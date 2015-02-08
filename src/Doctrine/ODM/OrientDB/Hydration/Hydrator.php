@@ -3,10 +3,12 @@
 namespace Doctrine\ODM\OrientDB\Hydration;
 
 use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Caster\Caster;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property as PropertyAnnotation;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
@@ -50,7 +52,7 @@ class Hydrator
         $this->metadataFactory = $manager->getMetadataFactory();
         $this->binding         = $manager->getBinding();
         $this->uow             = $uow;
-        $this->clusterMap      = new ClusterMap($this->binding, $manager->getCache());
+        $this->clusterMap      = new ClusterMap($this->binding, $manager->getConfiguration()->getMetadataCacheImpl());
         $this->caster          = new Caster($this);
 
         $this->enableMismatchesTolerance($manager->getConfiguration()->getMismatchesTolerance());
@@ -86,7 +88,9 @@ class Hydrator
         $classProperty = static::ORIENT_PROPERTY_CLASS;
 
         if ($proxy) {
-            $this->fill($proxy, $orientObject);
+            /** @var ClassMetadata $metadata */
+            $metadata = $this->getMetadataFactory()->getMetadataFor(ClassUtils::getClass($proxy));
+            $this->fill($metadata, $proxy, $orientObject);
 
             return $proxy;
 
@@ -94,8 +98,8 @@ class Hydrator
             $orientClass = $orientObject->$classProperty;
 
             if ($orientClass) {
-                $class       = $this->getMetadataFactory()->findClassMappingInDirectories($orientClass);
-                $document    = $this->createDocument($class, $orientObject);
+                $metadata = $this->getMetadataFactory()->getMetadataForOClass($orientClass);
+                $document = $this->createDocument($metadata, $orientObject);
 
                 return $document;
             }
@@ -130,10 +134,10 @@ class Hydrator
     public function hydrateRid(Rid $rid)
     {
         $orientClass = $this->clusterMap->identifyClass($rid);
-        $class       = $this->getMetadataFactory()->findClassMappingInDirectories($orientClass);
-        $metadata    = $this->getMetadataFactory()->getMetadataFor($class);
+        $metadata    = $this->getMetadataFactory()->getMetadataForOClass($orientClass);
+        $class       = $metadata->getName();
 
-        return $this->getProxyFactory()->getProxy($class, array($metadata->getRidPropertyName() => $rid->getValue()));
+        return $this->getProxyFactory()->getProxy($class, [$metadata->getRidPropertyName() => $rid->getValue()]);
     }
 
     /**
@@ -165,13 +169,14 @@ class Hydrator
      * Either tries to get the proxy
      *
      *
-     * @param  string      $class
-     * @param  \stdClass   $orientObject
+     * @param  ClassMetadata $metadata
+     * @param  \stdClass     $orientObject
+     *
      * @return object of type $class
      */
-    protected function createDocument($class, \stdClass $orientObject)
+    protected function createDocument(ClassMetadata $metadata, \stdClass $orientObject)
     {
-        $metadata = $this->getMetadataFactory()->getMetadataFor($class);
+        $class = $metadata->getName();
 
         /**
          * when a record from OrientDB doesn't have a RID
@@ -183,14 +188,14 @@ class Hydrator
             if ($this->getUnitOfWork()->isInIdentityMap($rid)) {
                 $document = $this->getUnitOfWork()->getProxy($rid);
             } else {
-                $document = $this->getProxyFactory()->getProxy($class, array($metadata->getRidPropertyName() => $rid->getValue()));
+                $document = $this->getProxyFactory()->getProxy($class, [$metadata->getRidPropertyName() => $rid->getValue()]);
             }
         } else {
             $class = $metadata->getName();
             $document = new $class;
         }
 
-        $this->fill($document, $orientObject);
+        $this->fill($metadata, $document, $orientObject);
 
         return $document;
     }
@@ -198,21 +203,21 @@ class Hydrator
     /**
      * Casts a value according to how it was annotated.
      *
-     * @param  \Doctrine\ODM\OrientDB\Mapping\Annotations\Property  $annotation
-     * @param  mixed                                               $propertyValue
+     * @param  array $mapping
+     * @param  mixed $propertyValue
      *
-*@return mixed
+     * @return mixed
      */
-    protected function castProperty($annotation, $propertyValue)
+    protected function castProperty(array $mapping, $propertyValue)
     {
-        $propertyId = $this->getCastedPropertyCacheKey($annotation->type, $propertyValue);
+        $propertyId = $this->getCastedPropertyCacheKey($mapping['type'], $propertyValue);
 
         if (!isset($this->castedProperties[$propertyId])) {
-            $method = 'cast' . Inflector::camelize($annotation->type);
+            $method = 'cast' . Inflector::classify($mapping['type']);
 
             $this->getCaster()->setValue($propertyValue);
-            $this->getCaster()->setProperty('annotation', $annotation);
-            $this->verifyCastingSupport($this->getCaster(), $method, $annotation->type);
+            $this->getCaster()->setProperty('mapping', $mapping);
+            $this->verifyCastingSupport($this->getCaster(), $method, $mapping['type']);
 
             $this->castedProperties[$propertyId] = $this->getCaster()->$method();
         }
@@ -239,27 +244,24 @@ class Hydrator
      * Given an object and an Orient-object, it fills the former with the
      * latter.
      *
-     * @param  object      $document
-     * @param  \stdClass   $object
+     * @param ClassMetadata $metadata
+     * @param  object       $document
+     * @param  \stdClass    $object
+     *
      * @return object
+     * @throws \Exception
      */
-    protected function fill($document, \stdClass $object)
+    protected function fill(ClassMetadata $metadata, $document, \stdClass $object)
     {
-        $metadata = $this->getMetadataFactory()->getMetadataFor(get_class($document));
-        $propertyAnnotations = $this->getMetadataFactory()->getObjectPropertyAnnotations($document);
-        $hydratedData = array();
+        $hydratedData = [];
 
-        foreach ($propertyAnnotations as $property => $annotation) {
-            $documentProperty = $property;
-
-            if ($annotation->name) {
-                $property = $annotation->name;
-            }
+        foreach ($metadata->fieldMappings as $fieldName => $mapping) {
+            $property = $mapping['name'];
 
             if (property_exists($object, $property)) {
-                $value = $this->hydrateValue($object->$property, $annotation);
+                $value = $this->hydrateValue($object->$property, $mapping);
                 $hydratedData[$property] = $value;
-                $metadata->setFieldValue($document, $documentProperty, $value);
+                $metadata->setFieldValue($document, $fieldName, $value);
             }
         }
 
@@ -289,18 +291,18 @@ class Hydrator
      * Hydrates the value
      *
      * @param $value
-     * @param PropertyAnnotation $annotation
+     * @param array $mapping
      *
      * @return mixed|null
      * @throws \Exception
      */
-    protected function hydrateValue($value, PropertyAnnotation $annotation)
+    protected function hydrateValue($value, array $mapping)
     {
-        if ($annotation->type) {
+        if (isset($mapping['type'])) {
             try {
-                $value = $this->castProperty($annotation, $value);
+                $value = $this->castProperty($mapping, $value);
             } catch (\Exception $e) {
-                if ($annotation->isNullable()) {
+                if ($mapping['nullable']) {
                     $value = null;
                 } else {
                     throw $e;

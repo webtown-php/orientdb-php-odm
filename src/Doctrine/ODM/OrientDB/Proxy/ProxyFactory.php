@@ -12,6 +12,7 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\DocumentManager;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 
 /**
@@ -57,7 +58,7 @@ class ProxyFactory extends AbstractProxyFactory
     public function __construct(DocumentManager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER)
     {
         $this->metadataFactory = $manager->getMetadataFactory();
-        $this->uow        = $manager->getUnitOfWork();
+        $this->uow             = $manager->getUnitOfWork();
         $this->proxyNamespace  = $proxyNamespace;
         $proxyGenerator        = new ProxyGenerator($proxyDir, $proxyNamespace);
         $proxyGenerator->setPlaceholder('baseProxyInterface', 'Doctrine\ODM\OrientDB\Proxy\Proxy');
@@ -71,14 +72,15 @@ class ProxyFactory extends AbstractProxyFactory
 
     public function createProxyDefinition($className)
     {
+        /** @var ClassMetadata $classMetadata */
         $classMetadata = $this->metadataFactory->getMetadataFor($className);
-        $reflectionFields = $classMetadata->getReflectionFields();
+        $reflectionFields = $classMetadata->getReflectionProperties();
         $reflectionId = $reflectionFields[$classMetadata->getRidPropertyName()];
 
         return new ProxyDefinition(
             ClassUtils::generateProxyClassName($className, $this->proxyNamespace),
             $classMetadata->getIdentifierFieldNames(),
-            $classMetadata->getReflectionFields(),
+            $reflectionFields,
             $this->createInitializer($classMetadata, $this->uow->getHydrator(), $reflectionId),
             $this->createCloner($classMetadata, $this->uow->getHydrator(), $reflectionId)
         );

@@ -2,25 +2,23 @@
 
 namespace test\Doctrine\ODM\OrientDB\Document\Stub\Contact;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="EmptyAddress")
+* @Document(class="EmptyAddress")
 */
 class EmptyAddress
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
     
     /**
-     * @ODM\Property(type="string", notnull="false")
+     * @Property(type="string", notnull="false")
      */
     public $string;
     
     /**
-     * @ODM\Property(type="integer", notnull="false")
+     * @Property(type="integer", notnull="false")
      */
     public $integer;
 }

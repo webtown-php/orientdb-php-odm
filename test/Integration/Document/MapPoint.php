@@ -20,20 +20,18 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="MapPoint")
+* @Document(class="MapPoint")
 */
 class MapPoint
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
 
     /**
-     * @ODM\Property(type="double")
+     * @Property(type="double")
      */
     public $y;
 }

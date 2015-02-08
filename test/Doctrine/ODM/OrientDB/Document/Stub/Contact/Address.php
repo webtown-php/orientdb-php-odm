@@ -2,200 +2,198 @@
 
 namespace test\Doctrine\ODM\OrientDB\Document\Stub\Contact;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="Address")
+* @Document(class="Address")
 */
 class Address
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     protected $rid;
     /**
-     * @ODM\Property(name="nojson", type="nojson")
+     * @Property(name="nojson", type="nojson")
      */
     protected $annotatedNotInJSON;
     /**
-     * @ODM\Property(name="date", type="date")
+     * @Property(name="date", type="date")
      */
     protected $date;
     /**
-     * @ODM\Property(name="datetime", type="datetime")
+     * @Property(name="datetime", type="datetime")
      */
     protected $date_time;
     /**
-     * @ODM\Property(name="type", type="string")
+     * @Property(name="type", type="string")
      */
     protected $type;
     /**
-     * @ODM\Property(name="is_true", type="boolean")
+     * @Property(name="is_true", type="boolean")
      */
     protected $is__true;
     /**
-     * @ODM\Property(name="is_false", type="boolean")
+     * @Property(name="is_false", type="boolean")
      */
     protected $is__false;
 
     /**
-     * @ODM\Property(name="sample")
+     * @Property(name="sample")
      */
     protected $example_property;
 
     /**
-     * @ODM\Property(name="capital", type="double")
+     * @Property(name="capital", type="double")
      */
     protected $capital;
 
     /**
-     * @ODM\Property(name="negative_short", type="short")
+     * @Property(name="negative_short", type="short")
      */
     protected $negative_short;
 
     /**
-     * @ODM\Property(name="positive_short", type="short")
+     * @Property(name="positive_short", type="short")
      */
     protected $positive_short;
 
     /**
-     * @ODM\Property(name="invalid_short", type="short")
+     * @Property(name="invalid_short", type="short")
      */
     protected $invalid_short;
 
     /**
-     * @ODM\Property(name="negative_long", type="long")
+     * @Property(name="negative_long", type="long")
      */
     protected $negative_long;
 
     /**
-     * @ODM\Property(name="positive_long", type="long")
+     * @Property(name="positive_long", type="long")
      */
     protected $positive_long;
 
     /**
-     * @ODM\Property(name="invalid_long", type="long")
+     * @Property(name="invalid_long", type="long")
      */
     protected $invalid_long;
 
     /**
-     * @ODM\Property(name="negative_byte", type="byte")
+     * @Property(name="negative_byte", type="byte")
      */
     protected $negative_byte;
 
     /**
-     * @ODM\Property(name="positive_byte", type="byte")
+     * @Property(name="positive_byte", type="byte")
      */
     protected $positive_byte;
 
     /**
-     * @ODM\Property(name="invalid_byte", type="byte")
+     * @Property(name="invalid_byte", type="byte")
      */
     protected $invalid_byte;
 
     /**
-     * @ODM\Property(type="float")
+     * @Property(type="float")
      */
     protected $floating;
 
     /**
-     * @ODM\Property(type="binary")
+     * @Property(type="binary")
      */
     protected $image;
 
     /**
-     * @ODM\Property(type="link")
+     * @Link
      */
     protected $link;
 
     /**
-     * @ODM\Property(type="embedded")
+     * @Property(type="embedded")
      */
     protected $embedded;
 
 
     /**
-     * @ODM\Property(type="embedded_set", cast="link")
+     * @Property(type="embedded_set", cast="link")
      */
     protected $embeddedset;
 
     /**
-     * @ODM\Property(type="embedded_list", cast="link")
+     * @Property(type="embedded_list", cast="link")
      */
     protected $embeddedlist;
 
     /**
-     * @ODM\Property(type="embedded_list", cast="boolean")
+     * @Property(type="embedded_list", cast="boolean")
      */
     protected $embeddedbooleans;
 
     /**
-     * @ODM\Property(type="embedded_list", cast="string")
+     * @Property(type="embedded_list", cast="string")
      */
     protected $embeddedstrings;
 
     /**
-     * @ODM\Property(type="embedded_list", cast="integer")
+     * @Property(type="embedded_list", cast="integer")
      */
     protected $embeddedintegers;
 
     /**
-     * @ODM\Property(type="embedded_set", cast="boolean")
+     * @Property(type="embedded_set", cast="boolean")
      */
     protected $embeddedsetbooleans;
 
     /**
-     * @ODM\Property(type="embedded_set", cast="string")
+     * @Property(type="embedded_set", cast="string")
      */
     protected $embeddedsetstrings;
 
     /**
-     * @ODM\Property(type="embedded_set", cast="integer")
+     * @Property(type="embedded_set", cast="integer")
      */
     protected $embeddedsetintegers;
 
     /**
-     * @ODM\Property(type="link")
+     * @Property(type="link")
      */
     protected $lazy_link;
 
     /**
-     * @ODM\Property(type="linklist")
+     * @Property(type="linklist")
      */
     protected $lazy_linklist;
 
     /**
-     * @ODM\Property(type="linkset")
+     * @Property(type="linkset")
      */
     public $lazy_linkset;
 
     /**
-     * @ODM\Property(type="linkmap")
+     * @Property(type="linkmap")
      */
     public $lazy_linkmap;
 
     /**
-     * @ODM\Property(type="linkset")
+     * @Property(type="linkset")
      */
     protected $linkset;
 
     /**
-     * @ODM\Property(type="linklist")
+     * @Property(type="linklist")
      */
     protected $linklist;
 
     /**
-     * @ODM\Property(type="linkmap")
+     * @Property(type="linkmap")
      */
     protected $linkmap;
 
     /**
-     * @ODM\Property(type="embedded_map", cast="link")
+     * @Property(type="embedded_map", cast="link")
      */
     protected $embedded_map;
 
     /**
-     * @ODM\Property(type="integer")
+     * @Property(type="integer")
      */
     protected $number;
 

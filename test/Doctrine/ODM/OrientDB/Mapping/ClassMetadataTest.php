@@ -12,6 +12,7 @@
 
 namespace test\Doctrine\ODM\OrientDB\Mapping;
 
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use test\PHPUnit\TestCase;
 use Doctrine\ODM\OrientDB\Mapping;
@@ -19,27 +20,27 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
-* @ODM\Document(class="Mapped")
+* @Document(class="Mapped")
 */
 class Mapped
 {
     /**
-     * @ODM\Property(name="@rid",type="string")
+     * @RID
      */
     protected $rid;
 
     /**
-     * @ODM\Property(name="field",type="string")
+     * @Property(name="field",type="string")
      */
     protected $field;
 
     /**
-     * @ODM\Property(name="assoc",type="link")
+     * @Link
      */
     protected $assoc;
 
     /**
-     * @ODM\Property(name="multiassoc",type="linkset")
+     * @LinkSet
      */
     protected $multiassoc;
 
@@ -60,13 +61,10 @@ class ClassMetadataTest extends TestCase
         $this->metadata = new ClassMetadata(Mapped::class);
 
         $this->metadata->setIdentifier('rid');
-        $this->metadata->setFields(array(
-            'field' => new Property(array('name' => 'field', 'type' => 'string'))
-        ));
-        $this->metadata->setAssociations(array(
-            'assoc'      => new Property(array('name' => 'assoc', 'type' => 'link')),
-            'multiassoc' => new Property(array('name' => 'multiassoc', 'type' => 'linkset'))
-        ));
+        $this->metadata->mapField(['fieldName' => 'field', 'name' => 'field', 'type' => 'string']);
+        $this->metadata->mapLink(['fieldName' => 'assoc', 'name' => 'assoc']);
+        $this->metadata->mapLinkSet(['fieldName' => 'multiassoc', 'name' => 'multiassoc']);
+        $this->metadata->initializeReflection(new RuntimeReflectionService());
     }
 
     function testGetName()

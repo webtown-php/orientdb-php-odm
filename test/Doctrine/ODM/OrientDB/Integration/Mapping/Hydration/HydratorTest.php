@@ -17,7 +17,7 @@ class HydratorTest extends TestCase
 
     public function setup()
     {
-        $manager = $this->createManager(array('document_dirs' => array('test/Doctrine/ODM/OrientDB/Document/Stub' => 'test')));
+        $manager = $this->createDocumentManager([], ['test/Doctrine/ODM/OrientDB/Document/Stub']);
         $this->hydrator = $manager->getUnitOfWork()->getHydrator();
 
         $this->emptyJsonRecord = json_decode('{

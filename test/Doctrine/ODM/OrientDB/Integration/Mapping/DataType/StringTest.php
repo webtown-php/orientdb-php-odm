@@ -21,7 +21,7 @@ class StringTest extends TestCase
 {
     public function testHydratingAStringProperty()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         //Country
         $country = $manager->find('#'.$this->getClassId('Country').':0');
 

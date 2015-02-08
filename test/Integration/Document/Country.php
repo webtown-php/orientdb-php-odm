@@ -20,20 +20,18 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="Country")
+* @Document(class="Country")
 */
 class Country
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     protected $rid;
 
     /**
-     * @ODM\Property(name="name", type="string")
+     * @Property(name="name", type="string")
      */
     public $name;
 

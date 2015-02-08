@@ -1,303 +1,31 @@
 <?php
 
-/*
- * This file is part of the Orient package.
- *
- * (c) Alessandro Nadalin <alessandro.nadalin@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-/**
- * Class Factory
- *
- * @package    Doctrine\ODM
- * @subpackage OrientDB
- * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
- * @author     David Funaro <ing.davidino@gmail.com>
- * @author     Tamás Millián <tamas.millian@gmail.com>
- */
-
 namespace Doctrine\ODM\OrientDB\Mapping;
 
-use Doctrine\Common\Cache\Cache;
-use Doctrine\ODM\OrientDB\Mapping;
-use Doctrine\Common\Persistence\Mapping\ClassMetadataFactory as ClassMetadataFactoryInterface;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\ReaderInterface as AnnotationReaderInterface;
+use Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata as ClassMetadataInfo;
+use Doctrine\Common\Persistence\Mapping\ReflectionService;
+use Doctrine\ODM\OrientDB\Configuration;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\OClassNotFoundException;
-use Symfony\Component\Finder\Finder;
 
-/**
- * @todo this class needs to be tested, is part of the core of the ODM
- */
-class ClassMetadataFactory implements ClassMetadataFactoryInterface
+class ClassMetadataFactory extends AbstractClassMetadataFactory
 {
-    const ANNOTATION_PROPERTY_CLASS = Property::class;
-    const ANNOTATION_CLASS_CLASS    = Document::class;
+    public static $singleAssociations    = ['link'];
+    public static $multipleAssociations  = ['linklist', 'linkset', 'linkmap'];
+    public static $associationTypes      = [];
 
-    protected $annotationReader;
-    protected $cache;
-    protected $documentDirectories       = array();
-    protected $metadata                  = array();
-    protected $classMap                  = array();
-    public static $singleAssociations    = array('link');
-    public static $multipleAssociations  = array('linklist', 'linkset', 'linkmap');
+    /** @var DocumentManager The DocumentManager instance */
+    private $dm;
 
-    /**
-     * @param AnnotationReaderInterface $annotationReader
-     * @param Cache                     $cache
-     */
-    public function __construct(AnnotationReaderInterface $annotationReader, Cache $cache)
-    {
-        $this->annotationReader = $annotationReader;
-        $this->cache = $cache;
-    }
+    /** @var Configuration The Configuration instance */
+    private $config;
 
-    /**
-     * @to implement and test
-     */
-    public function getAllMetadata()
-    {
-        return $this->metadata;
-    }
+    /** @var \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver The used metadata driver. */
+    private $driver;
 
-    /**
-     * @to implement and test
-     *
-     * @param string $className
-     *
-     * @return ClassMetadata
-     * @throws MappingException
-     */
-    public function getMetadataFor($className)
-    {
-        $className = $this->getMetadataClass($className);
-        if (!$this->hasMetadataFor($className)) {
-            $metadata = new ClassMetadata($className);
-            $this->populateMetadata($metadata);
-            $this->setMetadataFor($className, $metadata);
-        }
-
-        return $this->metadata[$className];
-    }
-
-    /**
-     * @to implement and test
-     *
-     * @param string $className
-     *
-     * @return bool
-     */
-    public function hasMetadataFor($className)
-    {
-        $className = $this->getMetadataClass($className);
-
-        return isset($this->metadata[$className]);
-    }
-
-    /**
-     * Whether the class with the specified name should have its metadata loaded.
-     * This is only the case if it is either mapped directly or as a
-     * MappedSuperclass.
-     *
-     * @param string $className
-     * @return boolean
-     * @todo to implement and test
-     */
-    public function isTransient($className)
-    {
-        throw new \Exception();
-    }
-
-    /**
-     * @to implement and test
-     *
-     * @param string        $className
-     * @param ClassMetadata $metadata
-     */
-    public function setMetadataFor($className, $metadata)
-    {
-        $this->metadata[$className] = $metadata;
-    }
-
-    /**
-     * Returns the directories in which the mapper is going to look for
-     * classes mapped for the Doctrine\OrientDB ODM.
-     *
-     * @return array
-     */
-    public function getDocumentDirectories()
-    {
-        return $this->documentDirectories;
-    }
-
-    /**
-     * Sets the directories in which the mapper is going to look for
-     * classes mapped for the Doctrine\OrientDB ODM.
-     *
-     * @param array $directories
-     */
-    public function setDocumentDirectories(array $directories)
-    {
-        $this->documentDirectories = array_merge(
-            $this->documentDirectories,
-            $directories
-        );
-    }
-
-    /**
-     * Returns the fully qualified name of a class by its path
-     *
-     * @param  string $file
-     * @param  string $namespace
-     * @return string
-     */
-    public function getClassByPath($file, $namespace)
-    {
-        $absPath    = realpath($file);
-        $namespaces = explode('/', $absPath);
-        $i          = 0;
-        $chunk      = explode('\\', $namespace);
-        $namespace  = array_shift($chunk);
-
-        while ($namespaces[$i] != $namespace) {
-            unset($namespaces[$i]);
-
-            if (!array_key_exists(++$i, $namespaces)) {
-                break;
-            }
-        }
-
-        $className = str_replace('.php', null, array_pop($namespaces));
-
-        return '\\'. implode('\\', $namespaces) . '\\' . $className;
-    }
-
-    /**
-     * Returns the annotation of a class.
-     *
-     * @param  string   $class
-     *
-*@return \Doctrine\ODM\OrientDB\Mapping\Annotations\Document
-     */
-    public function getClassAnnotation($class)
-    {
-        $reflClass = new \ReflectionClass($class);
-        $mappedDocumentClass = static::ANNOTATION_CLASS_CLASS;
-
-        foreach ($this->annotationReader->getClassAnnotations($reflClass) as $annotation) {
-            if ($annotation instanceof $mappedDocumentClass) {
-                return $annotation;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the annotation of a property.
-     *
-     * @param \ReflectionProperty $property
-     *
-     * @return \Doctrine\ODM\OrientDB\Mapping\Annotations\Property
-     */
-    public function getPropertyAnnotation(\ReflectionProperty $property)
-    {
-        return $this->annotationReader->getPropertyAnnotation(
-            $property, self::ANNOTATION_PROPERTY_CLASS
-        );
-    }
-
-    /**
-     * Returns all the annotations in the $document's properties.
-     *
-     * @param  mixed $document
-     * @return array
-     */
-    public function getObjectPropertyAnnotations($document)
-    {
-        $cacheKey = "object_property_annotations_" . get_class($document);
-        if (!$this->cache->contains($cacheKey)) {
-            $refObject   = new \ReflectionObject($document);
-            $annotations = array();
-            foreach ($refObject->getProperties() as $property) {
-                $annotation = $this->getPropertyAnnotation($property);
-                if ($annotation) {
-                    $annotations[$property->getName()] = $annotation;
-                }
-            }
-            $this->cache->save($cacheKey, $annotations);
-        }
-        return $this->cache->fetch($cacheKey);
-    }
-
-    /**
-     * Tries to find the PHP class mapping Doctrine\OrientDB's $OClass in each of the
-     * directories where the documents are stored.
-     *
-     * @param  string $OClass
-     * @return string
-     * @throws \Doctrine\ODM\OrientDB\OClassNotFoundException
-     */
-    public function findClassMappingInDirectories($OClass)
-    {
-        foreach ($this->getDocumentDirectories() as $dir => $namespace) {
-            if ($class = $this->findClassMappingInDirectory($OClass, $dir, $namespace)) {
-                return $class;
-            }
-        }
-
-        throw new OClassNotFoundException($OClass);
-    }
-
-    protected function getMetadataClass($className)
-    {
-        if (is_a($className, '\Doctrine\ODM\OrientDB\Proxy\Proxy', true)) {
-            return get_parent_class($className);
-        }
-
-        return $className;
-    }
-
-    protected function populateMetadata(ClassMetadata $metadata)
-    {
-        $associations = array();
-        $fields = array();
-        $foundIdentifier = false;
-        $classAnnotation = $this->getClassAnnotation($metadata->getName());
-        $metadata->setOrientClass($classAnnotation->class);
-
-        foreach ($metadata->getReflectionClass()->getProperties() as $refProperty) {
-            $annotation = $this->getPropertyAnnotation($refProperty);
-
-            if ($annotation) {
-                if (!$annotation->name) {
-                    $annotation->name = $refProperty->getName();
-                }
-
-                if ('@rid' === $annotation->name) {
-                    $foundIdentifier = true;
-                    $metadata->setIdentifier($refProperty->getName());
-                    $fields[$refProperty->getName()] = $annotation;
-                } elseif (in_array($annotation->type, $this->getAssociationTypes())) {
-                    $associations[$refProperty->getName()] = $annotation;
-                } else {
-                    $fields[$refProperty->getName()] = $annotation;
-                }
-            }
-        }
-
-        if (! $foundIdentifier) {
-            throw MappingException::missingRid($metadata->getName());
-        }
-        $metadata->setFields($fields);
-        $metadata->setAssociations($associations);
-
-        return $associations;
-    }
+    /** @var \Doctrine\Common\EventManager The event manager instance */
+    private $evm;
 
     /**
      * Returns all the possible association types.
@@ -305,41 +33,149 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      *
      * @return Array
      */
-    protected function getAssociationTypes()
+    public static function getAssociationTypes()
     {
-        return array_merge(static::$singleAssociations, static::$multipleAssociations);
+        return static::$associationTypes ?:
+            (self::$associationTypes = array_merge(static::$singleAssociations, static::$multipleAssociations));
     }
 
     /**
-     * Searches a PHP class mapping Doctrine\OrientDB's $OClass in $directory,
-     * which uses the given $namespace.
+     * Tries to find the PHP class mapping Doctrine\OrientDB's $OClass in each of the
+     * directories where the documents are stored.
      *
      * @param  string $OClass
-     * @param  string $directory
-     * @param  string $namespace
-     * @return string|null
+     *
+     * @return ClassMetadata
+     * @throws \Doctrine\ODM\OrientDB\OClassNotFoundException
      */
-    protected function findClassMappingInDirectory($OClass, $directory, $namespace)
-    {
-        $finder = new Finder();
-
-        if (isset($this->classMap[$OClass])) {
-            return $this->classMap[$OClass];
-        }
-
-        foreach ($finder->files()->name('*.php')->in($directory) as $file) {
-            $class = $this->getClassByPath($file, $namespace);
-
-            if (class_exists($class)) {
-                $annotation = $this->getClassAnnotation($class);
-
-                if ($annotation && $OClass === $annotation->class) {
-                    $this->classMap[$OClass] = $class;
-                    return $class;
-                }
+    public function getMetadataForOClass($OClass) {
+        /** @var ClassMetadata[] $all */
+        $all = $this->getAllMetadata();
+        foreach ($all as $md) {
+            if ($OClass === $md->getOrientClass()) {
+                return $md;
             }
         }
 
-        return null;
+        throw new OClassNotFoundException($OClass);
+    }
+
+    /**
+     * Sets the DocumentManager instance for this class.
+     *
+     * @param DocumentManager $dm The DocumentManager instance
+     */
+    public function setDocumentManager(DocumentManager $dm) {
+        $this->dm = $dm;
+    }
+
+    /**
+     * Sets the Configuration instance
+     *
+     * @param Configuration $config
+     */
+    public function setConfiguration(Configuration $config) {
+        $this->config = $config;
+    }
+
+    /**
+     * Lazy initialization of this stuff, especially the metadata driver,
+     * since these are not needed at all when a metadata cache is active.
+     *
+     * @return void
+     */
+    protected function initialize() {
+        $this->driver      = $this->config->getMetadataDriverImpl();
+        $this->evm         = $this->dm->getEventManager();
+        $this->initialized = true;
+    }
+
+    /**
+     * Gets the fully qualified class-name from the namespace alias.
+     *
+     * @param string $namespaceAlias
+     * @param string $simpleClassName
+     *
+     * @return string
+     */
+    protected function getFqcnFromAlias($namespaceAlias, $simpleClassName) {
+        return $this->config->getDocumentNamespace($namespaceAlias) . '\\' . $simpleClassName;
+    }
+
+    /**
+     * Returns the mapping driver implementation.
+     *
+     * @return \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver
+     */
+    protected function getDriver() {
+        return $this->driver;
+    }
+
+    /**
+     * Wakes up reflection after ClassMetadata gets unserialized from cache.
+     *
+     * @param ClassMetadataInfo $class
+     * @param ReflectionService $reflService
+     *
+     * @return void
+     */
+    protected function wakeupReflection(ClassMetadataInfo $class, ReflectionService $reflService) {
+
+    }
+
+    /**
+     * Initializes Reflection after ClassMetadata was constructed.
+     *
+     * @param ClassMetadataInfo $class
+     * @param ReflectionService $reflService
+     *
+     * @return void
+     */
+    protected function initializeReflection(ClassMetadataInfo $class, ReflectionService $reflService) {
+        /** @var ClassMetadata $class */
+        $class->initializeReflection($reflService);
+    }
+
+    /**
+     * Checks whether the class metadata is an entity.
+     *
+     * This method should return false for mapped superclasses or embedded classes.
+     *
+     * @param ClassMetadataInfo $class
+     *
+     * @return boolean
+     */
+    protected function isEntity(ClassMetadataInfo $class) {
+        return true;
+    }
+
+    /**
+     * Actually loads the metadata from the underlying metadata.
+     *
+     * @param ClassMetadata      $class
+     * @param ClassMetadata|null $parent
+     * @param bool               $rootEntityFound
+     * @param array              $nonSuperclassParents All parent class names
+     *                                                 that are not marked as mapped superclasses.
+     *
+     * @throws MappingException
+     */
+    protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents) {
+        try {
+            $this->driver->loadMetadataForClass($class->getName(), $class);
+        } catch (\ReflectionException $ex) {
+            throw MappingException::reflectionFailure($class->getName(), $ex);
+        }
+    }
+
+    /**
+     * Creates a new ClassMetadata instance for the given class name.
+     *
+     * @param string $className
+     *
+     * @return ClassMetadata
+     */
+    protected function newClassMetadataInstance($className) {
+        return new ClassMetadata($className);
     }
 }

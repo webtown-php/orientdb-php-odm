@@ -23,7 +23,7 @@ class LongTest extends TestCase
     public function testHydrationOfALongProperty()
     {
 
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $query = new Query();
         $query->update('Profile')

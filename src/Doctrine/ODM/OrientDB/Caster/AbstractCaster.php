@@ -7,7 +7,7 @@ abstract class AbstractCaster implements CasterInterface
 {
     protected $dateClass   = '\DateTime';
     protected $value;
-    protected $properties   = array();
+    protected $properties   = [];
 
     const SHORT_LIMIT       = 32767;
     const LONG_LIMIT        = 9223372036854775807;
@@ -62,18 +62,18 @@ abstract class AbstractCaster implements CasterInterface
      * Defines properties that can be internally used by the caster.
      *
      * @param string $key
-     * @param mixed  $property
+     * @param array  $mapping
      */
-    public function setProperty($key, $property)
+    public function setProperty($key, array $mapping)
     {
-        $this->properties[$key] = $property;
+        $this->properties[$key] = $mapping;
     }
 
     /**
      * Returns a property of the Caster, given its $key.
      *
      * @param  string $key
-     * @return mixed
+     * @return array
      */
     protected function getProperty($key)
     {

@@ -16,7 +16,7 @@ class PersistenceTest extends TestCase
 
     protected function setUp()
     {
-        $this->manager = $this->createManager();
+        $this->manager = $this->createDocumentManager();
     }
 
     public function testPersistDocument()

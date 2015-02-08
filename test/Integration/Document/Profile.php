@@ -20,20 +20,18 @@
 
 namespace test\Integration\Document;
 
-use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
-
 /**
-* @ODM\Document(class="Profile")
+* @Document(class="Profile")
 */
 class Profile
 {
     /**
-     * @ODM\Property(name="@rid", type="string")
+     * @RID
      */
     public $rid;
 
     /**
-     * @ODM\Property(type="long")
+     * @Property(type="long")
      */
     public $hash;
 }

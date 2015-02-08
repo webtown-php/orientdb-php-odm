@@ -15,7 +15,7 @@ class ProxyFactoryTest extends TestCase
 
     public function testGenerate()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $metadata = $manager->getClassMetadata('test\Integration\Document\Country');
         $proxyFactory = $manager->getProxyFactory();
         $proxyFactory->generateProxyClasses(array($metadata));
@@ -26,7 +26,7 @@ class ProxyFactoryTest extends TestCase
 
     public function testLazyLoad()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
 
         $rid = '#'.$this->getClassId('City').':0';
         $proxy = $manager->getReference($rid);
@@ -38,7 +38,7 @@ class ProxyFactoryTest extends TestCase
 
     public function testEagerLoad()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $rid = '#'.$this->getClassId('City').':0';
         $proxy = $manager->find($rid);
         $this->assertTrue($proxy->__isInitialized());
@@ -48,7 +48,7 @@ class ProxyFactoryTest extends TestCase
 
     public function testCloner()
     {
-        $manager = $this->createManager();
+        $manager = $this->createDocumentManager();
         $rid = '#'.$this->getClassId('City').':0';
         $proxy = $manager->getReference($rid);
 
