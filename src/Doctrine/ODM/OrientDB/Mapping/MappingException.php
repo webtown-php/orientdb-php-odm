@@ -14,18 +14,15 @@ use Doctrine\ODM\OrientDB\Types\Rid;
  */
 class MappingException extends \Exception
 {
-    public static function missingRid($class)
-    {
+    public static function missingRid($class) {
         return new self(sprintf('The identifier mapping for %s could not be found.', $class));
     }
 
-    public static function noClusterForRid(Rid $rid)
-    {
+    public static function noClusterForRid(Rid $rid) {
         return new self(sprintf('There is no cluster for %s.', $rid->getValue()));
     }
 
-    public static function noMappingForProperty($property, $class)
-    {
+    public static function noMappingForProperty($property, $class) {
         return new self(sprintf('The %s class has no mapping for %s property.', $class, $property));
     }
 
@@ -34,12 +31,12 @@ class MappingException extends \Exception
      * because there might be long classnames that will be shortened
      * within the stacktrace
      *
-     * @param string $document The document's name
+     * @param string               $document The document's name
      * @param \ReflectionException $previousException
+     *
      * @return self
      */
-    public static function reflectionFailure($document, \ReflectionException $previousException)
-    {
+    public static function reflectionFailure($document, \ReflectionException $previousException) {
         return new self('An error occurred in ' . $document, 0, $previousException);
     }
 
@@ -48,8 +45,7 @@ class MappingException extends \Exception
      *
      * @return MappingException
      */
-    public static function classIsNotAValidEntityOrMappedSuperClass($className)
-    {
+    public static function classIsNotAValidEntityOrMappedSuperClass($className) {
         if (false !== ($parent = get_parent_class($className))) {
             return new self(sprintf(
                 'Class "%s" sub class of "%s" is not a valid entity or mapped super class.',
@@ -69,8 +65,7 @@ class MappingException extends \Exception
      *
      * @return MappingException
      */
-    public static function duplicateFieldMapping($entity, $fieldName)
-    {
-        return new self('Property "'.$fieldName.'" in "'.$entity.'" was already declared, but it must be declared only once');
+    public static function duplicateFieldMapping($entity, $fieldName) {
+        return new self('Property "' . $fieldName . '" in "' . $entity . '" was already declared, but it must be declared only once');
     }
 }

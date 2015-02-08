@@ -25,8 +25,7 @@ class OClassNotFoundException extends Exception
 {
     const MESSAGE = 'Unable to find a PHP class mapped for "%s".';
 
-    public function __construct($class)
-    {
+    public function __construct($class) {
         $this->message = sprintf(self::MESSAGE, $class);
     }
 }

@@ -9,9 +9,9 @@ use Doctrine\Common\Proxy\Proxy as BaseProxy;
 use Doctrine\Common\Proxy\ProxyDefinition;
 use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Hydration\Hydrator;
-use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 
@@ -25,7 +25,7 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 class ProxyFactory extends AbstractProxyFactory
 {
 
-    /** @var \Doctrine\ODM\OrientDB\Hydration\Hydrator  */
+    /** @var \Doctrine\ODM\OrientDB\Hydration\Hydrator */
     private $hydrator;
 
     /**
@@ -48,15 +48,14 @@ class ProxyFactory extends AbstractProxyFactory
      * connected to the given <tt>DocumentManager</tt>.
      *
      * @param DocumentManager $manager
-     * @param string  $proxyDir                                      The directory to use for the proxy classes. It
+     * @param string          $proxyDir                              The directory to use for the proxy classes. It
      *                                                               must exist.
-     * @param string  $proxyNamespace                                The namespace to use for the proxy classes.
-     * @param int     $autoGenerate                                  Whether to automatically generate proxy classes.
+     * @param string          $proxyNamespace                        The namespace to use for the proxy classes.
+     * @param int             $autoGenerate                          Whether to automatically generate proxy classes.
      *
      * @internal param Manager $documentManager The DocumentManager the new factory works for.
      */
-    public function __construct(DocumentManager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER)
-    {
+    public function __construct(DocumentManager $manager, $proxyDir, $proxyNamespace, $autoGenerate = AbstractProxyFactory::AUTOGENERATE_NEVER) {
         $this->metadataFactory = $manager->getMetadataFactory();
         $this->uow             = $manager->getUnitOfWork();
         $this->proxyNamespace  = $proxyNamespace;
@@ -65,17 +64,15 @@ class ProxyFactory extends AbstractProxyFactory
         parent::__construct($proxyGenerator, $this->metadataFactory, $autoGenerate);
     }
 
-    public function skipClass(BaseClassMetadata $classMetadata)
-    {
+    public function skipClass(BaseClassMetadata $classMetadata) {
         return false;
     }
 
-    public function createProxyDefinition($className)
-    {
+    public function createProxyDefinition($className) {
         /** @var ClassMetadata $classMetadata */
-        $classMetadata = $this->metadataFactory->getMetadataFor($className);
+        $classMetadata    = $this->metadataFactory->getMetadataFor($className);
         $reflectionFields = $classMetadata->getReflectionProperties();
-        $reflectionId = $reflectionFields[$classMetadata->getRidPropertyName()];
+        $reflectionId     = $reflectionFields[$classMetadata->getRidPropertyName()];
 
         return new ProxyDefinition(
             ClassUtils::generateProxyClassName($className, $this->proxyNamespace),
@@ -90,7 +87,7 @@ class ProxyFactory extends AbstractProxyFactory
      * Generates a closure capable of initializing a proxy
      *
      * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
-     * @param \ReflectionProperty $reflectionId
+     * @param \ReflectionProperty                                $reflectionId
      *
      * @return \Closure
      *
@@ -100,8 +97,7 @@ class ProxyFactory extends AbstractProxyFactory
         BaseClassMetadata $classMetadata,
         Hydrator $hydrator,
         \ReflectionProperty $reflectionId
-    )
-    {
+    ) {
         if ($classMetadata->getReflectionClass()->hasMethod('__wakeup')) {
             return function (BaseProxy $proxy) use ($reflectionId, $hydrator) {
                 $proxy->__setInitializer(null);
@@ -118,7 +114,7 @@ class ProxyFactory extends AbstractProxyFactory
                 $proxy->__setInitialized(true);
                 $proxy->__wakeup();
 
-                $rid = $reflectionId->getValue($proxy);
+                $rid    = $reflectionId->getValue($proxy);
                 $loaded = $hydrator->load(array($rid));
                 if (null === $loaded) {
                     throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
@@ -143,7 +139,7 @@ class ProxyFactory extends AbstractProxyFactory
             }
             $proxy->__setInitialized(true);
 
-            $rid = $reflectionId->getValue($proxy);
+            $rid    = $reflectionId->getValue($proxy);
             $loaded = $hydrator->load(array($rid));
             if (null === $loaded) {
                 throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
@@ -157,7 +153,7 @@ class ProxyFactory extends AbstractProxyFactory
      * Generates a closure capable of finalizing a cloned proxy
      *
      * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
-     * @param \ReflectionProperty $reflectionId
+     * @param \ReflectionProperty                                $reflectionId
      *
      * @return \Closure
      *
@@ -174,7 +170,7 @@ class ProxyFactory extends AbstractProxyFactory
             }
             $proxy->__setInitialized(true);
             $proxy->__setInitializer(null);
-            $rid    = $reflectionId->getValue($proxy);
+            $rid      = $reflectionId->getValue($proxy);
             $original = $hydrator->load(array($rid));
 
             if (null === $original) {

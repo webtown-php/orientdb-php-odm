@@ -20,12 +20,12 @@
 
 namespace Doctrine\ODM\OrientDB;
 
-use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\OrientDB\Query\Query;
-use Doctrine\OrientDB\Exception;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\Common\Util\Inflector;
+use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\Query\Query;
 use RuntimeException;
 
 class DocumentRepository implements ObjectRepository
@@ -36,25 +36,24 @@ class DocumentRepository implements ObjectRepository
     /**
      * Instantiates a new repository.
      *
-     * @param string $className type
+     * @param string          $className type
      * @param DocumentManager $manager
      */
-    public function __construct($className, DocumentManager $manager)
-    {
+    public function __construct($className, DocumentManager $manager) {
         $this->className = $className;
-        $this->manager = $manager;
+        $this->manager   = $manager;
     }
 
     /**
      * Convenient method that intercepts the find*By*() calls.
      *
      * @param string $method
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @return mixed
      * @throws RuntimeException
      */
-    public function __call($method, $arguments)
-    {
+    public function __call($method, $arguments) {
         if (strpos($method, 'findOneBy') === 0) {
             $property = substr($method, 9);
             $method   = 'findOneBy';
@@ -91,8 +90,7 @@ class DocumentRepository implements ObjectRepository
      * @throws OClassNotFoundException
      * @throws \Exception
      */
-    public function find($rid, $fetchPlan = '*:0')
-    {
+    public function find($rid, $fetchPlan = '*:0') {
         $document = $this->getManager()->find($rid, $fetchPlan);
 
         if (!$document) {
@@ -114,8 +112,7 @@ class DocumentRepository implements ObjectRepository
      *
      * @return mixed The objects.
      */
-    public function findAll()
-    {
+    public function findAll() {
         return $this->findBy(array());
     }
 
@@ -135,8 +132,7 @@ class DocumentRepository implements ObjectRepository
      * @return ArrayCollection The objects.
      * @throws Exception
      */
-    public function findBy(array $criteria, array $orderBy = [], $limit = null, $offset = null, $fetchPlan = '*:0')
-    {
+    public function findBy(array $criteria, array $orderBy = [], $limit = null, $offset = null, $fetchPlan = '*:0') {
         $results = array();
 
         foreach ($this->getOrientClasses() as $mappedClass) {
@@ -173,10 +169,10 @@ class DocumentRepository implements ObjectRepository
      * Finds a single object by a set of criteria.
      *
      * @param array $criteria
+     *
      * @return object The object.
      */
-    public function findOneBy(array $criteria)
-    {
+    public function findOneBy(array $criteria) {
         $documents = $this->findBy($criteria, array(), 1);
 
         if ($documents instanceof ArrayCollection && count($documents)) {
@@ -191,19 +187,18 @@ class DocumentRepository implements ObjectRepository
      *
      * @return string
      */
-    public function getClassName()
-    {
+    public function getClassName() {
         return $this->className;
     }
 
     /**
      * Verifies if the $document should belog to this repository.
      *
-     * @param  object  $document
+     * @param  object $document
+     *
      * @return boolean
      */
-    protected function contains($document)
-    {
+    protected function contains($document) {
         return in_array($this->getClassName(), class_parents(get_class($document)));
     }
 
@@ -212,8 +207,7 @@ class DocumentRepository implements ObjectRepository
      *
      * @return DocumentManager
      */
-    protected function getManager()
-    {
+    protected function getManager() {
         return $this->manager;
     }
 
@@ -223,8 +217,7 @@ class DocumentRepository implements ObjectRepository
      *
      * @return array
      */
-    protected function getOrientClasses()
-    {
+    protected function getOrientClasses() {
         /** @var ClassMetadata $metadata */
         $metadata = $this->getManager()->getClassMetadata($this->className);
 

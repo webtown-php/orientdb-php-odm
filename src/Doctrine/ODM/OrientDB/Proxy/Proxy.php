@@ -9,4 +9,6 @@ use Doctrine\Common\Proxy\Proxy as BaseProxy;
  * Placeholder so if the interface is extended it won't
  * break the current implementations
  */
-interface Proxy extends BaseProxy {}
+interface Proxy extends BaseProxy
+{
+}

@@ -23,6 +23,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
     protected $entityAnnotationClasses = [
         Document::class => 1
     ];
+
     /**
      * Registers annotation classes to the common registry.
      *

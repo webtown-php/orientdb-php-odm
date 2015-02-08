@@ -146,7 +146,6 @@ interface CasterInterface
     public function castLong();
 
 
-
     /**
      * Casts the value to string.
      *
@@ -164,8 +163,8 @@ interface CasterInterface
     /**
      * Defines properties that can be internally used by the caster.
      *
-     * @param string    $key
-     * @param array     $mapping
+     * @param string $key
+     * @param array  $mapping
      */
     public function setProperty($key, array $mapping);
 

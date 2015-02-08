@@ -25,16 +25,14 @@ class DocumentNotFoundException extends Exception
 {
     const MESSAGE = 'The object can not be converted to a POPO mapped by the ODM.';
 
-    public function __construct($explanation = '')
-    {
+    public function __construct($explanation = '') {
         $this->message = self::MESSAGE;
         if (strlen($explanation) > 0) {
             $this->message .= ' ' . $explanation;
         }
     }
 
-    public static function documentNotFound($className, $identifier)
-    {
+    public static function documentNotFound($className, $identifier) {
         return new self(sprintf(
             'The "%s" document with identifier %s could not be found.',
             $className,

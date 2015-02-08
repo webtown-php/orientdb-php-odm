@@ -21,21 +21,19 @@
 
 namespace Doctrine\ODM\OrientDB;
 
-use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\EventManager;
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ODM\OrientDB\Caster\CastingMismatchException;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\ODM\OrientDB\Types\Rid;
-use Doctrine\ODM\OrientDB\Caster\CastingMismatchException;
-use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Binding\BindingInterface;
+use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Query;
 use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
-use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 
 class DocumentManager implements ObjectManager
 {
@@ -58,26 +56,25 @@ class DocumentManager implements ObjectManager
      *
      * @throws ConfigurationException
      */
-    public function __construct(BindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null)
-    {
-        $this->binding         = $binding;
-        $this->configuration   = $configuration;
-        $this->eventManager    = $eventManager ?: new EventManager();
+    public function __construct(BindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null) {
+        $this->binding       = $binding;
+        $this->configuration = $configuration;
+        $this->eventManager  = $eventManager ?: new EventManager();
 
         $metadataFactoryClassName = $this->configuration->getClassMetadataFactoryName();
-        $this->metadataFactory = new $metadataFactoryClassName();
+        $this->metadataFactory    = new $metadataFactoryClassName();
         $this->metadataFactory->setDocumentManager($this);
         $this->metadataFactory->setConfiguration($this->configuration);
         if ($cacheDriver = $this->configuration->getMetadataCacheImpl()) {
             $this->metadataFactory->setCacheDriver($cacheDriver);
         }
 
-        $this->uow             = new UnitOfWork($this);
+        $this->uow = new UnitOfWork($this);
         /**
          * this must be the last since it will require the Manager to be constructed already.
          * TODO fixthis
          */
-        $this->proxyFactory    = new ProxyFactory(
+        $this->proxyFactory = new ProxyFactory(
             $this,
             $configuration->getProxyDirectory(),
             $configuration->getProxyNamespace(),
@@ -90,8 +87,7 @@ class DocumentManager implements ObjectManager
      *
      * @param \stdClass $object
      */
-    public function detach($object)
-    {
+    public function detach($object) {
         throw new \Exception();
     }
 
@@ -106,8 +102,7 @@ class DocumentManager implements ObjectManager
      *
      * @return array|Mixed
      */
-    public function execute(Query $query, $fetchPlan = null)
-    {
+    public function execute(Query $query, $fetchPlan = null) {
         return $this->getUnitOfWork()->execute($query, $fetchPlan);
     }
 
@@ -119,8 +114,7 @@ class DocumentManager implements ObjectManager
      *
      * @return Proxy
      */
-    public function getReference($rid)
-    {
+    public function getReference($rid) {
         return $this->getUnitOfWork()->getProxy(new Rid($rid), true);
     }
 
@@ -142,8 +136,7 @@ class DocumentManager implements ObjectManager
      * @return Proxy|object
      * @throws OClassNotFoundException|CastingMismatchException|Exception
      */
-    public function find($rid, $fetchPlan = '*:0')
-    {
+    public function find($rid, $fetchPlan = '*:0') {
         $validator = new RidValidator;
         $rid       = $validator->check($rid);
 
@@ -165,7 +158,7 @@ class DocumentManager implements ObjectManager
      * proxies for entities the UnitOfWork didn't know
      * about yet, or already existing ones.
      *
-     * @TODO The fetchPlan is ignored in case of lazy collections
+     * @TODO   The fetchPlan is ignored in case of lazy collections
      *
      * @see    ->find()
      *
@@ -176,8 +169,7 @@ class DocumentManager implements ObjectManager
      * @return ArrayCollection
      * @throws \Doctrine\OrientDB\Binding\InvalidQueryException
      */
-    public function findRecords(array $rids, $lazy = false, $fetchPlan = '*:0')
-    {
+    public function findRecords(array $rids, $lazy = false, $fetchPlan = '*:0') {
         return $this->getUnitOfWork()->getCollection($rids, $lazy, $fetchPlan);
     }
 
@@ -186,8 +178,7 @@ class DocumentManager implements ObjectManager
      *
      * @param $document
      */
-    public function flush($document = null)
-    {
+    public function flush($document = null) {
         $this->getUnitOfWork()->commit($document);
     }
 
@@ -198,8 +189,7 @@ class DocumentManager implements ObjectManager
      *
      * @return \Doctrine\ODM\OrientDB\Mapping\ClassMetadata
      */
-    public function getClassMetadata($class)
-    {
+    public function getClassMetadata($class) {
         return $this->getMetadataFactory()->getMetadataFor($class);
     }
 
@@ -208,8 +198,7 @@ class DocumentManager implements ObjectManager
      *
      * @return ProxyFactory
      */
-    public function getProxyFactory()
-    {
+    public function getProxyFactory() {
         return $this->proxyFactory;
     }
 
@@ -218,8 +207,7 @@ class DocumentManager implements ObjectManager
      *
      * @return \Doctrine\Common\EventManager
      */
-    public function getEventManager()
-    {
+    public function getEventManager() {
         return $this->eventManager;
     }
 
@@ -228,8 +216,7 @@ class DocumentManager implements ObjectManager
      *
      * @return MetadataFactory
      */
-    public function getMetadataFactory()
-    {
+    public function getMetadataFactory() {
         return $this->metadataFactory;
     }
 
@@ -238,8 +225,7 @@ class DocumentManager implements ObjectManager
      *
      * @return UnitOfWork
      */
-    public function getUnitOfWork()
-    {
+    public function getUnitOfWork() {
         return $this->uow;
     }
 
@@ -250,8 +236,7 @@ class DocumentManager implements ObjectManager
      *
      * @return DocumentRepository
      */
-    public function getRepository($className)
-    {
+    public function getRepository($className) {
         $repositoryClass = $className . "Repository";
 
         if (class_exists($repositoryClass)) {
@@ -267,10 +252,10 @@ class DocumentManager implements ObjectManager
      * This method is a no-op for other objects.
      *
      * @param object $obj
+     *
      * @todo  implement and test
      */
-    public function initializeObject($obj)
-    {
+    public function initializeObject($obj) {
         throw new \Exception();
     }
 
@@ -279,8 +264,7 @@ class DocumentManager implements ObjectManager
      *
      * @param \stdClass $object
      */
-    public function merge($object)
-    {
+    public function merge($object) {
         throw new \Exception();
     }
 
@@ -292,9 +276,8 @@ class DocumentManager implements ObjectManager
      *
      * @param object $document
      */
-    public function persist($document)
-    {
-        if ( ! is_object($document)) {
+    public function persist($document) {
+        if (!is_object($document)) {
             throw new \InvalidArgumentException(gettype($document));
         }
         $this->getUnitOfWork()->persist($document);
@@ -305,8 +288,7 @@ class DocumentManager implements ObjectManager
      *
      * @param object $object
      */
-    public function remove($object)
-    {
+    public function remove($object) {
         $this->getUnitOfWork()->remove($object);
     }
 
@@ -316,8 +298,7 @@ class DocumentManager implements ObjectManager
      *
      * @param object $object
      */
-    public function refresh($object)
-    {
+    public function refresh($object) {
         $this->getUnitOfWork()->refresh($object);
     }
 
@@ -329,8 +310,7 @@ class DocumentManager implements ObjectManager
      *
      * @param string|null $class if given, only documents of this type will be detached
      */
-    public function clear($class = null)
-    {
+    public function clear($class = null) {
         $this->uow->clear($class);
     }
 
@@ -339,12 +319,9 @@ class DocumentManager implements ObjectManager
      *
      * @param \stdClass $object
      */
-    public function contains($object)
-    {
+    public function contains($object) {
         throw new \Exception();
     }
-
-
 
 
     /**
@@ -352,8 +329,7 @@ class DocumentManager implements ObjectManager
      *
      * @return BindingInterface
      */
-    public function getBinding()
-    {
+    public function getBinding() {
         return $this->binding;
     }
 
@@ -362,8 +338,7 @@ class DocumentManager implements ObjectManager
      *
      * @return Configuration
      */
-    public function getConfiguration()
-    {
+    public function getConfiguration() {
         return $this->configuration;
     }
 }

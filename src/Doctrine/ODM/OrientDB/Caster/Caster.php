@@ -31,15 +31,15 @@ use Doctrine\OrientDB\Query\Validator\ValidationException;
 class Caster extends AbstractCaster
 {
     protected $value;
-    protected $trueValues   = array(1, '1', 'true');
-    protected $falseValues  = array(0, '0', 'false');
+    protected $trueValues = array(1, '1', 'true');
+    protected $falseValues = array(0, '0', 'false');
 
     /**
      * Instantiates a new Caster.
      *
-     * @param \Doctrine\ODM\OrientDB\Hydration\Hydrator  $hydrator
-     * @param mixed     $value
-     * @param string    $dateClass  The class used to cast dates and datetimes
+     * @param \Doctrine\ODM\OrientDB\Hydration\Hydrator $hydrator
+     * @param mixed                                     $value
+     * @param string                                    $dateClass The class used to cast dates and datetimes
      */
     public function __construct(
         Hydrator $hydrator,
@@ -61,8 +61,7 @@ class Caster extends AbstractCaster
      * @todo duplicated for truevalues and falsevalues
      * @return boolean
      */
-    public function castBoolean()
-    {
+    public function castBoolean() {
         if (is_bool($this->value)) {
             return $this->value;
         }
@@ -80,7 +79,7 @@ class Caster extends AbstractCaster
         }
 
         $castFunction = function ($value) {
-            return (bool) $value;
+            return (bool)$value;
         };
 
         return $this->handleMismatch($castFunction, 'boolean');
@@ -91,8 +90,7 @@ class Caster extends AbstractCaster
      *
      * @return string
      */
-    public function castBinary()
-    {
+    public function castBinary() {
         return 'data:;base64,' . $this->value;
     }
 
@@ -101,8 +99,7 @@ class Caster extends AbstractCaster
      * @throws CastingMismatchException
      * @return mixed
      */
-    public function castByte()
-    {
+    public function castByte() {
         $min = self::BYTE_MIN_VALUE;
         $max = self::BYTE_MAX_VALUE;
 
@@ -124,10 +121,9 @@ class Caster extends AbstractCaster
      *
      * @return \DateTime
      */
-    public function castDate()
-    {
+    public function castDate() {
         $dateClass = $this->getDateClass();
-        $value = preg_replace('/(\s\d{2}:\d{2}:\d{2}):(\d{1,6})/', '$1.$2', $this->value);
+        $value     = preg_replace('/(\s\d{2}:\d{2}:\d{2}):(\d{1,6})/', '$1.$2', $this->value);
 
         if (is_numeric($value)) {
             $datetime = new $dateClass();
@@ -144,8 +140,7 @@ class Caster extends AbstractCaster
      *
      * @return \DateTime
      */
-    public function castDateTime()
-    {
+    public function castDateTime() {
         return $this->castDate();
     }
 
@@ -155,18 +150,17 @@ class Caster extends AbstractCaster
      *
      * @return integer
      */
-    public function castDecimal()
-    {
-        $min   = (float) 4.9E-324;
-        $max   = (float) 1.7976931348623157E+308;
-        $value = (float) $this->value;
+    public function castDecimal() {
+        $min   = (float)4.9E-324;
+        $max   = (float)1.7976931348623157E+308;
+        $value = (float)$this->value;
 
         if ($value >= $min && $value <= $max) {
             return $value;
         }
 
-        $castFunction = function($value) use ($min,$max) {
-            if ($value < $min ) {
+        $castFunction = function ($value) use ($min, $max) {
+            if ($value < $min) {
                 return $min;
             }
 
@@ -174,7 +168,7 @@ class Caster extends AbstractCaster
                 return $max;
             }
 
-            return (float) $value;
+            return (float)$value;
         };
 
         if (is_numeric($this->value)) {
@@ -189,8 +183,7 @@ class Caster extends AbstractCaster
      *
      * @return float
      */
-    public function castDouble()
-    {
+    public function castDouble() {
         return $this->castFloat();
     }
 
@@ -199,8 +192,7 @@ class Caster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castEmbedded()
-    {
+    public function castEmbedded() {
         return $this->getHydrator()->hydrate($this->value);
     }
 
@@ -209,8 +201,7 @@ class Caster extends AbstractCaster
      *
      * @return Array
      */
-    public function castEmbeddedList()
-    {
+    public function castEmbeddedList() {
         return $this->castEmbeddedArrays();
     }
 
@@ -219,8 +210,7 @@ class Caster extends AbstractCaster
      *
      * @return Array
      */
-    public function castEmbeddedMap()
-    {
+    public function castEmbeddedMap() {
         $this->convertJsonCollectionToArray();
 
         return $this->castEmbeddedArrays();
@@ -231,8 +221,7 @@ class Caster extends AbstractCaster
      *
      * @return Array
      */
-    public function castEmbeddedSet()
-    {
+    public function castEmbeddedSet() {
         return $this->castEmbeddedArrays();
     }
 
@@ -241,10 +230,9 @@ class Caster extends AbstractCaster
      *
      * @return float
      */
-    public function castFloat()
-    {
+    public function castFloat() {
         $castFunction = function ($value) {
-            return (float) $value;
+            return (float)$value;
         };
 
         if (is_numeric($this->value)) {
@@ -259,10 +247,9 @@ class Caster extends AbstractCaster
      *
      * @return integer
      */
-    public function castInteger()
-    {
+    public function castInteger() {
         $castFunction = function ($value) {
-            return is_object($value) ? 1 : (int) $value;
+            return is_object($value) ? 1 : (int)$value;
         };
 
         if (is_numeric($this->value)) {
@@ -277,8 +264,7 @@ class Caster extends AbstractCaster
      * @see    http://code.google.com/p/orient/wiki/FetchingStrategies
      * @return Proxy
      */
-    public function castLink()
-    {
+    public function castLink() {
         if ($this->value instanceof \stdClass) {
             return $this->getHydrator()->hydrate($this->value);
         }
@@ -296,8 +282,7 @@ class Caster extends AbstractCaster
      *
      * @return Array
      */
-    public function castLinkset()
-    {
+    public function castLinkset() {
         return $this->castLinkCollection();
     }
 
@@ -306,8 +291,7 @@ class Caster extends AbstractCaster
      *
      * @return Array
      */
-    public function castLinklist()
-    {
+    public function castLinklist() {
         return $this->castLinkCollection();
     }
 
@@ -318,8 +302,7 @@ class Caster extends AbstractCaster
      *
      * @return Array
      */
-    public function castLinkmap()
-    {
+    public function castLinkmap() {
         $this->convertJsonCollectionToArray();
 
         return $this->castLinkCollection();
@@ -330,8 +313,7 @@ class Caster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castLong()
-    {
+    public function castLong() {
         return $this->castInBuffer(self::LONG_LIMIT, 'long');
     }
 
@@ -341,11 +323,11 @@ class Caster extends AbstractCaster
      *
      * @param integer $limit
      * @param string  $type
+     *
      * @return integer
      * @throws CastingMismatchException
      */
-    protected function castInBuffer($limit, $type)
-    {
+    protected function castInBuffer($limit, $type) {
         $castFunction = function ($value) use ($limit) {
             return abs($value) < $limit ? $value : $limit;
         };
@@ -363,8 +345,7 @@ class Caster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castNone()
-    {
+    public function castNone() {
         return $this->value;
     }
 
@@ -373,10 +354,9 @@ class Caster extends AbstractCaster
      *
      * @return string
      */
-    public function castString()
-    {
+    public function castString() {
         $castFunction = function ($value) {
-            return is_array($value) ? 'Array' : (string) $value;
+            return is_array($value) ? 'Array' : (string)$value;
         };
 
         if (is_string($this->value)) {
@@ -391,8 +371,7 @@ class Caster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castShort()
-    {
+    public function castShort() {
         return $this->castInBuffer(self::SHORT_LIMIT, 'short');
     }
 
@@ -405,9 +384,8 @@ class Caster extends AbstractCaster
      * @return Array
      * @throws Exception
      */
-    protected function castArrayOf($type)
-    {
-        $method  = 'cast' . Inflector::classify($type);
+    protected function castArrayOf($type) {
+        $method      = 'cast' . Inflector::classify($type);
         $innerCaster = new self($this->getHydrator());
 
         if (!method_exists($innerCaster, $method)) {
@@ -429,8 +407,7 @@ class Caster extends AbstractCaster
      * @return Array
      * @throws Exception
      */
-    public function castEmbeddedArrays()
-    {
+    public function castEmbeddedArrays() {
         $mapping = $this->getProperty('mapping');
 
         if (!$mapping) {
@@ -446,8 +423,8 @@ class Caster extends AbstractCaster
         try {
             return $this->castArrayOf($listType);
         } catch (Exception $exception) {
-            $message = "It seems like you are trying to hydrate an embedded property without specifying its type.\n".
-                       "Please add the 'cast' (eg cast='boolean') to the mapping.";
+            $message = "It seems like you are trying to hydrate an embedded property without specifying its type.\n" .
+                "Please add the 'cast' (eg cast='boolean') to the mapping.";
 
             throw new Exception($message, null, $exception);
         }
@@ -460,8 +437,7 @@ class Caster extends AbstractCaster
      * @see    Caster::castLink for more insights
      * @return Array|null
      */
-    protected function castLinkCollection()
-    {
+    protected function castLinkCollection() {
         return $this->getHydrator()->hydrateCollection($this->value);
     }
 
@@ -469,12 +445,11 @@ class Caster extends AbstractCaster
      * If a JSON value is converted in an object containing other objects to
      * hydrate, this method converts the main object in an array.
      */
-    protected function convertJsonCollectionToArray()
-    {
+    protected function convertJsonCollectionToArray() {
         if (!is_array($this->value) && is_object($this->value)) {
             $orientObjects = [];
 
-            $refClass = new \ReflectionObject($this->value);
+            $refClass   = new \ReflectionObject($this->value);
             $properties = $refClass->getProperties(\ReflectionProperty::IS_PUBLIC);
 
             foreach ($properties as $property) {
@@ -491,8 +466,7 @@ class Caster extends AbstractCaster
      *
      * @return string
      */
-    protected function getDateClass()
-    {
+    protected function getDateClass() {
         return $this->dateClass;
     }
 
@@ -501,8 +475,7 @@ class Caster extends AbstractCaster
      *
      * @return \Doctrine\ODM\OrientDB\Hydration\Hydrator
      */
-    protected function getHydrator()
-    {
+    protected function getHydrator() {
         return $this->hydrator;
     }
 
@@ -514,8 +487,7 @@ class Caster extends AbstractCaster
      * @return mixed
      * @throws CastingMismatchException
      */
-    protected function handleMismatch(\Closure $castFunction, $expectedType)
-    {
+    protected function handleMismatch(\Closure $castFunction, $expectedType) {
         if ($this->getHydrator()->toleratesMismatches()) {
             return $castFunction($this->value);
         }

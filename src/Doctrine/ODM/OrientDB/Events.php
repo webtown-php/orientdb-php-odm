@@ -9,7 +9,8 @@ namespace Doctrine\ODM\OrientDB;
  */
 final class Events
 {
-    private function __construct() {}
+    private function __construct() {
+    }
 
     /**
      * The preRemove event occurs for a given document before the respective

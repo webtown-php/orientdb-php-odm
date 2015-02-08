@@ -16,34 +16,30 @@ class ChangeSet
     private $inserts;
     private $removals;
 
-    public function __construct(array $updates, array $inserts, array $removals)
-    {
-        $this->updates = $updates;
-        $this->inserts = $inserts;
+    public function __construct(array $updates, array $inserts, array $removals) {
+        $this->updates  = $updates;
+        $this->inserts  = $inserts;
         $this->removals = $removals;
     }
 
     /**
      * @return array
      */
-    public function getInserts()
-    {
+    public function getInserts() {
         return $this->inserts;
     }
 
     /**
      * @return array
      */
-    public function getRemovals()
-    {
+    public function getRemovals() {
         return $this->removals;
     }
 
     /**
      * @return array
      */
-    public function getUpdates()
-    {
+    public function getUpdates() {
         return $this->updates;
     }
 }

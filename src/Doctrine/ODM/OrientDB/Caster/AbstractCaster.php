@@ -5,15 +5,15 @@ namespace Doctrine\ODM\OrientDB\Caster;
 
 abstract class AbstractCaster implements CasterInterface
 {
-    protected $dateClass   = '\DateTime';
+    protected $dateClass = '\DateTime';
     protected $value;
-    protected $properties   = [];
+    protected $properties = [];
 
-    const SHORT_LIMIT       = 32767;
-    const LONG_LIMIT        = 9223372036854775807;
-    const BYTE_MAX_VALUE    = 127;
-    const BYTE_MIN_VALUE    = -128;
-    const MISMATCH_MESSAGE  = 'trying to cast "%s" as %s';
+    const SHORT_LIMIT = 32767;
+    const LONG_LIMIT = 9223372036854775807;
+    const BYTE_MAX_VALUE = 127;
+    const BYTE_MIN_VALUE = -128;
+    const MISMATCH_MESSAGE = 'trying to cast "%s" as %s';
 
 
     /**
@@ -23,8 +23,7 @@ abstract class AbstractCaster implements CasterInterface
      *
      * @return $this
      */
-    public function setValue($value)
-    {
+    public function setValue($value) {
         $this->value = $value;
 
         return $this;
@@ -37,8 +36,7 @@ abstract class AbstractCaster implements CasterInterface
      *
      * @param string $class
      */
-    protected function assignDateClass($class)
-    {
+    protected function assignDateClass($class) {
         $refClass = new \ReflectionClass($class);
 
         if (!$refClass->implementsInterface(\DateTimeInterface::class)) {
@@ -53,8 +51,7 @@ abstract class AbstractCaster implements CasterInterface
      *
      * @return string
      */
-    protected function getDateClass()
-    {
+    protected function getDateClass() {
         return $this->dateClass;
     }
 
@@ -64,8 +61,7 @@ abstract class AbstractCaster implements CasterInterface
      * @param string $key
      * @param array  $mapping
      */
-    public function setProperty($key, array $mapping)
-    {
+    public function setProperty($key, array $mapping) {
         $this->properties[$key] = $mapping;
     }
 
@@ -73,10 +69,10 @@ abstract class AbstractCaster implements CasterInterface
      * Returns a property of the Caster, given its $key.
      *
      * @param  string $key
+     *
      * @return array
      */
-    protected function getProperty($key)
-    {
+    protected function getProperty($key) {
         return isset($this->properties[$key]) ? $this->properties[$key] : null;
     }
 
@@ -87,8 +83,7 @@ abstract class AbstractCaster implements CasterInterface
      *
      * @throws CastingMismatchException
      */
-    protected function raiseMismatch($expectedType)
-    {
+    protected function raiseMismatch($expectedType) {
         $value = $this->value;
 
         if (is_object($value)) {

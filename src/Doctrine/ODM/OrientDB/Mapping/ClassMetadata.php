@@ -154,7 +154,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function isSingleValuedAssociation($fieldName) {
         return isset($this->associationMappings[$fieldName])
-            && ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
+        && ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
     }
 
     /**

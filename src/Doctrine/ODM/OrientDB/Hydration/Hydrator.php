@@ -7,7 +7,6 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Caster\Caster;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\Property as PropertyAnnotation;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
@@ -29,7 +28,7 @@ use Doctrine\OrientDB\Query\Query;
  */
 class Hydrator
 {
-    const ORIENT_PROPERTY_CLASS     = '@class';
+    const ORIENT_PROPERTY_CLASS = '@class';
 
     protected $proxyFactory;
     protected $metadataFactory;
@@ -38,14 +37,13 @@ class Hydrator
     protected $uow;
     protected $cache;
     protected $caster;
-    protected $castedProperties          = array();
+    protected $castedProperties = array();
     protected $clusterMap;
 
     /**
      * @param UnitOfWork $uow
      */
-    public function __construct(UnitOfWork $uow)
-    {
+    public function __construct(UnitOfWork $uow) {
         $manager = $uow->getManager();
 
         $this->proxyFactory    = $manager->getProxyFactory();
@@ -64,8 +62,7 @@ class Hydrator
      *
      * @return mixed
      */
-    public function load(array $rids, $fetchPlan = null)
-    {
+    public function load(array $rids, $fetchPlan = null) {
         $query   = new Query($rids);
         $results = $this->binding->execute($query, $fetchPlan)->getResult();
 
@@ -80,11 +77,11 @@ class Hydrator
      *
      * @param  \stdClass $orientObject
      * @param  Proxy     $proxy
+     *
      * @return Proxy
      * @throws DocumentNotFoundException
      */
-    public function hydrate(\stdClass $orientObject, Proxy $proxy = null)
-    {
+    public function hydrate(\stdClass $orientObject, Proxy $proxy = null) {
         $classProperty = static::ORIENT_PROPERTY_CLASS;
 
         if ($proxy) {
@@ -104,20 +101,20 @@ class Hydrator
                 return $document;
             }
 
-            throw new DocumentNotFoundException(self::ORIENT_PROPERTY_CLASS.' property empty.');
+            throw new DocumentNotFoundException(self::ORIENT_PROPERTY_CLASS . ' property empty.');
         }
 
-        throw new DocumentNotFoundException(self::ORIENT_PROPERTY_CLASS.' property not found.');
+        throw new DocumentNotFoundException(self::ORIENT_PROPERTY_CLASS . ' property not found.');
     }
 
     /**
      * Hydrates an array of documents.
      *
      * @param  array $collection
+     *
      * @return ArrayCollection
      */
-    public function hydrateCollection(array $collection)
-    {
+    public function hydrateCollection(array $collection) {
         $records = array();
 
         foreach ($collection as $key => $record) {
@@ -131,8 +128,7 @@ class Hydrator
         return new ArrayCollection($records);
     }
 
-    public function hydrateRid(Rid $rid)
-    {
+    public function hydrateRid(Rid $rid) {
         $orientClass = $this->clusterMap->identifyClass($rid);
         $metadata    = $this->getMetadataFactory()->getMetadataForOClass($orientClass);
         $class       = $metadata->getName();
@@ -145,8 +141,7 @@ class Hydrator
      *
      * @return ProxyFactory
      */
-    protected  function getProxyFactory()
-    {
+    protected function getProxyFactory() {
         return $this->proxyFactory;
     }
 
@@ -155,13 +150,11 @@ class Hydrator
      *
      * @return ClassMetadataFactory
      */
-    protected function getMetadataFactory()
-    {
+    protected function getMetadataFactory() {
         return $this->metadataFactory;
     }
 
-    protected function getUnitOfWork()
-    {
+    protected function getUnitOfWork() {
         return $this->uow;
     }
 
@@ -174,8 +167,7 @@ class Hydrator
      *
      * @return object of type $class
      */
-    protected function createDocument(ClassMetadata $metadata, \stdClass $orientObject)
-    {
+    protected function createDocument(ClassMetadata $metadata, \stdClass $orientObject) {
         $class = $metadata->getName();
 
         /**
@@ -188,10 +180,11 @@ class Hydrator
             if ($this->getUnitOfWork()->isInIdentityMap($rid)) {
                 $document = $this->getUnitOfWork()->getProxy($rid);
             } else {
-                $document = $this->getProxyFactory()->getProxy($class, [$metadata->getRidPropertyName() => $rid->getValue()]);
+                $document = $this->getProxyFactory()
+                                 ->getProxy($class, [$metadata->getRidPropertyName() => $rid->getValue()]);
             }
         } else {
-            $class = $metadata->getName();
+            $class    = $metadata->getName();
             $document = new $class;
         }
 
@@ -208,8 +201,7 @@ class Hydrator
      *
      * @return mixed
      */
-    protected function castProperty(array $mapping, $propertyValue)
-    {
+    protected function castProperty(array $mapping, $propertyValue) {
         $propertyId = $this->getCastedPropertyCacheKey($mapping['type'], $propertyValue);
 
         if (!isset($this->castedProperties[$propertyId])) {
@@ -225,8 +217,7 @@ class Hydrator
         return $this->castedProperties[$propertyId];
     }
 
-    protected function getCastedPropertyCacheKey($type, $value)
-    {
+    protected function getCastedPropertyCacheKey($type, $value) {
         return get_class() . "_casted_property_" . $type . "_" . serialize($value);
     }
 
@@ -235,8 +226,7 @@ class Hydrator
      *
      * @return \Doctrine\Common\Cache\Cache
      */
-    protected function getCache()
-    {
+    protected function getCache() {
         return $this->cache;
     }
 
@@ -251,15 +241,14 @@ class Hydrator
      * @return object
      * @throws \Exception
      */
-    protected function fill(ClassMetadata $metadata, $document, \stdClass $object)
-    {
+    protected function fill(ClassMetadata $metadata, $document, \stdClass $object) {
         $hydratedData = [];
 
         foreach ($metadata->fieldMappings as $fieldName => $mapping) {
             $property = $mapping['name'];
 
             if (property_exists($object, $property)) {
-                $value = $this->hydrateValue($object->$property, $mapping);
+                $value                   = $this->hydrateValue($object->$property, $mapping);
                 $hydratedData[$property] = $value;
                 $metadata->setFieldValue($document, $fieldName, $value);
             }
@@ -282,22 +271,20 @@ class Hydrator
      *
      * @return \Doctrine\ODM\OrientDB\Caster\Caster
      */
-    protected function getCaster()
-    {
+    protected function getCaster() {
         return $this->caster;
     }
 
     /**
      * Hydrates the value
      *
-     * @param $value
+     * @param       $value
      * @param array $mapping
      *
      * @return mixed|null
      * @throws \Exception
      */
-    protected function hydrateValue($value, array $mapping)
-    {
+    protected function hydrateValue($value, array $mapping) {
         if (isset($mapping['type'])) {
             try {
                 $value = $this->castProperty($mapping, $value);
@@ -309,6 +296,7 @@ class Hydrator
                 }
             }
         }
+
         return $value;
     }
 
@@ -317,8 +305,7 @@ class Hydrator
      *
      * @param bool $tolerate
      */
-    public function enableMismatchesTolerance($tolerate)
-    {
+    public function enableMismatchesTolerance($tolerate) {
         $this->enableMismatchesTolerance = $tolerate;
     }
 
@@ -328,9 +315,8 @@ class Hydrator
      *
      * @return bool
      */
-    public function toleratesMismatches()
-    {
-        return (bool) $this->enableMismatchesTolerance;
+    public function toleratesMismatches() {
+        return (bool)$this->enableMismatchesTolerance;
     }
 
     /**
@@ -340,13 +326,13 @@ class Hydrator
      * @param  Caster $caster
      * @param  string $method
      * @param  string $annotationType
+     *
      * @throws Exception
      */
-    protected function verifyCastingSupport(Caster $caster, $method, $annotationType)
-    {
+    protected function verifyCastingSupport(Caster $caster, $method, $annotationType) {
         if (!method_exists($caster, $method)) {
-            $message  = sprintf(
-                'You are trying to map a property which seems not to have a standard type (%s). Do you have a typo in your annotation?'.
+            $message = sprintf(
+                'You are trying to map a property which seems not to have a standard type (%s). Do you have a typo in your annotation?' .
                 'If you think everything\'s ok, go check on %s class which property types are supported.',
                 $annotationType,
                 get_class($caster)

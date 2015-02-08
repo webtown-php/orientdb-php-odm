@@ -10,8 +10,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return string
      */
-    public function castString()
-    {
+    public function castString() {
         if (is_string($this->value)) {
             return $this->value;
         }
@@ -24,8 +23,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castShort()
-    {
+    public function castShort() {
         return $this->castNumeric();
     }
 
@@ -34,8 +32,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castLong()
-    {
+    public function castLong() {
         return $this->castNumeric();
     }
 
@@ -44,9 +41,8 @@ class ReverseCaster extends AbstractCaster
      *
      * @return boolean
      */
-    public function castBoolean()
-    {
-        return (bool) $this->value;
+    public function castBoolean() {
+        return (bool)$this->value;
     }
 
     /**
@@ -54,8 +50,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return string
      */
-    public function castBinary()
-    {
+    public function castBinary() {
         if ("data:;base64," === substr($this->value, 0, 13)) {
             return substr($this->value, 13);
         }
@@ -69,8 +64,7 @@ class ReverseCaster extends AbstractCaster
      * @throws CastingMismatchException
      * @return mixed
      */
-    public function castByte()
-    {
+    public function castByte() {
         return $this->castNumeric();
     }
 
@@ -81,8 +75,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return \DateTime
      */
-    public function castDate()
-    {
+    public function castDate() {
         /** @var \DateTimeInterface $dateClass */
         $dateClass = $this->getDateClass();
         if ($this->value instanceof $dateClass) {
@@ -97,8 +90,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return \DateTime
      */
-    public function castDateTime()
-    {
+    public function castDateTime() {
         return $this->castDate();
     }
 
@@ -108,8 +100,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return integer
      */
-    public function castDecimal()
-    {
+    public function castDecimal() {
         return $this->castNumeric();
     }
 
@@ -118,8 +109,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return float
      */
-    public function castDouble()
-    {
+    public function castDouble() {
         return $this->castFloat();
     }
 
@@ -128,8 +118,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return mixed
      */
-    public function castEmbedded()
-    {
+    public function castEmbedded() {
         throw new \Exception('to be implemented');
     }
 
@@ -138,8 +127,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return Array
      */
-    public function castEmbeddedList()
-    {
+    public function castEmbeddedList() {
         throw new \Exception('to be implemented');
     }
 
@@ -148,8 +136,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return Array
      */
-    public function castEmbeddedMap()
-    {
+    public function castEmbeddedMap() {
         throw new \Exception('to be implemented');
 
     }
@@ -159,29 +146,24 @@ class ReverseCaster extends AbstractCaster
      *
      * @return Array
      */
-    public function castEmbeddedSet()
-    {
+    public function castEmbeddedSet() {
         throw new \Exception('to be implemented');
 
     }
 
-    public function castLink()
-    {
+    public function castLink() {
         throw new \Exception('to be implemented');
     }
 
-    public function castLinkSet()
-    {
+    public function castLinkSet() {
         throw new \Exception('to be implemented');
     }
 
-    public function castLinkList()
-    {
+    public function castLinkList() {
         throw new \Exception('to be implemented');
     }
 
-    public function castLinkMap()
-    {
+    public function castLinkMap() {
         throw new \Exception('to be implemented');
     }
 
@@ -190,8 +172,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return float
      */
-    public function castFloat()
-    {
+    public function castFloat() {
         return $this->castNumeric();
     }
 
@@ -200,8 +181,7 @@ class ReverseCaster extends AbstractCaster
      *
      * @return integer
      */
-    public function castInteger()
-    {
+    public function castInteger() {
         return $this->castNumeric();
     }
 
@@ -213,8 +193,7 @@ class ReverseCaster extends AbstractCaster
      * @return int|string
      * @throws CastingMismatchException
      */
-    protected function castNumeric()
-    {
+    protected function castNumeric() {
         if (is_numeric($this->value)) {
             return $this->value;
         }
