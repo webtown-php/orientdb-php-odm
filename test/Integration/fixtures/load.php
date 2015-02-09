@@ -5,7 +5,7 @@ use Guzzle\Http\Client;
 use Guzzle\Http\Exception\BadResponseException;
 
 
-define('DB_NAME', 'GratefulDeadConcerts');
+define('DB_NAME', 'ODMTest');
 
 class Fixtures
 {
@@ -18,26 +18,28 @@ class Fixtures
         $this->contentType = array('Content-Type' => 'application/json');
 
         $this->client = new Client('http://127.0.0.1:2480');
-        $this->client->setDefaultOption('auth', array($dbuser,$dbpass));
+        $this->client->setDefaultOption('auth', [$dbuser,$dbpass]);
 
     }
 
     function clean()
     {
-        $classes = array('Address', 'Country','City','Profile','Company', 'Post', 'Comment', 'MapPoint');
-
-        //Clean
-        foreach ($classes as $class) {
-            $query = "DROP CLASS " . $class;
-            $this->client->post('/command/' . $this->dbname . '/sql/' .$query,array('Content-Type'=>'application/json'))->send();
+        $res = $this->client->get('/listDatabases')->send();
+        $body = json_decode($res->getBody(true));
+        if (in_array($this->dbname, $body->databases)) {
+            $res = $this->client->delete(sprintf("/database/%s", $this->dbname))->send();
+            
+            $body = json_decode($res->getBody(true));
         }
+        $res = $this->client->post(sprintf('/database/%s/plocal/graph', $this->dbname))->send();
+        $body = json_decode($res->getBody(true));
 
         return $this;
     }
 
     function create_classes()
     {
-        $classes = array(
+        $classes = [
             'Address'  => '{"city": {"propertyType": "STRING"}}',
             'Country'  => null,
             'City'     => null,
@@ -46,7 +48,7 @@ class Fixtures
             'Comment'  => null,
             'Post'     => '{"comments": {"propertyType": "LINKLIST","linkedClass": "Comment"}}',
             'MapPoint' => '{"x": {"propertyType": "FLOAT"}, "y":{"propertyType": "FLOAT"} }',
-        );
+        ];
 
         foreach ($classes as $class => $properties) {
             $query = "CREATE CLASS " . $class;
@@ -108,7 +110,7 @@ class Fixtures
 
 }
 
-$fixtures = new Fixtures('GratefulDeadConcerts','admin','admin');
+$fixtures = new Fixtures('ODMTest','root','password');
 $fixtures
     ->clean()
     ->create_classes()
