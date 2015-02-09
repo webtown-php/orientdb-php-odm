@@ -108,7 +108,7 @@ class QueryBuilderTest extends TestCase
         $query = new Query();
         $query->limit(10)
               ->limit(20)
-              ->from(array('19:2', '19:4'), false)
+              ->from(array('11:2', '11:4'), false)
               ->select(array('rid', 'street'))
               ->select(array('type'))
               ->orderBy('street ASC');
