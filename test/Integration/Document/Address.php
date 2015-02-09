@@ -31,7 +31,7 @@ class Address
     public $rid;
 
     /**
-     * @Property(type="link")
+     * @Link(targetClass="test")
      */
     protected $city;
 

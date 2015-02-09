@@ -26,24 +26,55 @@ use Doctrine\ODM\OrientDB\Mapping as DataMapper;
 class ClassMetadata implements DoctrineMetadata
 {
     /**
-     * Identifies a link.
+     * Identifies a link association
      */
     const LINK = 0x01;
+    /**
+     * Identifies a link list association
+     */
     const LINK_LIST = 0x02;
+    /**
+     * Identifies a link set association
+     */
     const LINK_SET = 0x04;
+    /**
+     * Identifies a link map association
+     */
     const LINK_MAP = 0x08;
 
     /**
-     * Combined bitmask for single-valued associations.
+     * Identifies a embedded association
      */
-    const TO_ONE = 0x01;
+    const EMBED = 0x10;
+    /**
+     * Identifies a embedded list association
+     */
+    const EMBED_LIST = 0x20;
+    /**
+     * Identifies a embedded set association
+     */
+    const EMBED_SET = 0x40;
+    /**
+     * Identifies a embedded map association
+     */
+    const EMBED_MAP = 0x80;
 
     /**
-     * Combined bitmask for collection-valued associations.
+     * Combined bit mask for single-valued associations.
      */
-    const TO_MANY = 0x0E;
+    const TO_ONE = 0x11;
 
-    protected $orientClass;
+    /**
+     * Combined bit mask for collection-valued associations.
+     */
+    const TO_MANY = 0xEE;
+
+    /**
+     * READ-ONLY: The name of the OrientDB class to which this document is mapped
+     *
+     * @var string
+     */
+    public $orientClass;
 
     /**
      * READ-ONLY: The name of the entity class.
@@ -55,7 +86,7 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * READ-ONLY: The name of the entity class that is at the root of the mapped entity inheritance
      * hierarchy. If the entity is not part of a mapped inheritance hierarchy this is the same
-     * as {@link $entityName}.
+     * as {@see $name}.
      *
      * @var string
      */
@@ -66,11 +97,15 @@ class ClassMetadata implements DoctrineMetadata
      */
     public $identifier;
 
+    /**
+     * @var \ReflectionClass
+     */
     protected $reflClass;
 
+    /**
+     * @var \ReflectionProperty[]
+     */
     protected $reflFields;
-    protected $associationMappings;
-    protected $fields;
 
     /**
      * READONLY
@@ -78,6 +113,8 @@ class ClassMetadata implements DoctrineMetadata
      * @var array
      */
     public $fieldMappings = [];
+
+    public $associationMappings;
 
     protected $setter;
     protected $getter;
@@ -158,7 +195,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function isSingleValuedAssociation($fieldName) {
         return isset($this->associationMappings[$fieldName])
-        && ($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
+        && ($this->associationMappings[$fieldName]['association'] & self::TO_ONE);
     }
 
     /**
@@ -166,7 +203,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function isCollectionValuedAssociation($fieldName) {
         return isset($this->associationMappings[$fieldName])
-        && !($this->associationMappings[$fieldName]['type'] & self::TO_ONE);
+        && !($this->associationMappings[$fieldName]['association'] & self::TO_ONE);
     }
 
     /**
@@ -193,10 +230,14 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function getAssociationTargetClass($assocName) {
-        return null;
+        if (!isset($this->associationMappings[$assocName])) {
+            throw new \InvalidArgumentException("association name expected, '" . $assocName . "' is not an association.");
+        }
+
+        return $this->associationMappings[$assocName]['targetClass'];
     }
 
     /**
@@ -248,70 +289,184 @@ class ClassMetadata implements DoctrineMetadata
         return $this->getFieldValue($object, $this->identifier);
     }
 
+    /**
+     * Adds a mapping for a field
+     *
+     * @param array $mapping The mapping.
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
+     */
     public function mapField(array $mapping) {
-//        $this->_validateAndCompleteFieldMapping($mapping);
-        $this->assertFieldNotMapped($mapping['fieldName']);
+        $fieldMame = $mapping['fieldName'];
+        $this->assertFieldNotMapped($fieldMame);
+
+        $namespace = $this->reflClass->getNamespaceName();
+        if (isset($mapping['targetClass']) && strpos($mapping['targetClass'], '\\') === false && strlen($namespace)) {
+            $mapping['targetClass'] = $namespace . '\\' . $mapping['targetClass'];
+        }
+
+        $cascades = isset($mapping['cascade']) ? array_map('strtolower', (array)$mapping['cascade']) : [];
+
+        if (in_array('all', $cascades) || isset($mapping['embedded'])) {
+            $cascades = ['remove', 'persist', 'refresh', 'merge', 'detach'];
+        }
+
+        if (isset($mapping['embedded'])) {
+            unset($mapping['cascade']);
+        } elseif (isset($mapping['cascade'])) {
+            $mapping['cascade'] = $cascades;
+        }
+
+        $mapping['isCascadeRemove']  = in_array('remove', $cascades);
+        $mapping['isCascadePersist'] = in_array('persist', $cascades);
+        $mapping['isCascadeRefresh'] = in_array('refresh', $cascades);
+        $mapping['isCascadeMerge']   = in_array('merge', $cascades);
+        $mapping['isCascadeDetach']  = in_array('detach', $cascades);
 
         $this->fieldMappings[$mapping['fieldName']] = $mapping;
+
+        if (isset($mapping['association'])) {
+            $this->associationMappings[$fieldMame] = $mapping;
+        }
+
+        return $this;
     }
 
     /**
-     * Adds a link mapping.
+     * Adds a mapping for a link
      *
      * @param array $mapping The mapping.
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLink(array $mapping) {
-        $mapping['type'] = self::LINK;
-        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
-        $this->_storeAssociationMapping($mapping);
+        $mapping['type']        = 'link';
+        $mapping['association'] = self::LINK;
+        $mapping['link']        = true;
+        $this->mapField($mapping);
+
+        return $this;
     }
 
     /**
-     * Adds a link-set mapping.
+     * Adds a mapping for a link list or array
      *
      * @param array $mapping The mapping.
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkList(array $mapping) {
-        $mapping['type'] = self::LINK_LIST;
-        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
-        $this->_storeAssociationMapping($mapping);
+        $mapping['type']        = 'link_list';
+        $mapping['association'] = self::LINK_LIST;
+        $mapping['link']        = true;
+        $this->mapField($mapping);
+
+        return $this;
     }
 
     /**
-     * Adds a link-set mapping.
+     * Adds a mapping for a link set
      *
      * @param array $mapping The mapping.
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkSet(array $mapping) {
-        $mapping['type'] = self::LINK_SET;
-        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
-        $this->_storeAssociationMapping($mapping);
+        $mapping['type']        = 'link_set';
+        $mapping['association'] = self::LINK_SET;
+        $mapping['link']        = true;
+        $this->mapField($mapping);
+
+        return $this;
     }
 
     /**
-     * Adds a link-set mapping.
+     * Adds a mapping for a link map
      *
      * @param array $mapping The mapping.
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkMap(array $mapping) {
-        $mapping['type'] = self::LINK_MAP;
-        //$mapping = $this->_validateAndCompleteOneToOneMapping($mapping);
-        $this->_storeAssociationMapping($mapping);
+        $mapping['type']        = 'link_map';
+        $mapping['association'] = self::LINK_MAP;
+        $mapping['link']        = true;
+        $this->mapField($mapping);
+
+        return $this;
     }
 
     /**
-     * Stores the association mapping.
+     * Adds a mapping for an embedded type
      *
-     * @param array $assocMapping
+     * @param array $mapping
      *
-     * @return void
-     *
-     * @throws MappingException
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
      */
-    protected function _storeAssociationMapping(array $assocMapping) {
-        $sourceFieldName = $assocMapping['fieldName'];
-        $this->assertFieldNotMapped($sourceFieldName);
-        $this->associationMappings[$sourceFieldName] = $assocMapping;
+    public function mapEmbedded(array $mapping) {
+        $mapping['type']        = 'embedded';
+        $mapping['association'] = self::EMBED;
+        $mapping['embed']       = true;
+        $this->mapField($mapping);
+
+        return $this;
+    }
+
+    /**
+     * Adds a mapping for an embedded list
+     *
+     * @param array $mapping
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
+     */
+    public function mapEmbeddedList(array $mapping) {
+        $mapping['type']        = 'embedded_list';
+        $mapping['association'] = self::EMBED_LIST;
+        $mapping['embed']       = true;
+        $this->mapField($mapping);
+
+        return $this;
+    }
+
+    /**
+     * Adds a mapping for an embedded set
+     *
+     * @param array $mapping
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
+     */
+    public function mapEmbeddedSet(array $mapping) {
+        $mapping['type']        = 'embedded_set';
+        $mapping['association'] = self::EMBED_SET;
+        $mapping['embed']       = true;
+        $this->mapField($mapping);
+
+        return $this;
+    }
+
+    /**
+     * Adds a mapping for an embedded map
+     *
+     * @param array $mapping
+     *
+     * @return $this
+     * @throws MappingException if the fieldName has already been mapped
+     */
+    public function mapEmbeddedMap(array $mapping) {
+        $mapping['type']        = 'embedded_map';
+        $mapping['association'] = self::EMBED_MAP;
+        $mapping['embed']       = true;
+        $this->mapField($mapping);
+
+        return $this;
     }
 
     public function setOrientClass($orientClass) {
@@ -347,12 +502,19 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
+     * Restores some state that can not be serialized/unserialized.
+     *
+     * @param \Doctrine\Common\Persistence\Mapping\ReflectionService $reflService
+     */
+    public function wakeupReflection($reflService) {
+
+    }
+
+    /**
      * Initializes a new ClassMetadata instance that will hold the object-relational mapping
      * metadata of the class with the given name.
      *
      * @param \Doctrine\Common\Persistence\Mapping\ReflectionService $reflService The reflection service.
-     *
-     * @return void
      */
     public function initializeReflection($reflService) {
         $this->reflClass = $reflService->getClass($this->name);
@@ -371,7 +533,6 @@ class ClassMetadata implements DoctrineMetadata
         if (isset($this->fieldMappings[$fieldName]) ||
             isset($this->associationMappings[$fieldName])
         ) {
-
             throw MappingException::duplicateFieldMapping($this->name, $fieldName);
         }
     }

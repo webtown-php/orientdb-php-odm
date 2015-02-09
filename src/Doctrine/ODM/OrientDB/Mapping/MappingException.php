@@ -68,4 +68,14 @@ class MappingException extends \Exception
     public static function duplicateFieldMapping($entity, $fieldName) {
         return new self('Property "' . $fieldName . '" in "' . $entity . '" was already declared, but it must be declared only once');
     }
+
+    /**
+     * @param string $className
+     * @param string $fieldName
+     * @return MappingException
+     */
+    public static function simpleReferenceRequiresTargetDocument($className, $fieldName)
+    {
+        return new self("Target document must be specified for simple reference: $className::$fieldName");
+    }
 }

@@ -102,7 +102,7 @@ class Address
     protected $image;
 
     /**
-     * @Link
+     * @Link(targetClass="test")
      */
     protected $link;
 

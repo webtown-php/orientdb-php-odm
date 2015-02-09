@@ -8,8 +8,14 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\AbstractProperty;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedPropertyBase;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkPropertyBase;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedMap;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedSet;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Link;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkList;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkMap;
@@ -55,9 +61,10 @@ class AnnotationDriver extends AbstractAnnotationDriver
             foreach ($pas as $ann) {
                 $mapping = [
                     'fieldName' => $refProperty->getName(),
+                    'nullable'  => false,
                 ];
 
-                if ($ann instanceof AbstractProperty) {
+                if ($ann instanceof PropertyBase) {
                     if (!$ann->name) {
                         $ann->name = $refProperty->getName();
                     }
@@ -66,7 +73,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
                 switch (true) {
                     case $ann instanceof Property:
-                        $mapping = $this->columnToArray($refProperty->getName(), $ann);
+                        $mapping = $this->propertyToArray($refProperty->getName(), $ann);
                         $metadata->mapField($mapping);
                         continue;
 
@@ -83,19 +90,43 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         continue;
 
                     case $ann instanceof Link:
+                        $mapping = $this->linkToArray($mapping, $ann);
                         $metadata->mapLink($mapping);
                         continue;
 
                     case $ann instanceof LinkList:
+                        $mapping = $this->linkToArray($mapping, $ann);
                         $metadata->mapLinkList($mapping);
                         continue;
 
                     case $ann instanceof LinkSet:
+                        $mapping = $this->linkToArray($mapping, $ann);
                         $metadata->mapLinkSet($mapping);
                         continue;
 
                     case $ann instanceof LinkMap:
+                        $mapping = $this->linkToArray($mapping, $ann);
                         $metadata->mapLinkMap($mapping);
+                        continue;
+
+                    case $ann instanceof Embedded:
+                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $metadata->mapEmbedded($mapping);
+                        continue;
+
+                    case $ann instanceof EmbeddedList:
+                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $metadata->mapEmbeddedList($mapping);
+                        continue;
+
+                    case $ann instanceof EmbeddedSet:
+                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $metadata->mapEmbeddedSet($mapping);
+                        continue;
+
+                    case $ann instanceof EmbeddedMap:
+                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $metadata->mapEmbeddedMap($mapping);
                         continue;
                 }
             }
@@ -106,7 +137,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
         }
     }
 
-    public function &columnToArray($fieldName, Property $prop) {
+    public function &propertyToArray($fieldName, Property $prop) {
         $mapping = [
             'fieldName' => $fieldName,
             'name'      => $prop->name,
@@ -115,6 +146,17 @@ class AnnotationDriver extends AbstractAnnotationDriver
             'cast'      => $prop->getCast(),
         ];
 
+        return $mapping;
+    }
+
+    private function &linkToArray(&$mapping, LinkPropertyBase $link) {
+        $mapping['cascade'] = $link->cascade;
+        $mapping['targetClass'] = $link->targetClass;
+        return $mapping;
+    }
+
+    private function &embeddedToArray(&$mapping, EmbeddedPropertyBase $embed) {
+        $mapping['targetClass'] = $embed->targetClass;
         return $mapping;
     }
 

@@ -8,6 +8,6 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target("PROPERTY")
  */
-class LinkMap extends AbstractProperty
+class LinkMap extends LinkPropertyBase
 {
 }

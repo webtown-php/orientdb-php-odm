@@ -120,7 +120,8 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * @return void
      */
     protected function wakeupReflection(ClassMetadataInfo $class, ReflectionService $reflService) {
-
+        /** @var ClassMetadata $class */
+        $class->wakeupReflection($reflService);
     }
 
     /**

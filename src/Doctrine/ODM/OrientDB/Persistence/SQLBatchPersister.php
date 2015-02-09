@@ -67,13 +67,13 @@ class SQLBatchPersister implements PersisterInterface
         if ($this->binding instanceof HttpBindingInterface) {
             $batch   = array(
                 'transaction' => true,
-                'operations'  => array(
-                    array(
+                'operations'  => [
+                    [
                         'type'     => 'script',
                         'language' => 'sql',
                         'script'   => $queryWriter->getQueries()
-                    )
-                )
+                    ]
+                ]
             );
             $results = $this->binding->batch(json_encode($batch))->getData()->result;
 

@@ -10,9 +10,6 @@ use Doctrine\ODM\OrientDB\Mapping\MappingException;
 class AnnotationDriverTest extends AbstractMappingDriverTest
 {
 
-    /**
-     * @group DDC-268
-     */
     public function testLoadMetadataForNonEntityThrowsException()
     {
         $cm = new ClassMetadata('stdClass');
@@ -24,9 +21,6 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
         $annotationDriver->loadMetadataForClass('stdClass', $cm);
     }
 
-    /**
-     * @group DDC-268
-     */
     public function testColumnWithMissingTypeDefaultsToString()
     {
         $cm = new ClassMetadata(ColumnWithoutType::class);
@@ -48,11 +42,11 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
 }
 
 /**
- * @Document
+ * @Document(class="ColumnWithoutType")
  */
 class ColumnWithoutType
 {
-    /** @Property */
+    /** @RID */
     public $id;
 }
 

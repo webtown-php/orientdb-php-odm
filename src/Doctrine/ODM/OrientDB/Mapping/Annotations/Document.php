@@ -23,11 +23,12 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  * @Target("CLASS")
- * @Attributes({
- *    @Attribute("class", required = true, type = "string")
- * })
  */
-class Document extends Annotation
+class Document
 {
+    /**
+     * @Required
+     * @var string
+     */
     public $class;
 }

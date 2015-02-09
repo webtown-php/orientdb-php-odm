@@ -23,16 +23,22 @@ use Doctrine\Common\Annotations\Annotation;
 /**
  * @Annotation
  * @Target("PROPERTY")
- * @Attributes({
- *    @Attribute("type",     required = false, type = "string"),
- *    @Attribute("cast",     required = false, type = "string"),
- *    @Attribute("nullable", required = false, type = "bool"  ),
- * })
  */
-class Property extends AbstractProperty
+class Property extends PropertyBase
 {
+    /**
+     * @var string
+     */
     public $type;
+
+    /**
+     * @var string
+     */
     public $cast;
+
+    /**
+     * @var bool
+     */
     public $nullable = false;
 
     public function getCast()

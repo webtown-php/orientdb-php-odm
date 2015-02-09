@@ -45,11 +45,32 @@ class UnitOfWork
     private $hydrator;
     private $identityMap = [];
     private $newDocuments = [];
+
+    /**
+     * Map of the original document data of managed documents.
+     * Keys are object ids (spl_object_hash). This is used for calculating changesets
+     * at commit time.
+     *
+     * @var array
+     * @internal Note that PHPs "copy-on-write" behavior helps a lot with memory usage.
+     *           A value will only really be copied if the value in the document is modified
+     *           by the user.
+     */
     private $originalDocumentData = [];
+
+    /**
+     * Map of document changes. Keys are object ids (spl_object_hash).
+     * Filled at the beginning of a commit of the UnitOfWork and cleaned at the end.
+     *
+     * @var array
+     */
+    private $documentChangeSets = array();
+
     private $documentUpdates = [];
-    private $documentInserts = [];
-    private $documentRemovals = [];
+    private $documentInsertions = [];
+    private $documentDeletions = [];
     private $documentStates = [];
+
 
     public function __construct(DocumentManager $manager) {
         $this->dm = $manager;
@@ -79,14 +100,14 @@ class UnitOfWork
             }
         }
 
-        $changeSet = new ChangeSet($this->documentUpdates, $this->documentInserts, $this->documentRemovals);
+        $changeSet = new ChangeSet($this->documentUpdates, $this->documentInsertions, $this->documentDeletions);
         $persister = $this->createPersister();
         $persister->process($changeSet);
 
         // clean up
-        $this->documentInserts
+        $this->documentInsertions
             = $this->documentUpdates
-            = $this->documentRemovals
+            = $this->documentDeletions
             = [];
     }
 
@@ -170,6 +191,52 @@ class UnitOfWork
         } else {
             $this->newDocuments[spl_object_hash($document)] = $document;
         }
+
+//        $visited = [];
+//        $this->doPersist($document, $visited);
+    }
+
+    private function doPersist($document, &$visited) {
+        $oid = spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return;
+        }
+
+        $visited[$oid] = $document;
+
+        $class = $this->dm->getClassMetadata(get_class($document));
+
+        $documentState = $this->getDocumentState($document, self::STATE_NEW);
+        switch ($documentState) {
+            case self::STATE_MANAGED:
+                // Nothing to do, except if policy is "deferred explicit"
+                if ($class->isChangeTrackingDeferredExplicit()) {
+                    $this->scheduleForDirtyCheck($document);
+                }
+                break;
+            case self::STATE_NEW:
+                $this->persistNew($class, $document);
+                break;
+            case self::STATE_DETACHED:
+                throw new \InvalidArgumentException(
+                    "Behavior of persist() for a detached document is not yet defined.");
+                break;
+            case self::STATE_REMOVED:
+                if (!$class->isEmbeddedDocument) {
+                    // Document becomes managed again
+                    if ($this->isScheduledForDelete($document)) {
+                        unset($this->documentDeletions[$oid]);
+                    } else {
+                        //FIXME: There's more to think of here...
+                        $this->scheduleForInsert($class, $document);
+                    }
+                    break;
+                }
+            default:
+                throw MongoDBException::invalidDocumentState($documentState);
+        }
+
+        $this->cascadePersist($document, $visited);
     }
 
     /**
@@ -181,13 +248,14 @@ class UnitOfWork
      */
     public function clear($class = null) {
         if ($class === null) {
-            $this->identityMap
-                = $this->newDocuments
-                = $this->originalDocumentData
-                = $this->documentUpdates
-                = $this->documentInserts
-                = $this->documentRemovals
-                = $this->documentStates = [];
+            $this->identityMap =
+            $this->newDocuments =
+            $this->originalDocumentData =
+            $this->documentChangeSets =
+            $this->documentInsertions =
+            $this->documentUpdates =
+            $this->documentDeletions =
+            $this->documentStates = [];
         } else {
             throw new \Exception('not implemented');
         }
@@ -197,16 +265,28 @@ class UnitOfWork
      * @param Proxy $proxy
      */
     public function remove(Proxy $proxy) {
-        $rid                          = $this->getRid($proxy);
-        $this->documentRemovals[$rid] = ['document' => $proxy];
+        $rid                           = $this->getRid($proxy);
+        $this->documentDeletions[$rid] = ['document' => $proxy];
+    }
+
+    public function refresh($document) {
+        throw new \Exception('not implemented');
     }
 
     /**
+     * Gets the changeset for a document.
+     *
      * @param object $document
+     *
+     * @return array
      */
-    public function refresh($document) {
-        $rid = $this->getRid($document);
-        throw new \Exception('not implemented');
+    public function getDocumentChangeSet($document) {
+        $oid = spl_object_hash($document);
+        if (isset($this->documentChangeSets[$oid])) {
+            return $this->documentChangeSets[$oid];
+        }
+
+        return [];
     }
 
     /**
@@ -262,7 +342,7 @@ class UnitOfWork
             $identifier = $this->getRid($document);
 
             // if it is marked for removal, ignore the changes
-            if (isset($this->documentRemovals[$identifier])) {
+            if (isset($this->documentDeletions[$identifier])) {
                 return;
             }
 
@@ -274,8 +354,8 @@ class UnitOfWork
         } else {
             $changes = $this->buildChangeSet($document);
             // identify the document by its hash to avoid duplicates
-            $oid                         = spl_object_hash($document);
-            $this->documentInserts[$oid] = ['changes' => $changes, 'document' => $document];
+            $oid                            = spl_object_hash($document);
+            $this->documentInsertions[$oid] = ['changes' => $changes, 'document' => $document];
         }
     }
 
@@ -300,7 +380,10 @@ class UnitOfWork
             /* if we don't know the original data, or it doesn't have the field, or the field's
              * value is different we count it as a change
              */
-            if (!$originalData || !isset($originalData[$propName]) || $originalData[$propName] !== $currentValue) {
+            if (!$originalData ||
+                !isset($originalData[$propName]) ||
+                $originalData[$propName] !== $currentValue
+            ) {
                 $changes[] = ['field' => $propName, 'value' => $currentValue, 'mapping' => $mapping];
             }
         }
@@ -327,7 +410,7 @@ class UnitOfWork
      * @return boolean true if this UnitOfWork has pending insertions
      */
     public function hasPendingInsertions() {
-        return !empty($this->documentInserts);
+        return !empty($this->documentInsertions);
     }
 
     /**
@@ -356,6 +439,34 @@ class UnitOfWork
     }
 
     /**
+     * Checks whether a document is registered as removed/deleted with the unit
+     * of work.
+     *
+     * @param object $document
+     *
+     * @return boolean
+     */
+    public function isScheduledForDelete($document) {
+        return isset($this->documentDeletions[spl_object_hash($document)]);
+    }
+
+    /**
+     * Checks whether a document is scheduled for insertion, update or deletion.
+     *
+     * @param $document
+     *
+     * @return boolean
+     */
+    public function isDocumentScheduled($document) {
+        $oid = spl_object_hash($document);
+
+        return
+            isset($this->documentInsertions[$oid]) ||
+            isset($this->documentUpdates[$oid]) ||
+            isset($this->documentDeletions[$oid]);
+    }
+
+    /**
      * Add the specified document to the identity map
      *
      * @param object $document
@@ -370,6 +481,122 @@ class UnitOfWork
         }
 
         $this->identityMap[$id] = $document;
+    }
+
+    /**
+     * Gets the state of a document with regard to the current unit of work.
+     *
+     * @param object   $document
+     * @param int|null $assume The state to assume if the state is not yet known (not MANAGED or REMOVED).
+     *                         This parameter can be set to improve performance of document state detection
+     *                         by potentially avoiding a database lookup if the distinction between NEW and DETACHED
+     *                         is either known or does not matter for the caller of the method.
+     *
+     * @return int The document state.
+     */
+    public function getDocumentState($document, $assume = null) {
+        $oid = spl_object_hash($document);
+
+        if (isset($this->documentStates[$oid])) {
+            return $this->documentStates[$oid];
+        }
+
+        $class = $this->dm->getClassMetadata(get_class($document));
+
+//        if ($class->isEmbeddedDocument) {
+//            return self::STATE_NEW;
+//        }
+
+        if ($assume !== null) {
+            return $assume;
+        }
+
+        /* State can only be NEW or DETACHED, because MANAGED/REMOVED states are
+         * known. Note that you cannot remember the NEW or DETACHED state in
+         * _documentStates since the UoW does not hold references to such
+         * objects and the object hash can be reused. More generally, because
+         * the state may "change" between NEW/DETACHED without the UoW being
+         * aware of it.
+         */
+        $rid = $class->getIdentifierValues($document);
+
+        if ($rid === null) {
+            return self::STATE_NEW;
+        }
+
+        // Last try before DB lookup: check the identity map.
+        if ($this->tryGetById($rid)) {
+            return self::STATE_DETACHED;
+        }
+
+        // DB lookup
+//        if ($this->getDocumentPersister($class->name)->exists($document)) {
+//            return self::STATE_DETACHED;
+//        }
+
+        return self::STATE_NEW;
+    }
+
+    /**
+     * INTERNAL:
+     * Removes a document from the identity map. This effectively detaches the
+     * document from the persistence management of Doctrine.
+     *
+     * @ignore
+     *
+     * @param object $document
+     *
+     * @return boolean
+     */
+    public function removeFromIdentityMap($document) {
+        $oid = spl_object_hash($document);
+
+        if ($document instanceof Proxy) {
+            $id = $this->getRid($document);
+        } else {
+            $id = $oid;
+        }
+        if (isset($this->identityMap[$id])) {
+            unset($this->identityMap[$id]);
+            $this->documentStates[$oid] = self::STATE_DETACHED;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * INTERNAL:
+     * Gets a document in the identity map by its identifier hash.
+     *
+     * @ignore
+     *
+     * @param mixed $rid Document identifier
+     *
+     * @return object
+     */
+    public function getById($rid) {
+        return isset($this->identityMap[$rid])
+            ? $this->identityMap[$rid]
+            : null;
+    }
+
+    /**
+     * INTERNAL:
+     * Tries to get a document by its identifier hash. If no document is found
+     * for the given hash, FALSE is returned.
+     *
+     * @ignore
+     *
+     * @param mixed $rid Document identifier
+     *
+     * @return mixed The found document or FALSE.
+     */
+    public function tryGetById($rid) {
+        return isset($this->identityMap[$rid])
+            ? $this->identityMap[$rid]
+            : false;
     }
 
     /**

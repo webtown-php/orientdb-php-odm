@@ -35,12 +35,12 @@ class Mapped
     protected $field;
 
     /**
-     * @Link
+     * @Link(targetClass="test")
      */
     protected $assoc;
 
     /**
-     * @LinkSet
+     * @LinkSet(targetClass="test")
      */
     protected $multiassoc;
 
@@ -59,12 +59,12 @@ class ClassMetadataTest extends TestCase
     public function setup()
     {
         $this->metadata = new ClassMetadata(Mapped::class);
+        $this->metadata->initializeReflection(new RuntimeReflectionService());
 
         $this->metadata->setIdentifier('rid');
         $this->metadata->mapField(['fieldName' => 'field', 'name' => 'field', 'type' => 'string']);
         $this->metadata->mapLink(['fieldName' => 'assoc', 'name' => 'assoc']);
         $this->metadata->mapLinkSet(['fieldName' => 'multiassoc', 'name' => 'multiassoc']);
-        $this->metadata->initializeReflection(new RuntimeReflectionService());
     }
 
     function testGetName()
@@ -119,7 +119,7 @@ class ClassMetadataTest extends TestCase
 
     function testGetFieldNames()
     {
-        $this->assertEquals(array('field'), $this->metadata->getFieldNames());
+        $this->assertEquals(array('field', 'assoc', 'multiassoc'), $this->metadata->getFieldNames());
     }
 
     function testGetAssociationNames()
@@ -134,6 +134,7 @@ class ClassMetadataTest extends TestCase
 
     function testGetAssociationTargetClass()
     {
+        $this->setExpectedException(\InvalidArgumentException::class);
         $this->assertEquals(null, $this->metadata->getAssociationTargetClass('OMNOMNOMNOMN'));
     }
 }
