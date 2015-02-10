@@ -10,6 +10,8 @@
 
 namespace test\Doctrine\ODM\OrientDB\Integration;
 
+use Doctrine\ODM\OrientDB\PersistentCollection;
+use test\Integration\Document\Post;
 use test\PHPUnit\TestCase;
 
 /**
@@ -26,6 +28,11 @@ class RepositoryTest extends TestCase
         $this->addressId = $this->getClassId('Address');
     }
 
+    /**
+     * @param $class
+     *
+     * @return \Doctrine\ODM\OrientDB\DocumentRepository
+     */
     protected function createRepository($class)
     {
         $manager = $this->createDocumentManager(array(
@@ -50,8 +57,12 @@ class RepositoryTest extends TestCase
         $class = 'test\Integration\Document\Post';
         $repository = $this->createRepository($class);
 
-        $this->assertInstanceOf(static::COLLECTION_CLASS, $repository->find($this->postId . ':0', '*:0')->comments);
-        $this->assertInstanceOf(static::COLLECTION_CLASS, $repository->find($this->postId . ':0', '*:-1')->comments);
+        /** @var Post $post */
+        $post = $repository->findWithPlan($this->postId . ':0', '*:0');
+        $this->assertInstanceOf(PersistentCollection::class, $post->getComments());
+
+        $post = $repository->findWithPlan($this->postId . ':0', '*:-1');
+        $comments = $post->getComments()->toArray();
     }
 
     /**
@@ -67,7 +78,7 @@ class RepositoryTest extends TestCase
     {
         $repository = $this->createRepository('test\Integration\Document\Post');
 
-        $this->assertNull($repository->find('27:985023989'));
+        $this->assertNull($repository->find('18:985023989'));
     }
 
     public function testRetrievingAllTheRepo()

@@ -25,26 +25,61 @@ use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Caster\CastingMismatchException;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
+use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
+use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Query;
-use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 
 class DocumentManager implements ObjectManager
 {
+    /**
+     * @var Configuration
+     */
     protected $configuration;
+
+    /**
+     * @var BindingInterface
+     */
     protected $binding;
+
     /**
      * @var ClassMetadataFactory
      */
     protected $metadataFactory;
+
+    /**
+     * The DocumentRepository instances.
+     *
+     * @var DocumentRepository[]
+     */
+    private $repositories = [];
+
+    /**
+     * @var ProxyFactory
+     */
     protected $proxyFactory;
+
+    /**
+     * @var UnitOfWork
+     */
     protected $uow;
+
+    /**
+     * @var HydratorFactoryInterface
+     */
+    protected $hydratorFactory;
+
+    /**
+     * @var ClusterMap
+     */
+    protected $clusterMap;
 
     /**
      * Instantiates a new DocumentMapper, injecting the $mapper that will be used to
@@ -69,17 +104,23 @@ class DocumentManager implements ObjectManager
             $this->metadataFactory->setCacheDriver($cacheDriver);
         }
 
-        $this->uow = new UnitOfWork($this);
-        /**
-         * this must be the last since it will require the Manager to be constructed already.
-         * TODO fixthis
-         */
+        if (!$hf = $this->configuration->getHydratorFactoryImpl()) {
+            $hf = new DynamicHydratorFactory();
+        }
+        $this->hydratorFactory = $hf;
+        $hf->setDocumentManager($this);
+
+        $this->clusterMap = new ClusterMap($this->binding, $this->configuration->getMetadataCacheImpl());
+
+        $this->uow          = new UnitOfWork($this, $this->eventManager, $this->hydratorFactory);
         $this->proxyFactory = new ProxyFactory(
             $this,
             $configuration->getProxyDirectory(),
             $configuration->getProxyNamespace(),
             $configuration->getAutoGenerateProxyClasses()
         );
+
+
     }
 
     /**
@@ -115,7 +156,36 @@ class DocumentManager implements ObjectManager
      * @return Proxy
      */
     public function getReference($rid) {
-        return $this->getUnitOfWork()->getProxy(new Rid($rid), true);
+        if ($document = $this->uow->tryGetById($rid)) {
+            return $document;
+        }
+
+        $oclass = $this->clusterMap->identifyClass(new RID($rid));
+        $md     = $this->metadataFactory->getMetadataForOClass($oclass);
+
+        $document = $this->proxyFactory->getProxy($md->name, [$md->getRidPropertyName() => $rid]);
+        $this->uow->registerManaged($document, $rid, []);
+
+        return $document;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function find($className, $id) {
+        return $this->getRepository($className)->find($id);
+    }
+
+    /**
+     * @param string $className
+     * @param string $id
+     * @param string $fetchPlan
+     *
+     * @return mixed|null
+     * @throws Exception
+     */
+    public function findWithPlan($className, $id, $fetchPlan = '*:0') {
+        return $this->getRepository($className)->findWithPlan($id, $fetchPlan);
     }
 
     /**
@@ -136,41 +206,11 @@ class DocumentManager implements ObjectManager
      * @return Proxy|object
      * @throws OClassNotFoundException|CastingMismatchException|Exception
      */
-    public function find($rid, $fetchPlan = '*:0') {
-        $validator = new RidValidator;
-        $rid       = $validator->check($rid);
+    public function findByRid($rid, $fetchPlan = '*:0') {
+        $class = $this->clusterMap->identifyClass(new Rid($rid));
+        $md    = $this->metadataFactory->getMetadataForOClass($class);
 
-        try {
-            return $this->getUnitOfWork()->getProxy(new Rid($rid), false, $fetchPlan);
-        } catch (OClassNotFoundException $e) {
-            throw $e;
-        } catch (CastingMismatchException $e) {
-            throw $e;
-        } catch (Exception $e) {
-            return null;
-        }
-    }
-
-    /**
-     * Queries for an array of objects with the given $rids.
-     * In case of laziness a collection of proxies is
-     * returned which contain either uninitialized
-     * proxies for entities the UnitOfWork didn't know
-     * about yet, or already existing ones.
-     *
-     * @TODO   The fetchPlan is ignored in case of lazy collections
-     *
-     * @see    ->find()
-     *
-     * @param  array   $rids
-     * @param  boolean $lazy
-     * @param  mixed   $fetchPlan
-     *
-     * @return ArrayCollection
-     * @throws \Doctrine\OrientDB\Binding\InvalidQueryException
-     */
-    public function findRecords(array $rids, $lazy = false, $fetchPlan = '*:0') {
-        return $this->getUnitOfWork()->getCollection($rids, $lazy, $fetchPlan);
+        return $this->findWithPlan($md->name, $rid, $fetchPlan);
     }
 
     /**
@@ -194,7 +234,7 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the ProxyFactory associated with this manager.
+     * Returns the ProxyFactory associated with this document manager.
      *
      * @return ProxyFactory
      */
@@ -203,7 +243,7 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Gets the EventManager used by the DocumentManager.
+     * Gets the EventManager associated with this document manager.
      *
      * @return \Doctrine\Common\EventManager
      */
@@ -212,7 +252,7 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the Metadata factory associated with this manager.
+     * Returns the Metadata factory associated with this document manager.
      *
      * @return MetadataFactory
      */
@@ -221,7 +261,22 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the unit of work associated with this manager
+     * Returns the hydrator factory associated with this document manager
+     * @return HydratorFactoryInterface
+     */
+    public function getHydratorFactory() {
+        return $this->hydratorFactory;
+    }
+
+    /**
+     * @return ClusterMap
+     */
+    public function getClusterMap() {
+        return $this->clusterMap;
+    }
+
+    /**
+     * Returns the unit of work associated with this document manager
      *
      * @return UnitOfWork
      */
@@ -230,51 +285,45 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Returns the Repository class associated with the $class.
-     *
-     * @param  string $className
-     *
-     * @return DocumentRepository
+     * @inheritdoc
      */
-    public function getRepository($className) {
-        $repositoryClass = $className . "Repository";
+    public function getRepository($documentName) {
+        $documentName = ltrim($documentName, '\\');
 
-        if (class_exists($repositoryClass)) {
-            return new $repositoryClass($className, $this);
+        if (isset($this->repositories[$documentName])) {
+            return $this->repositories[$documentName];
         }
 
-        return new DocumentRepository($className, $this);
+        $metadata                  = $this->getClassMetadata($documentName);
+        $customRepositoryClassName = $metadata->customRepositoryClassName;
+
+        if ($customRepositoryClassName !== null) {
+            $repository = new $customRepositoryClassName($this, $this->uow, $metadata);
+        } else {
+            $repository = new DocumentRepository($this, $this->uow, $metadata);
+        }
+
+        $this->repositories[$documentName] = $repository;
+
+        return $repository;
     }
 
     /**
-     * Helper method to initialize a lazy loading proxy or persistent collection.
-     *
-     * This method is a no-op for other objects.
-     *
-     * @param object $obj
-     *
-     * @todo  implement and test
+     * @inheritdoc
      */
     public function initializeObject($obj) {
         throw new \Exception();
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @param \stdClass $object
+     * @inheritdoc
      */
     public function merge($object) {
         throw new \Exception();
     }
 
     /**
-     * Tells the Manager to make an instance managed and persistent.
-     *
-     * The document will be entered into the database at or before transaction
-     * commit or as a result of the flush operation.
-     *
-     * @param object $document
+     * @inheritdoc
      */
     public function persist($document) {
         if (!is_object($document)) {
@@ -284,40 +333,28 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @param object $object
+     * @inheritdoc
      */
     public function remove($object) {
         $this->getUnitOfWork()->remove($object);
     }
 
     /**
-     * Refreshes the persistent state of a document from the database,
-     * overriding any local changes that have not yet been persisted.
-     *
-     * @param object $object
+     * @inheritdoc
      */
     public function refresh($object) {
         $this->getUnitOfWork()->refresh($object);
     }
 
     /**
-     * Clears the DocumentManager.
-     *
-     * All documents that are currently managed by this DocumentManager become
-     * detached.
-     *
-     * @param string|null $class if given, only documents of this type will be detached
+     * @inheritdoc
      */
     public function clear($class = null) {
         $this->uow->clear($class);
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @param \stdClass $object
+     * @inheritdoc
      */
     public function contains($object) {
         throw new \Exception();

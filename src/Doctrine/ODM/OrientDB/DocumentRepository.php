@@ -21,6 +21,7 @@
 namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Util\Inflector;
 use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
@@ -30,18 +31,30 @@ use RuntimeException;
 
 class DocumentRepository implements ObjectRepository
 {
-    protected $manager;
-    protected $className;
+    /**
+     * @var DocumentManager
+     */
+    protected $dm;
+    /**
+     * @var UnitOfWork
+     */
+    protected $uow;
+    /**
+     * @var ClassMetadata
+     */
+    protected $metadata;
 
     /**
      * Instantiates a new repository.
      *
-     * @param string          $className type
-     * @param DocumentManager $manager
+     * @param DocumentManager $dm
+     * @param UnitOfWork      $uow
+     * @param ClassMetadata   $metadata
      */
-    public function __construct($className, DocumentManager $manager) {
-        $this->className = $className;
-        $this->manager   = $manager;
+    public function __construct(DocumentManager $dm, UnitOfWork $uow, ClassMetadata $metadata) {
+        $this->dm = $dm;
+        $this->uow = $uow;
+        $this->metadata = $metadata;
     }
 
     /**
@@ -82,7 +95,6 @@ class DocumentRepository implements ObjectRepository
      * Finds an object by its primary key / identifier.
      *
      * @param string $rid The identifier.
-     * @param string $fetchPlan
      *
      * @return object The object.
      * @throws Caster\CastingMismatchException
@@ -90,21 +102,35 @@ class DocumentRepository implements ObjectRepository
      * @throws OClassNotFoundException
      * @throws \Exception
      */
-    public function find($rid, $fetchPlan = '*:0') {
-        $document = $this->getManager()->find($rid, $fetchPlan);
+    public function find($rid) {
+        return $this->findWithPlan($rid);
+    }
 
-        if (!$document) {
+    /**
+     * @param        $rid
+     * @param string $fetchPlan
+     *
+     * @return mixed|null
+     * @throws Exception
+     */
+    public function findWithPlan($rid, $fetchPlan = '*:0') {
+        if (empty($rid)) {
             return null;
         }
 
-        if ($this->contains($document)) {
-            return $document;
+        // try identity map first
+        if (!$document = $this->uow->tryGetById($rid)) {
+            $document = $this->getDocumentPersister()->load($rid, $fetchPlan);
         }
 
-        throw new Exception(
-            "You are asking to find record $rid through the repository {$this->getClassName()} " .
-            "but the document belongs to another repository (" . get_class($document) . ")"
-        );
+        if ($document && !$this->contains($document)) {
+            throw new Exception(
+                "You are asking to find record $rid through the repository {$this->getClassName()} " .
+                "but the document belongs to another repository (" . get_class($document) . ")"
+            );
+        }
+
+        return $document;
     }
 
     /**
@@ -113,7 +139,7 @@ class DocumentRepository implements ObjectRepository
      * @return mixed The objects.
      */
     public function findAll() {
-        return $this->findBy(array());
+        return $this->findBy([]);
     }
 
     /**
@@ -150,7 +176,7 @@ class DocumentRepository implements ObjectRepository
                 $query->limit($limit);
             }
 
-            $collection = $this->getManager()->execute($query, $fetchPlan);
+            $collection = $this->dm->execute($query, $fetchPlan);
 
             if (!$collection instanceof ArrayCollection) {
                 throw new Exception(
@@ -188,7 +214,7 @@ class DocumentRepository implements ObjectRepository
      * @return string
      */
     public function getClassName() {
-        return $this->className;
+        return $this->metadata->getName();
     }
 
     /**
@@ -199,16 +225,7 @@ class DocumentRepository implements ObjectRepository
      * @return boolean
      */
     protected function contains($document) {
-        return in_array($this->getClassName(), class_parents(get_class($document)));
-    }
-
-    /**
-     * Returns the manager associated with this repository.
-     *
-     * @return DocumentManager
-     */
-    protected function getManager() {
-        return $this->manager;
+        return $this->metadata->name === ClassUtils::getClass($document);
     }
 
     /**
@@ -218,9 +235,14 @@ class DocumentRepository implements ObjectRepository
      * @return array
      */
     protected function getOrientClasses() {
-        /** @var ClassMetadata $metadata */
-        $metadata = $this->getManager()->getClassMetadata($this->className);
+        return explode(',', $this->metadata->getOrientClass());
+    }
 
-        return explode(',', $metadata->getOrientClass());
+    /**
+     * @return Persisters\DocumentPersister
+     */
+    protected function getDocumentPersister()
+    {
+        return $this->uow->getDocumentPersister($this->metadata->name);
     }
 }

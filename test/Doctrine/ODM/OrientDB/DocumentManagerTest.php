@@ -13,18 +13,17 @@
 
 namespace test\Doctrine\ODM\OrientDB;
 
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Binding\BindingResultInterface;
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Query;
-use Doctrine\ODM\OrientDB\DocumentManager;
+use test\PHPUnit\TestCase;
 
 class DocumentManagerTest extends TestCase
 {
-    protected function createTestManager()
-    {
+    protected function createTestManager() {
         $rawResult = json_decode('[{
             "@type": "d", "@rid": "#19:0", "@version": 2, "@class": "Address",
             "name": "Luca",
@@ -42,6 +41,25 @@ class DocumentManagerTest extends TestCase
                 ->method('execute')
                 ->will($this->returnValue($result));
 
+        $data = <<<JSON
+{
+    "classes": [
+        {"name":"Address", "clusters":[1]}
+    ]
+}
+JSON;
+        $data = json_decode($data);
+
+        $stub = $this->getMock(BindingResultInterface::class);
+        $stub->expects($this->any())
+             ->method('getData')
+             ->willReturn($data);
+
+
+        $binding->expects($this->any())
+                ->method('getDatabase')
+                ->willReturn($stub);
+
         $configuration = $this->getConfiguration();
         $configuration->setMetadataDriverImpl($configuration->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Document/Stub']));
         $manager = new DocumentManager($binding, $configuration);
@@ -49,17 +67,15 @@ class DocumentManagerTest extends TestCase
         return $manager;
     }
 
-    public function testMethodUsedToTryTheManager()
-    {
-        $manager = $this->createTestManager();
+    public function testMethodUsedToTryTheManager() {
+        $manager  = $this->createTestManager();
         $metadata = $manager->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
 
         $this->assertInstanceOf(ClassMetadata::class, $metadata);
     }
 
-    public function testManagerActsAsAProxyForExecutingQueries()
-    {
-        $query = new Query(array('Address'));
+    public function testManagerActsAsAProxyForExecutingQueries() {
+        $query   = new Query(array('Address'));
         $manager = $this->createTestManager();
         $results = $manager->execute($query);
 
@@ -67,21 +83,9 @@ class DocumentManagerTest extends TestCase
         $this->assertInstanceOf('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address', $results[0]);
     }
 
-    public function testFindingADocument()
-    {
+    public function testFindingADocument() {
         $manager = $this->createTestManager();
 
-        $this->assertInstanceOf('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address', $manager->find('1:1'));
-    }
-
-    public function testProvidingRightRepositoryClass()
-    {
-        $manager = $this->createDocumentManager();
-        $cityRepository = $manager->getRepository('test\Doctrine\ODM\OrientDB\Document\Stub\City');
-
-        $this->assertInstanceOf('test\Doctrine\ODM\OrientDB\Document\Stub\CityRepository',$cityRepository);
-
-        $addressRepository = $manager->getRepository('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
-        $this->assertInstanceOf(DocumentRepository::class,$addressRepository);
+        $this->assertInstanceOf('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address', $manager->findByRid('1:1'));
     }
 }

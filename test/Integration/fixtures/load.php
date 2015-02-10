@@ -43,7 +43,8 @@ class Fixtures
             'Address'  => '{"city": {"propertyType": "STRING"}}',
             'Country'  => null,
             'City'     => null,
-            'Profile'  => '{ "name": {"propertyType": "STRING"} , "followers": {"propertyType": "LINKMAP","linkedClass": "Profile"} }',
+            'Phone'    => '{"phone": {"propertyType": "STRING"}}',
+            'Profile'  => '{ "name": {"propertyType": "STRING"} , "followers": {"propertyType": "LINKMAP","linkedClass": "Profile"}, "phones": {"propertyType":"EMBEDDEDLIST", "linkedClass":"Phone"} }',
             'Company'  => null,
             'Comment'  => null,
             'Post'     => '{"comments": {"propertyType": "LINKLIST","linkedClass": "Comment"}}',
@@ -85,8 +86,22 @@ class Fixtures
 
         //Insert Profile
         $profiles = array('David','Alex','Luke','Marko','Rexter','Gremlin', 'Thinkerpop', 'Frames');
-        foreach ($profiles as $profile) {
-            $this->client->post('/document/'. $this->dbname , $this->contentType, '{"@class": "Profile", "name": "' . $profile . '" }')->send();
+        foreach ($profiles as $k => $profile) {
+            $data = new \stdClass();
+            $data->{'@class'} = "Profile";
+            $data->name = $profile;
+            $phones = [];
+            for ($i=0; $i<2; $i++) {
+                $phone = new \stdClass();
+                $phone->{'@type'} = 'd';
+                $phone->{'@class'} = 'Phone';
+                $phone->phone = "555-201-$i" . str_repeat($k, 3);
+                $phones []= $phone;
+            }
+            $data->phones = $phones;
+            $data = json_encode($data);
+            $res = $this->client->post('/document/'. $this->dbname , $this->contentType, $data)->send();
+            $body = $res->getBody(true);
         }
 
         //Insert Comment

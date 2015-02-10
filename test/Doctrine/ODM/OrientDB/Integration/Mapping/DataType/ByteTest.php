@@ -22,7 +22,7 @@ class ByteTest extends TestCase
     public function testHydrationOfAByteProperty()
     {
         $manager = $this->createDocumentManager();
-        $role = $manager->find("#4:0");
+        $role = $manager->findByRid("#4:0");
 
         $this->assertInternalType('integer', $role->mode);
     }

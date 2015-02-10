@@ -12,6 +12,7 @@
 
 namespace test\Doctrine\ODM\OrientDB\Integration\Mapping\DataType;
 
+use Doctrine\OrientDB\Query\Command;
 use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Query;
 
@@ -27,12 +28,14 @@ class LongTest extends TestCase
 
         $query = new Query();
         $query->update('Profile')
-            ->set(array('hash' => 2937480 ))
-            ->where('@rid = ?', '#'.$this->getClassId('Profile').':0');
+              ->set(array('hash' => 2937480 ))
+              ->where('@rid = ?', '#'.$this->getClassId('Profile').':0')
+              ->returns(Command::RETURN_AFTER)
+        ;
 
         $manager->execute($query);
 
-        $neoProfile = $manager->find("#".$this->getClassId('Profile').":0");
+        $neoProfile = $manager->findByRid("#".$this->getClassId('Profile').":0");
 
         $this->assertInternalType('integer', $neoProfile->hash);
     }

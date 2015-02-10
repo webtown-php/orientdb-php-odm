@@ -32,19 +32,8 @@ class IntegerTest extends TestCase
             'mismatches_tolerance' => true,
         ));
 
-        $post = $manager->find("#".$this->postId.":0");
+        $post = $manager->findByRid("#".$this->postId.":0");
         $this->assertInternalType('integer', $post->id);
-    }
-
-    /**
-     * @expectedException Doctrine\ODM\OrientDB\Caster\CastingMismatchException
-     */
-    public function testAnExceptionIsRaisedWhenAnIntegerPropertyIsNotAnInteger()
-    {
-        $manager = $this->createDocumentManager();
-
-        //attention 6-th record can change
-        $post = $manager->find("#".$this->postId.":6");
     }
 
     public function testMismatchedAttributesAreConvertedIfTheMapperToleratesMismatches()
@@ -53,7 +42,7 @@ class IntegerTest extends TestCase
             'mismatches_tolerance' => true,
         ));
 
-        $post = $manager->find("#".$this->postId.":0");
+        $post = $manager->findByRid("#".$this->postId.":0");
 
         $this->assertInternalType('integer', $post->title);
     }

@@ -29,4 +29,10 @@ class Comment
      * @RID
      */
     public $rid;
+
+    /**
+     * @Property(type="string")
+     * @var string
+     */
+    public $body;
 }

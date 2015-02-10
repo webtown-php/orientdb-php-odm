@@ -20,6 +20,7 @@
 namespace Doctrine\OrientDB\Query;
 
 use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\Query\Command\Update;
 use Doctrine\OrientDB\Query\Validator\ValidationException;
 use Doctrine\OrientDB\Query\Command\Credential\Grant;
 use Doctrine\OrientDB\Query\Command\Credential\Revoke;
@@ -63,10 +64,12 @@ class Query implements QueryInterface
     /**
      * Builds a query with the given $command on the given $target.
      *
-     * @param array   $target
-     * @param string  $command
+     * @param array $target
+     * @param array $commands
+     *
+     * @throws Exception
      */
-    public function __construct(array $target = array(), array $commands = array())
+    public function __construct(array $target = [], array $commands = [])
     {
         $this->setCommands($commands);
 
@@ -627,7 +630,7 @@ class Query implements QueryInterface
      * Changes the internal command to an UPDATE, setting the class to update.
      *
      * @param  string $class
-     * @return Command
+     * @return Update
      */
     public function update($class)
     {

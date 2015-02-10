@@ -19,6 +19,7 @@
  */
 
 namespace test\Integration\Document;
+use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
 * @Document(class="Post")
@@ -31,7 +32,7 @@ class Post
     public $rid;
 
     /**
-     * @Property(type="link_list")
+     * @LinkList(targetClass="Comment")
      */
     public $comments;
 
@@ -55,6 +56,9 @@ class Post
         $this->rid = $rid;
     }
 
+    /**
+     * @return PersistentCollection|Comment[]
+     */
     public function getComments()
     {
         return $this->comments;

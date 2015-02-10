@@ -23,7 +23,7 @@ class StringTest extends TestCase
     {
         $manager = $this->createDocumentManager();
         //Country
-        $country = $manager->find('#'.$this->getClassId('Country').':0');
+        $country = $manager->findByRid('#'.$this->getClassId('Country').':0');
 
         $this->assertInternalType('string', $country->name);
     }

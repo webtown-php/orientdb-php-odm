@@ -31,10 +31,13 @@ class Address
     public $rid;
 
     /**
-     * @Link(targetClass="test")
+     * @Link(targetClass="City")
      */
     protected $city;
 
+    /**
+     * @return City
+     */
     public function getCity()
     {
         return $this->city;

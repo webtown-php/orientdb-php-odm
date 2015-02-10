@@ -11,9 +11,9 @@ use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
-use Doctrine\ODM\OrientDB\Hydration\Hydrator;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Persisters\DocumentPersister;
 
 /**
  * Class ProxyFactory
@@ -24,9 +24,6 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
  */
 class ProxyFactory extends AbstractProxyFactory
 {
-
-    /** @var \Doctrine\ODM\OrientDB\Hydration\Hydrator */
-    private $hydrator;
 
     /**
      * @var ClassMetadataFactory
@@ -69,6 +66,7 @@ class ProxyFactory extends AbstractProxyFactory
     public function createProxyDefinition($className) {
         /** @var ClassMetadata $classMetadata */
         $classMetadata    = $this->metadataFactory->getMetadataFor($className);
+        $documentPersister = $this->uow->getDocumentPersister($className);
         $reflectionFields = $classMetadata->getReflectionProperties();
         $reflectionId     = $reflectionFields[$classMetadata->getRidPropertyName()];
 
@@ -76,8 +74,8 @@ class ProxyFactory extends AbstractProxyFactory
             ClassUtils::generateProxyClassName($className, $this->proxyNamespace),
             $classMetadata->getIdentifierFieldNames(),
             $reflectionFields,
-            $this->createInitializer($classMetadata, $this->uow->getHydrator(), $reflectionId),
-            $this->createCloner($classMetadata, $this->uow->getHydrator(), $reflectionId)
+            $this->createInitializer($classMetadata, $documentPersister, $reflectionId),
+            $this->createCloner($classMetadata, $documentPersister, $reflectionId)
         );
     }
 
@@ -85,18 +83,18 @@ class ProxyFactory extends AbstractProxyFactory
      * Generates a closure capable of initializing a proxy
      *
      * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
-     * @param Hydrator                                           $hydrator
+     * @param DocumentPersister                                  $documentPersister
      * @param \ReflectionProperty                                $reflectionId
      *
      * @return callable
      */
     private function createInitializer(
         BaseClassMetadata $classMetadata,
-        Hydrator $hydrator,
+        DocumentPersister $documentPersister,
         \ReflectionProperty $reflectionId
     ) {
         if ($classMetadata->getReflectionClass()->hasMethod('__wakeup')) {
-            return function (BaseProxy $proxy) use ($reflectionId, $hydrator) {
+            return function (BaseProxy $proxy) use ($reflectionId, $documentPersister) {
                 $proxy->__setInitializer(null);
                 $proxy->__setCloner(null);
                 if ($proxy->__isInitialized()) {
@@ -112,17 +110,13 @@ class ProxyFactory extends AbstractProxyFactory
                 $proxy->__wakeup();
 
                 $rid    = $reflectionId->getValue($proxy);
-                $loaded = $hydrator->load(array($rid));
-                if (null === $loaded) {
+                if ($documentPersister->load($rid, '*:0', $proxy) === null) {
                     throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
-                } else {
-                    $hydrator->hydrate($loaded[0], $proxy);
                 }
-
             };
         }
 
-        return function (BaseProxy $proxy) use ($reflectionId, $hydrator) {
+        return function (BaseProxy $proxy) use ($reflectionId, $documentPersister) {
             $proxy->__setInitializer(null);
             $proxy->__setCloner(null);
             if ($proxy->__isInitialized()) {
@@ -137,11 +131,8 @@ class ProxyFactory extends AbstractProxyFactory
             $proxy->__setInitialized(true);
 
             $rid    = $reflectionId->getValue($proxy);
-            $loaded = $hydrator->load(array($rid));
-            if (null === $loaded) {
+            if ($documentPersister->load($rid, '*:0', $proxy) === null) {
                 throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
-            } else {
-                $hydrator->hydrate($loaded[0], $proxy);
             }
         };
     }
@@ -150,30 +141,28 @@ class ProxyFactory extends AbstractProxyFactory
      * Generates a closure capable of finalizing a cloned proxy
      *
      * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
-     * @param Hydrator                                           $hydrator
+     * @param DocumentPersister                                  $documentPersister
      * @param \ReflectionProperty                                $reflectionId
      *
      * @return callable
      */
     private function createCloner(
         BaseClassMetadata $classMetadata,
-        Hydrator $hydrator,
+        DocumentPersister $documentPersister,
         \ReflectionProperty $reflectionId
     ) {
-        return function (BaseProxy $proxy) use ($reflectionId, $hydrator, $classMetadata) {
+        return function (BaseProxy $proxy) use ($reflectionId, $documentPersister, $classMetadata) {
             if ($proxy->__isInitialized()) {
                 return;
             }
             $proxy->__setInitialized(true);
             $proxy->__setInitializer(null);
             $rid      = $reflectionId->getValue($proxy);
-            $original = $hydrator->load(array($rid));
+            $original = $documentPersister->load($rid);
 
             if (null === $original) {
                 throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
             }
-
-            $original = $hydrator->hydrate($original[0], $proxy);
 
             foreach ($classMetadata->getReflectionClass()->getProperties() as $reflectionProperty) {
                 $propertyName = $reflectionProperty->getName();

@@ -40,7 +40,7 @@ class Update extends Command implements UpdateInterface
      */
     protected function getSchema()
     {
-        return "UPDATE :Class SET :Updates :Where :Returns";
+        return "UPDATE :Class SET :Updates :Returns :Where";
     }
 
     /**
@@ -90,7 +90,11 @@ class Update extends Command implements UpdateInterface
      */
     public function canHydrate()
     {
-        return self::RETURN_BEFORE === $this->getTokenValue('Returns') ||
-            self::RETURN_AFTER === $this->getTokenValue('Returns');
+        $val = $this->getTokenValue('Returns');
+        if (count($val) === 1) {
+            $val = $val[0];
+        }
+        return self::RETURN_BEFORE === $val ||
+            self::RETURN_AFTER === $val;
     }
 }

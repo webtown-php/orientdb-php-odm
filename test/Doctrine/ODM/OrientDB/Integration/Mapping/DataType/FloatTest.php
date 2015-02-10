@@ -23,7 +23,7 @@ class FloatTest extends TestCase
     {
         $manager = $this->createDocumentManager();
         //MapPoint
-        $point = $manager->find("#".$this->getClassId('MapPoint').":0");
+        $point = $manager->findByRid("#".$this->getClassId('MapPoint').":0");
 
         $this->assertInternalType('float', $point->y);
     }

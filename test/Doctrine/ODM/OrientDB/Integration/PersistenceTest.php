@@ -7,6 +7,9 @@ use Doctrine\ODM\OrientDB\DocumentManager;
 use test\Integration\Document\Country;
 use test\PHPUnit\TestCase;
 
+/**
+ * @group SKIP
+ */
 class PersistenceTest extends TestCase
 {
     /**
@@ -29,7 +32,7 @@ class PersistenceTest extends TestCase
         $this->manager->clear();
         $this->assertNotNull($document->getRid());
 
-        $proxy = $this->manager->find($document->getRid());
+        $proxy = $this->manager->findByRid($document->getRid());
         $this->assertEquals('SinglePersistTest', $proxy->name);
 
         return $document->getRid();
@@ -41,14 +44,14 @@ class PersistenceTest extends TestCase
      */
     public function testUpdateDocument($rid)
     {
-        $document = $this->manager->find($rid);
+        $document = $this->manager->findByRid($rid);
         $document->name = 'SingleUpdateTest';
 
         unset($document);
         $this->manager->flush();
         $this->manager->clear();
 
-        $proxy = $this->manager->find($rid);
+        $proxy = $this->manager->findByRid($rid);
         $this->assertEquals('SingleUpdateTest', $proxy->name);
 
         return $rid;
@@ -60,12 +63,12 @@ class PersistenceTest extends TestCase
      */
     public function testDeleteDocument($rid)
     {
-        $document = $this->manager->find($rid);
+        $document = $this->manager->findByRid($rid);
         $this->manager->remove($document);
         $this->manager->flush();
         unset($document);
         $this->manager->clear();
 
-        $this->assertNull($this->manager->find($rid));
+        $this->assertNull($this->manager->findByRid($rid));
     }
 } 

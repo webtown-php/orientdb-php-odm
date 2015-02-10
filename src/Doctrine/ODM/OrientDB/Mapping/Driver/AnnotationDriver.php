@@ -8,26 +8,28 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedPropertyBase;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkPropertyBase;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedMap;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedPropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedSet;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Link;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkList;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkMap;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkPropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkSet;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
 class AnnotationDriver extends AbstractAnnotationDriver
 {
     protected $entityAnnotationClasses = [
-        Document::class => 1
+        Document::class         => 1,
+        EmbeddedDocument::class => 2,
     ];
 
     /**
@@ -49,12 +51,33 @@ class AnnotationDriver extends AbstractAnnotationDriver
      */
     public function loadMetadataForClass($className, ClassMetadata $metadata) {
         /** @var \Doctrine\ODM\OrientDB\Mapping\ClassMetadata $metadata */
-        /** @var Document $classAnnotation */
-        $classAnnotation = $this->reader->getClassAnnotation($metadata->getReflectionClass(), Document::class);
-        if (empty($classAnnotation)) {
+        $classAnnotations = $this->reader->getClassAnnotations($metadata->getReflectionClass());
+        if (count($classAnnotations) === 0) {
             throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
         }
-        $metadata->setOrientClass($classAnnotation->class);
+
+        if (count($classAnnotations) > 1){
+            $documentAnnots = [];
+            foreach ($classAnnotations as $annot) {
+
+                foreach ($this->entityAnnotationClasses as $annotClass => $i) {
+                    if ($annot instanceof $annotClass) {
+                        $documentAnnots[$i] = $annot;
+                        continue 2;
+                    }
+                }
+            }
+            // find the winning document annotation
+            ksort($documentAnnots);
+            $docAnnotation = reset($documentAnnots);
+        } else {
+            $docAnnotation = end($classAnnotations);
+        }
+
+        $metadata->setOrientClass($docAnnotation->class);
+        if ($docAnnotation instanceof EmbeddedDocument) {
+            $metadata->isEmbeddedDocument = true;
+        }
 
         foreach ($metadata->getReflectionClass()->getProperties() as $refProperty) {
             $pas = $this->reader->getPropertyAnnotations($refProperty);
@@ -132,7 +155,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
             }
         }
 
-        if (!$metadata->getRidPropertyName()) {
+        if (!$metadata->isEmbeddedDocument && !$metadata->getRidPropertyName()) {
             throw MappingException::missingRid($metadata->getName());
         }
     }
@@ -150,13 +173,15 @@ class AnnotationDriver extends AbstractAnnotationDriver
     }
 
     private function &linkToArray(&$mapping, LinkPropertyBase $link) {
-        $mapping['cascade'] = $link->cascade;
+        $mapping['cascade']     = $link->cascade;
         $mapping['targetClass'] = $link->targetClass;
+
         return $mapping;
     }
 
     private function &embeddedToArray(&$mapping, EmbeddedPropertyBase $embed) {
         $mapping['targetClass'] = $embed->targetClass;
+
         return $mapping;
     }
 

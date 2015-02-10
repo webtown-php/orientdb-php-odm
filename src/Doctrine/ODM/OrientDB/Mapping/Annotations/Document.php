@@ -18,7 +18,6 @@
  */
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
-use Doctrine\Common\Annotations\Annotation;
 
 /**
  * @Annotation
@@ -31,4 +30,9 @@ class Document
      * @var string
      */
     public $class;
+
+    /**
+     * @var string
+     */
+    public $repositoryClass;
 }

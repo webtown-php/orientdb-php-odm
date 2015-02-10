@@ -10,6 +10,10 @@
 
 namespace test\Doctrine\ODM\OrientDB\Integration;
 
+use Doctrine\ODM\OrientDB\PersistentCollection;
+use test\Integration\Document\Address;
+use test\Integration\Document\Post;
+use test\Integration\Document\Profile;
 use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Query;
 
@@ -20,11 +24,13 @@ class DocumentManagerTest extends TestCase
 {
     public $postId;
     public $addressId;
+    public $profileId;
 
     public function setup()
     {
         $this->postId    = $this->getClassId('Post');
         $this->addressId = $this->getClassId('Address');
+        $this->profileId = $this->getClassId('Profile');
     }
 
     /**
@@ -36,10 +42,17 @@ class DocumentManagerTest extends TestCase
             'mismatches_tolerance' => true,
         ]);
 
-        $post       = $manager->find($this->postId.':0', '*:0');
+        $post       = $manager->findByRid($this->postId.':0', '*:0');
         $comments   = $post->getComments();
 
         $this->assertInstanceOf('test\Integration\Document\Comment', $comments[0]);
+    }
+
+    public function testFind() {
+        $dm = $this->createDocumentManager();
+        /** @var Profile $profile */
+        $profile = $dm->find(Profile::class, $this->profileId.':0');
+        $phones = $profile->getPhones()->toArray();
     }
 
     /**
@@ -105,7 +118,7 @@ class DocumentManagerTest extends TestCase
     public function testFindingARecord()
     {
         $manager = $this->createDocumentManager();
-        $address = $manager->find($this->addressId.':0');
+        $address = $manager->findByRid($this->addressId.':0');
 
         $this->assertInstanceOf('test\Integration\Document\Address', $address);
     }
@@ -119,9 +132,9 @@ class DocumentManagerTest extends TestCase
             'mismatches_tolerance' => true,
         ));
 
-        $post = $manager->find($this->postId.':0', '*:-1');
+        $post = $manager->findByRid($this->postId.':0', '*:-1');
 
-        $this->assertInstanceOf(static::COLLECTION_CLASS, $post->comments);
+        $this->assertInstanceOf(PersistentCollection::class, $post->comments);
     }
 
     /**
@@ -130,9 +143,12 @@ class DocumentManagerTest extends TestCase
     public function testGettingARelatedRecord()
     {
         $manager = $this->createDocumentManager();
-        $address = $manager->find($this->addressId.':0');
+        /** @var Address $address */
+        $address = $manager->findByRid($this->addressId.':0');
 
-        $this->assertInstanceOf('test\Integration\Document\Country', $address->getCity());
+        $city = $address->getCity();
+        $this->assertInstanceOf('test\Integration\Document\Country', $city);
+        $this->assertEquals('Rome', $city->name);
     }
 
     /**
@@ -144,7 +160,7 @@ class DocumentManagerTest extends TestCase
             'mismatches_tolerance' => true,
         ));
 
-        $post       = $manager->find($this->postId.':0');
+        $post       = $manager->findByRid($this->postId.':0');
         $comments   = $post->getComments();
 
         $this->assertInstanceOf('test\Integration\Document\Comment', $comments[0]);
@@ -158,7 +174,7 @@ class DocumentManagerTest extends TestCase
     {
         $manager = $this->createDocumentManager([], ['./docs']);
 
-        $manager->find($this->postId.':0');
+        $manager->findByRid($this->postId.':0');
     }
 
     /**
@@ -168,31 +184,9 @@ class DocumentManagerTest extends TestCase
     {
         $manager = $this->createDocumentManager();
 
-        $address = $manager->find($this->postId.':2000');
+        $address = $manager->findByRid($this->postId.':2000');
 
         $this->assertInternalType("null", $address);
-    }
-
-    /**
-     * @group integration
-     */
-    public function testFindingSomeRecords()
-    {
-        $manager = $this->createDocumentManager();
-
-        $addresses = $manager->findRecords(array($this->addressId.':0', $this->addressId.':1'));
-
-        $this->assertEquals(2, count($addresses));
-        $this->assertInstanceOf('test\Integration\Document\Address', $addresses[0]);
-    }
-
-    /**
-     * @group integration
-     */
-    public function testFindingSomeGoodAndSomeWrongRecordsReturnsGoodRecords()
-    {
-        $manager = $this->createDocumentManager();
-        $manager->findRecords(array($this->postId.':0', $this->postId.':700000'));
     }
 
     /**

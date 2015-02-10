@@ -12,6 +12,7 @@
 namespace Doctrine\ODM\OrientDB\Mapping;
 
 use Doctrine\Common\Persistence\Mapping\ClassMetadata as DoctrineMetadata;
+use Doctrine\Instantiator\Instantiator;
 use Doctrine\ODM\OrientDB\Mapping as DataMapper;
 
 /**
@@ -90,7 +91,22 @@ class ClassMetadata implements DoctrineMetadata
      *
      * @var string
      */
-    public $rootEntityName;
+    public $rootDocumentName;
+
+    /**
+     * READ-ONLY: Whether this class describes the mapping of a embedded document.
+     *
+     * @var boolean
+     */
+    public $isEmbeddedDocument = false;
+
+    /**
+     * The name of the custom repository class used for the document class.
+     * (Optional).
+     *
+     * @var string
+     */
+    public $customRepositoryClassName;
 
     /**
      * @var string identifier property name
@@ -116,8 +132,20 @@ class ClassMetadata implements DoctrineMetadata
 
     public $associationMappings;
 
+    /**
+     * @var callable
+     */
     protected $setter;
+
+    /**
+     * @var callable
+     */
     protected $getter;
+
+    /**
+     * @var Instantiator
+     */
+    private $instantiator;
 
     /**
      * Instantiates a new Metadata for the given $className.
@@ -133,6 +161,7 @@ class ClassMetadata implements DoctrineMetadata
         $this->getter = function ($document, $property) {
             return $document->$property;
         };
+        $this->instantiator = new Instantiator();
     }
 
     /**
@@ -324,8 +353,23 @@ class ClassMetadata implements DoctrineMetadata
         $mapping['isCascadeMerge']   = in_array('merge', $cascades);
         $mapping['isCascadeDetach']  = in_array('detach', $cascades);
 
-        $this->fieldMappings[$mapping['fieldName']] = $mapping;
+        $mapping['isOwningSide']  = true;
+        $mapping['isInverseSide'] = false;
+        if (isset($mapping['reference'])) {
+            if (isset($mapping['inversedBy']) && $mapping['inversedBy']) {
+                $mapping['isOwningSide']  = true;
+                $mapping['isInverseSide'] = false;
+            }
+            if (isset($mapping['mappedBy']) && $mapping['mappedBy']) {
+                $mapping['isOwningSide']  = false;
+                $mapping['isInverseSide'] = true;
+            }
+            if (!isset($mapping['orphanRemoval'])) {
+                $mapping['orphanRemoval'] = false;
+            }
+        }
 
+        $this->fieldMappings[$mapping['fieldName']] = $mapping;
         if (isset($mapping['association'])) {
             $this->associationMappings[$fieldMame] = $mapping;
         }
@@ -344,7 +388,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapLink(array $mapping) {
         $mapping['type']        = 'link';
         $mapping['association'] = self::LINK;
-        $mapping['link']        = true;
+        $mapping['reference']   = true;
         $this->mapField($mapping);
 
         return $this;
@@ -361,7 +405,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapLinkList(array $mapping) {
         $mapping['type']        = 'link_list';
         $mapping['association'] = self::LINK_LIST;
-        $mapping['link']        = true;
+        $mapping['reference']   = true;
         $this->mapField($mapping);
 
         return $this;
@@ -378,7 +422,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapLinkSet(array $mapping) {
         $mapping['type']        = 'link_set';
         $mapping['association'] = self::LINK_SET;
-        $mapping['link']        = true;
+        $mapping['reference']   = true;
         $this->mapField($mapping);
 
         return $this;
@@ -395,7 +439,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapLinkMap(array $mapping) {
         $mapping['type']        = 'link_map';
         $mapping['association'] = self::LINK_MAP;
-        $mapping['link']        = true;
+        $mapping['reference']   = true;
         $this->mapField($mapping);
 
         return $this;
@@ -412,7 +456,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapEmbedded(array $mapping) {
         $mapping['type']        = 'embedded';
         $mapping['association'] = self::EMBED;
-        $mapping['embed']       = true;
+        $mapping['embedded']    = true;
         $this->mapField($mapping);
 
         return $this;
@@ -429,7 +473,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapEmbeddedList(array $mapping) {
         $mapping['type']        = 'embedded_list';
         $mapping['association'] = self::EMBED_LIST;
-        $mapping['embed']       = true;
+        $mapping['embedded']    = true;
         $this->mapField($mapping);
 
         return $this;
@@ -446,7 +490,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapEmbeddedSet(array $mapping) {
         $mapping['type']        = 'embedded_set';
         $mapping['association'] = self::EMBED_SET;
-        $mapping['embed']       = true;
+        $mapping['embedded']    = true;
         $this->mapField($mapping);
 
         return $this;
@@ -463,7 +507,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapEmbeddedMap(array $mapping) {
         $mapping['type']        = 'embedded_map';
         $mapping['association'] = self::EMBED_MAP;
-        $mapping['embed']       = true;
+        $mapping['embedded']    = true;
         $this->mapField($mapping);
 
         return $this;
@@ -520,7 +564,7 @@ class ClassMetadata implements DoctrineMetadata
         $this->reflClass = $reflService->getClass($this->name);
 
         if ($this->reflClass) {
-            $this->name = $this->rootEntityName = $this->reflClass->getName();
+            $this->name = $this->rootDocumentName = $this->reflClass->getName();
         }
     }
 
@@ -537,4 +581,28 @@ class ClassMetadata implements DoctrineMetadata
         }
     }
 
+    /**
+     * Registers a custom repository class for the document class.
+     *
+     * @param string $repositoryClassName The class name of the custom repository.
+     */
+    public function setCustomRepositoryClass($repositoryClassName)
+    {
+        $namespace = $this->reflClass->getNamespaceName();
+        if ($repositoryClassName && strpos($repositoryClassName, '\\') === false && strlen($namespace)) {
+            $repositoryClassName = $namespace . '\\' . $repositoryClassName;
+        }
+
+        $this->customRepositoryClassName = $repositoryClassName;
+    }
+
+    /**
+     * Creates a new instance of the mapped class, without invoking the constructor.
+     *
+     * @return object
+     */
+    public function newInstance()
+    {
+        return $this->instantiator->instantiate($this->name);
+    }
 }

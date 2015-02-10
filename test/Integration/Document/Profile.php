@@ -19,6 +19,7 @@
  */
 
 namespace test\Integration\Document;
+use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
 * @Document(class="Profile")
@@ -34,4 +35,32 @@ class Profile
      * @Property(type="long")
      */
     public $hash;
+
+    /**
+     * @LinkMap(targetClass="Profile")
+     * @var Profile[]
+     */
+    public $followers;
+
+    /**
+     * @EmbeddedList(targetClass="Phone")
+     * @var Phone[]
+     */
+    public $phones;
+
+    /**
+     * @return Phone[]|PersistentCollection
+     */
+    public function getPhones() {
+        return $this->phones;
+    }
+
+    /**
+     * @return Profile[]|PersistentCollection
+     */
+    public function getFollowers() {
+        return $this->followers;
+    }
+
+
 }

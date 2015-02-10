@@ -11,6 +11,8 @@ use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
+use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\Driver\AnnotationDriver;
 
@@ -31,6 +33,7 @@ class Configuration
         $defaults = [
             'proxy_namespace'           => 'Doctrine\ODM\OrientDB\Proxy',
             'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS,
+            'hydratorFactoryImpl'       => null,
         ];
 
         $this->_attributes = array_merge($defaults, $options);
@@ -196,6 +199,24 @@ class Configuration
      */
     public function setMetadataCacheImpl(Cache $cacheImpl) {
         $this->_attributes['metadataCacheImpl'] = $cacheImpl;
+    }
+
+    /**
+     * Sets the hydrator factory implementation that is used for hydrating documents
+     *
+     * @param HydratorFactoryInterface $factoryImpl
+     */
+    public function setHydratorFactoryImpl(HydratorFactoryInterface $factoryImpl) {
+        $this->_attributes['hydratorFactoryImpl'] = $factoryImpl;
+    }
+
+    /**
+     * Gets the hydrator factory implementation
+     *
+     * @return HydratorFactoryInterface
+     */
+    public function getHydratorFactoryImpl() {
+        return $this->_attributes['hydratorFactoryImpl'];
     }
 
     public function getPersisterStrategy() {

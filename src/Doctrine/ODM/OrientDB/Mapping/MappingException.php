@@ -15,15 +15,15 @@ use Doctrine\ODM\OrientDB\Types\Rid;
 class MappingException extends \Exception
 {
     public static function missingRid($class) {
-        return new self(sprintf('The identifier mapping for %s could not be found.', $class));
+        return new self(sprintf('the identifier mapping for %s could not be found.', $class));
     }
 
     public static function noClusterForRid(Rid $rid) {
-        return new self(sprintf('There is no cluster for %s.', $rid->getValue()));
+        return new self(sprintf('there is no cluster for %s.', $rid->getValue()));
     }
 
     public static function noMappingForProperty($property, $class) {
-        return new self(sprintf('The %s class has no mapping for %s property.', $class, $property));
+        return new self(sprintf('the %s class has no mapping for %s property.', $class, $property));
     }
 
     /**
@@ -37,7 +37,7 @@ class MappingException extends \Exception
      * @return self
      */
     public static function reflectionFailure($document, \ReflectionException $previousException) {
-        return new self('An error occurred in ' . $document, 0, $previousException);
+        return new self('an error occurred in ' . $document, 0, $previousException);
     }
 
     /**
@@ -48,13 +48,13 @@ class MappingException extends \Exception
     public static function classIsNotAValidEntityOrMappedSuperClass($className) {
         if (false !== ($parent = get_parent_class($className))) {
             return new self(sprintf(
-                'Class "%s" sub class of "%s" is not a valid entity or mapped super class.',
+                'class "%s" sub class of "%s" is not a valid entity or mapped super class.',
                 $className, $parent
             ));
         }
 
         return new self(sprintf(
-            'Class "%s" is not a valid entity or mapped super class.',
+            'class "%s" is not a valid entity or mapped super class.',
             $className
         ));
     }
@@ -66,7 +66,7 @@ class MappingException extends \Exception
      * @return MappingException
      */
     public static function duplicateFieldMapping($entity, $fieldName) {
-        return new self('Property "' . $fieldName . '" in "' . $entity . '" was already declared, but it must be declared only once');
+        return new self('property "' . $fieldName . '" in "' . $entity . '" was already declared, but it must be declared only once');
     }
 
     /**
@@ -76,6 +76,26 @@ class MappingException extends \Exception
      */
     public static function simpleReferenceRequiresTargetDocument($className, $fieldName)
     {
-        return new self("Target document must be specified for simple reference: $className::$fieldName");
+        return new self("target document must be specified for simple reference: $className::$fieldName");
+    }
+
+    /**
+     * @param $name
+     *
+     * @return MappingException
+     */
+    public static function typeExists($name)
+    {
+        return new self('type ' . $name . ' already exists.');
+    }
+
+    /**
+     * @param $name
+     *
+     * @return MappingException
+     */
+    public static function typeNotFound($name)
+    {
+        return new self('type to be overwritten ' . $name . ' does not exist.');
     }
 }

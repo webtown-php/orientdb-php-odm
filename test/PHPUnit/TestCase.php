@@ -117,13 +117,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return new Mapping\Driver\AnnotationDriver($reader, (array)$paths);
     }
 
-    protected function ensureProxy(\stdClass $orientDocument)
-    {
-        $manager = $this->createDocumentManager();
-
-        return $manager->getUnitOfWork()->getHydrator()->hydrate($orientDocument);
-    }
-
     public function assertHttpStatus($expected, HttpBindingResultInterface $result, $message = null)
     {
         $response = $result->getInnerResponse();

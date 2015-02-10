@@ -24,7 +24,7 @@ class UnitOfWorkTest extends TestCase
      * @before
      */
     public function before() {
-        $this->manager = $this->createDocumentManager(['document_dirs' => ['test/Doctrine/ODM/OrientDB/Document/Stub' => 'test']]);
+        $this->manager = $this->createDocumentManager([], ['test/Doctrine/ODM/OrientDB/Document/Stub']);
         $this->metadataFactory = $this->manager->getMetadataFactory();
     }
 
@@ -32,7 +32,7 @@ class UnitOfWorkTest extends TestCase
      * @test
      */
     public function can_do_it() {
-        $uow = new UnitOfWork($this->manager);
+        $uow = $this->manager->getUnitOfWork();
 
         $adr = new Address();
         $orig = [];
