@@ -158,7 +158,7 @@ class ClassMetadata implements DoctrineMetadata
             $document->$property = $value;
         };
 
-        $this->getter = function ($document, $property) {
+        $this->getter       = function ($document, $property) {
             return $document->$property;
         };
         $this->instantiator = new Instantiator();
@@ -315,7 +315,18 @@ class ClassMetadata implements DoctrineMetadata
      * @inheritdoc
      */
     public function getIdentifierValues($object) {
-        return $this->getFieldValue($object, $this->identifier);
+        return [$this->getFieldValue($object, $this->identifier)];
+    }
+
+    /**
+     * Returns the RID for the specified document
+     *
+     * @param object $document
+     *
+     * @return string
+     */
+    public function getIdentifierValue($document) {
+        return $this->getFieldValue($document, $this->identifier);
     }
 
     /**
@@ -586,8 +597,7 @@ class ClassMetadata implements DoctrineMetadata
      *
      * @param string $repositoryClassName The class name of the custom repository.
      */
-    public function setCustomRepositoryClass($repositoryClassName)
-    {
+    public function setCustomRepositoryClass($repositoryClassName) {
         $namespace = $this->reflClass->getNamespaceName();
         if ($repositoryClassName && strpos($repositoryClassName, '\\') === false && strlen($namespace)) {
             $repositoryClassName = $namespace . '\\' . $repositoryClassName;
@@ -601,8 +611,7 @@ class ClassMetadata implements DoctrineMetadata
      *
      * @return object
      */
-    public function newInstance()
-    {
+    public function newInstance() {
         return $this->instantiator->instantiate($this->name);
     }
 }

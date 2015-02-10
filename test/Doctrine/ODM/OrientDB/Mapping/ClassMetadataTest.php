@@ -79,7 +79,7 @@ class ClassMetadataTest extends TestCase
 
     function testGetIdentifierValues() {
         $i = new Mapped('#1:1');
-        $this->assertEquals('#1:1', $this->metadata->getIdentifierValues($i));
+        $this->assertEquals('#1:1', $this->metadata->getIdentifierValue($i));
     }
 
     function testGetReflectionClass()

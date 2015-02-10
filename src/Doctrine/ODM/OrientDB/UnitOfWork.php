@@ -824,7 +824,7 @@ class UnitOfWork
             return spl_object_hash($document);
         }
 
-        return $metadata->getIdentifierValues($document);
+        return $metadata->getIdentifierValue($document);
     }
 
     /**
