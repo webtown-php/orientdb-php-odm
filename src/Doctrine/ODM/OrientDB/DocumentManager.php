@@ -204,7 +204,7 @@ class DocumentManager implements ObjectManager
      * @param  string $fetchPlan
      *
      * @return Proxy|object
-     * @throws OClassNotFoundException|CastingMismatchException|Exception
+     * @throws OClassNotFoundException|Exception
      */
     public function findByRid($rid, $fetchPlan = '*:0') {
         $class = $this->clusterMap->identifyClass(new Rid($rid));

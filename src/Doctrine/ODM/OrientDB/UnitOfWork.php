@@ -13,7 +13,6 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Persistence\ChangeSet;
 use Doctrine\ODM\OrientDB\Persistence\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
-use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Query\Query;
 
 /**
@@ -61,7 +60,6 @@ class UnitOfWork
     private $evm;
 
     private $identityMap = [];
-    private $newDocuments = [];
 
     /**
      * Map of the original document data of managed documents.
@@ -265,6 +263,7 @@ class UnitOfWork
      */
     public function isInIdentityMap($document) {
         $id = $this->getRid($document);
+
         return isset($this->identityMap[$id]);
     }
 
@@ -329,7 +328,7 @@ class UnitOfWork
                 break;
             case self::STATE_DETACHED:
                 throw new \InvalidArgumentException(
-                    "Behavior of persist() for a detached document is not yet defined.");
+                    "behavior of persist() for a detached document is undefined");
                 break;
             case self::STATE_REMOVED:
                 if (!$class->isEmbeddedDocument) {
@@ -343,10 +342,41 @@ class UnitOfWork
                     break;
                 }
             default:
-                throw MongoDBException::invalidDocumentState($documentState);
+                throw OrientDBException::invalidDocumentState($documentState);
         }
 
-        //$this->cascadePersist($document, $visited);
+        $this->cascadePersist($document, $visited);
+    }
+
+    /**
+     * Cascades the save operation to associated documents.
+     *
+     * @param object $document
+     * @param array  $visited
+     */
+    private function cascadePersist($document, array &$visited) {
+        $class = $this->dm->getClassMetadata(get_class($document));
+
+        foreach ($class->associationMappings as $fieldName => $mapping) {
+            if (!$mapping['isCascadePersist']) {
+                continue;
+            }
+
+            $relatedDocuments = $class->getFieldValue($document, $fieldName);
+
+            if ($relatedDocuments instanceof Collection || is_array($relatedDocuments)) {
+                if ($relatedDocuments instanceof PersistentCollection) {
+                    // Unwrap so that foreach() does not initialize
+                    $relatedDocuments = $relatedDocuments->unwrap();
+                }
+
+                foreach ($relatedDocuments as $relatedDocument) {
+                    $this->doPersist($relatedDocument, $visited);
+                }
+            } elseif ($relatedDocuments !== null) {
+                $this->doPersist($relatedDocuments, $visited);
+            }
+        }
     }
 
     /**
@@ -376,7 +406,6 @@ class UnitOfWork
     public function clear($class = null) {
         if ($class === null) {
             $this->identityMap =
-            $this->newDocuments =
             $this->originalDocumentData =
             $this->documentChangeSets =
             $this->documentInsertions =
@@ -391,11 +420,158 @@ class UnitOfWork
     }
 
     /**
-     * @param $proxy
+     * @param $document
      */
-    public function remove($proxy) {
-        $rid                           = $this->getRid($proxy);
-        $this->documentDeletions[$rid] = ['document' => $proxy];
+    public function remove($document) {
+        $visited = [];
+        $this->doRemove($document, $visited);
+    }
+
+    /**
+     * @param object $document
+     * @param array  $visited
+     *
+     * @throws OrientDBException
+     */
+    private function doRemove($document, array &$visited) {
+        $oid = spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return; // Prevent infinite recursion
+        }
+
+        $visited[$oid] = $document; // mark visited
+
+        /* Cascade first, because scheduleForDelete() removes the entity from
+         * the identity map, which can cause problems when a lazy Proxy has to
+         * be initialized for the cascade operation.
+         */
+        $this->cascadeRemove($document, $visited);
+
+        $class         = $this->dm->getClassMetadata(get_class($document));
+        $documentState = $this->getDocumentState($document);
+        switch ($documentState) {
+            case self::STATE_NEW:
+            case self::STATE_REMOVED:
+                // nothing to do
+                break;
+            case self::STATE_MANAGED:
+//                if ( ! empty($class->lifecycleCallbacks[Events::preRemove])) {
+//                    $class->invokeLifecycleCallbacks(Events::preRemove, $document);
+//                }
+                if ($this->evm->hasListeners(Events::preRemove)) {
+                    $this->evm->dispatchEvent(Events::preRemove, new LifecycleEventArgs($document, $this->dm));
+                }
+                $this->scheduleForDelete($document);
+                $this->cascadePreRemove($class, $document);
+                break;
+            case self::STATE_DETACHED:
+                throw OrientDBException::detachedDocumentCannotBeRemoved();
+            default:
+                throw OrientDBException::invalidDocumentState($documentState);
+        }
+    }
+
+    /**
+     * Cascades the delete operation to associated documents.
+     *
+     * @param object $document
+     * @param array  $visited
+     */
+    private function cascadeRemove($document, array &$visited) {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->fieldMappings as $mapping) {
+            if (!$mapping['isCascadeRemove']) {
+                continue;
+            }
+            if ($document instanceof Proxy && !$document->__isInitialized__) {
+                $document->__load();
+            }
+            if (isset($mapping['embedded'])) {
+                $relatedDocuments = $class->getFieldValue($document, $mapping['fieldName']);
+                if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
+                    // If its a PersistentCollection initialization is intended! No unwrap!
+                    foreach ($relatedDocuments as $relatedDocument) {
+                        $this->cascadeRemove($relatedDocument, $visited);
+                    }
+                } elseif ($relatedDocuments !== null) {
+                    $this->cascadeRemove($relatedDocuments, $visited);
+                }
+            } elseif (isset($mapping['reference'])) {
+                $relatedDocuments = $class->getFieldValue($document, $mapping['fieldName']);
+                if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
+                    // If its a PersistentCollection initialization is intended! No unwrap!
+                    foreach ($relatedDocuments as $relatedDocument) {
+                        $this->doRemove($relatedDocument, $visited);
+                    }
+                } elseif ($relatedDocuments !== null) {
+                    $this->doRemove($relatedDocuments, $visited);
+                }
+            }
+        }
+    }
+
+    /**
+     * Cascades the preRemove event to embedded documents.
+     *
+     * @param ClassMetadata $class
+     * @param object        $document
+     */
+    private function cascadePreRemove(ClassMetadata $class, $document) {
+        $hasPreRemoveListeners = $this->evm->hasListeners(Events::preRemove);
+
+        foreach ($class->fieldMappings as $mapping) {
+            if (isset($mapping['embedded'])) {
+                $value = $class->getFieldValue($document, $mapping['fieldName']);
+                if ($value === null) {
+                    continue;
+                }
+                if ($mapping['type'] === 'one') {
+                    $value = array($value);
+                }
+                foreach ($value as $entry) {
+                    $entryClass = $this->dm->getClassMetadata(get_class($entry));
+//                    if ( ! empty($entryClass->lifecycleCallbacks[Events::preRemove])) {
+//                        $entryClass->invokeLifecycleCallbacks(Events::preRemove, $entry);
+//                    }
+                    if ($hasPreRemoveListeners) {
+                        $this->evm->dispatchEvent(Events::preRemove, new LifecycleEventArgs($entry, $this->dm));
+                    }
+                    $this->cascadePreRemove($entryClass, $entry);
+                }
+            }
+        }
+    }
+
+    /**
+     * Cascades the postRemove event to embedded documents.
+     *
+     * @param ClassMetadata $class
+     * @param object        $document
+     */
+    private function cascadePostRemove(ClassMetadata $class, $document) {
+        $hasPostRemoveListeners = $this->evm->hasListeners(Events::postRemove);
+
+        foreach ($class->fieldMappings as $mapping) {
+            if (isset($mapping['embedded'])) {
+                $value = $class->getFieldValue($document, $mapping['fieldName']);
+                if ($value === null) {
+                    continue;
+                }
+                if ($mapping['type'] === 'one') {
+                    $value = array($value);
+                }
+                foreach ($value as $entry) {
+                    $entryClass = $this->dm->getClassMetadata(get_class($entry));
+//                    if ( ! empty($entryClass->lifecycleCallbacks[Events::postRemove])) {
+//                        $entryClass->invokeLifecycleCallbacks(Events::postRemove, $entry);
+//                    }
+                    if ($hasPostRemoveListeners) {
+                        $this->evm->dispatchEvent(Events::postRemove, new LifecycleEventArgs($entry, $this->dm));
+                    }
+                    $this->cascadePostRemove($entryClass, $entry);
+                }
+            }
+        }
     }
 
     public function refresh($document) {
@@ -473,11 +649,10 @@ class UnitOfWork
      * and any changes to its properties are detected, then a reference to the document is stored
      * there to mark it for an update.
      *
-     * @param ClassMetadata $class The class descriptor of the document.
-     * @param object $document The document for which to compute the changes.
+     * @param ClassMetadata $class    The class descriptor of the document.
+     * @param object        $document The document for which to compute the changes.
      */
-    public function computeChangeSet(ClassMetadata $class, $document)
-    {
+    public function computeChangeSet(ClassMetadata $class, $document) {
         $this->computeOrRecomputeChangeSet($class, $document);
     }
 
@@ -523,10 +698,6 @@ class UnitOfWork
             $this->computeChangeSet($class, $document);
             //$this->computeSingleDocumentChangeSet($proxy);
         }
-
-        foreach ($this->newDocuments as $document) {
-            $this->computeSingleDocumentChangeSet($document);
-        }
     }
 
     /**
@@ -534,8 +705,7 @@ class UnitOfWork
      *
      * Embedded documents will not be processed.
      */
-    private function computeScheduleInsertsChangeSets()
-    {
+    private function computeScheduleInsertsChangeSets() {
         foreach ($this->documentInsertions as $document) {
             $class = $this->dm->getClassMetadata(get_class($document));
 
@@ -546,7 +716,6 @@ class UnitOfWork
             $this->computeChangeSet($class, $document);
         }
     }
-
 
 
     /**

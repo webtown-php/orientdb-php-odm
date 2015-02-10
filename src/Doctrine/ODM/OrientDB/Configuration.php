@@ -55,11 +55,11 @@ class Configuration
      * @param string $documentNamespaceAlias
      *
      * @return string
-     * @throws MongoDBException
+     * @throws OrientDBException
      */
     public function getDocumentNamespace($documentNamespaceAlias) {
         if (!isset($this->_attributes['documentNamespaces'][$documentNamespaceAlias])) {
-            throw MongoDBException::unknownDocumentNamespace($documentNamespaceAlias);
+            throw OrientDBException::unknownDocumentNamespace($documentNamespaceAlias);
         }
 
         return trim($this->_attributes['documentNamespaces'][$documentNamespaceAlias], '\\');
