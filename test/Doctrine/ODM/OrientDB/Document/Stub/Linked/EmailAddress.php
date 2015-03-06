@@ -23,4 +23,10 @@ class EmailAddress
      * @var string
      */
     public $email;
+
+    /**
+     * @Link(targetClass="Contact")
+     * @var Contact
+     */
+    public $contact;
 }

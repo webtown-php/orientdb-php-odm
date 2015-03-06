@@ -10,7 +10,7 @@ use test\PHPUnit\TestCase;
 /**
  * @group functional
  */
-class UnitOfWorkWithSimpleContactTest extends TestCase
+class UnitOfWorkChangesetWithSimpleContactTest extends TestCase
 {
     /**
      * @var DocumentManager
@@ -43,7 +43,7 @@ class UnitOfWorkWithSimpleContactTest extends TestCase
      * @test
      * @depends persist_for_new_is_scheduled_for_insert
      */
-    public function getDocumentChangeSet_returns_expected_changes_for_new() {
+    public function getDocumentChangeSet_includes_expected_changes_for_new() {
         $uow = $this->manager->getUnitOfWork();
         $c   = new Contact();
         $this->manager->persist($c);
@@ -61,19 +61,18 @@ class UnitOfWorkWithSimpleContactTest extends TestCase
     /**
      * @test
      */
-    public function getDocumentChangeSet_returns_only_changes_for_update() {
-        $uow = $this->manager->getUnitOfWork();
-        $adr = new Contact();
-        $this->manager->persist($adr);
+    public function getDocumentChangeSet_includes_only_changes_for_update() {
+        $uow         = $this->manager->getUnitOfWork();
+        $c           = new Contact();
+        $c->rid      = "#1:1";
+        $c->name     = "Sydney";
+        $c->height   = 5;
+        $c->birthday = null;
+        $uow->registerManaged($c, "#1:1", ['rid' => '#1:1', 'name' => 'Sydney', 'height' => null, 'birthday' => null]);
 
-        $md            = $this->manager->getClassMetadata(Contact::class);
-        $adr->rid      = "#1:1";
-        $adr->name     = "Sydney";
-        $adr->height   = 5;
-        $adr->birthday = null;
-        $uow->setOriginalDocumentData($adr, ['rid' => '#1:1', 'name' => 'Sydney', 'height' => null, 'birthday' => null]);
-        $uow->computeChangeSet($md, $adr);
-        $cs = $uow->getDocumentChangeSet($adr);
+        $md = $this->manager->getClassMetadata(Contact::class);
+        $uow->computeChangeSet($md, $c);
+        $cs = $uow->getDocumentChangeSet($c);
         $this->assertEquals(['height'], array_keys($cs));
         $this->assertEquals([null, 5], $cs['height']);
     }

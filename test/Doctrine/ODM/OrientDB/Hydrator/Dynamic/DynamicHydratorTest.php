@@ -43,6 +43,7 @@ class DynamicHydratorTest extends TestCase
         $data = <<<JSON
 {
     "classes": [
+        {"name":"LinkedContact", "clusters":[1]},
         {"name":"LinkedEmailAddress", "clusters":[2]},
         {"name":"LinkedPhone", "clusters":[3]}
     ]
@@ -91,7 +92,8 @@ JSON;
                             $rawResult = json_decode('[{
                                 "@type": "d", "@rid": "#2:1", "@version": 1, "@class": "LinkedEmailAddress",
                                 "type": "work",
-                                "email": "syd@gmail.com"
+                                "email": "syd@gmail.com",
+                                "contact": "#1:1"
                             }]');
                             break;
                         case ["#3:1", "#3:2"]:
@@ -257,10 +259,11 @@ JSON
      * @test
      */
     public function hydrate_contact_with_link() {
+        $c  = new Stub\Linked\Contact();
         $md = $this->manager->getClassMetadata(Stub\Linked\Contact::class);
         $dh = new DynamicHydrator($this->manager, $this->manager->getUnitOfWork(), $md);
-        $c  = new Stub\Linked\Contact();
-        $d  = json_decode(<<<JSON
+
+        $d = json_decode(<<<JSON
 {
     "@rid": "#1:1",
     "name": "Sydney",
@@ -270,6 +273,7 @@ JSON
         );
 
         $hd = $dh->hydrate($c, $d);
+        $this->uow->registerManaged($c, "#1:1", $hd);
         $this->assertEquals(['@rid', 'name', 'email', 'phones'], array_keys($hd));
 
         $this->assertEquals('#1:1', $hd['@rid']);
@@ -284,6 +288,18 @@ JSON
 
         $this->assertEquals(UnitOfWork::STATE_MANAGED, $this->uow->getDocumentState($email));
         $this->assertTrue($this->uow->isInIdentityMap($email));
+
+        return [$c, $email];
+    }
+
+    /**
+     * @test
+     * @param $args
+     * @depends hydrate_contact_with_link
+     */
+    public function hydrated_contact_on_email_is_same($args) {
+        list ($c, $email) = $args;
+        $this->assertSame($c, $email->contact);
     }
 
     /**
