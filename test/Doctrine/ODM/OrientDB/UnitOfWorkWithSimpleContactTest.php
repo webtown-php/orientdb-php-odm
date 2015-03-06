@@ -53,7 +53,7 @@ class UnitOfWorkWithSimpleContactTest extends TestCase
         $uow->computeChangeSet($md, $c);
         $cs = $uow->getDocumentChangeSet($c);
 
-        $this->assertEquals(['rid', 'name', 'height', 'birthday'], array_keys($cs));
+        $this->assertEquals(['rid', 'name', 'height', 'birthday', 'active'], array_keys($cs));
         $this->assertEquals([null, 'Sydney'], $cs['name']);
         $this->assertEquals([null, null], $cs['height']);
     }

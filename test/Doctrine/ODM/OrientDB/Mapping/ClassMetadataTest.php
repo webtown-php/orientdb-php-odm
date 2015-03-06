@@ -83,7 +83,7 @@ class ClassMetadataTest extends TestCase
     }
 
     function testIsIdentifier() {
-        $this->assertEquals(true, $this->metadata->isIdentifier('@rid'));
+        $this->assertEquals(true, $this->metadata->isIdentifier('rid'));
         $this->assertEquals(false, $this->metadata->isIdentifier('id'));
     }
 
