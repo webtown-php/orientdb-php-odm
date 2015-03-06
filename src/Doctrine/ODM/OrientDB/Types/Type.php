@@ -92,6 +92,17 @@ abstract class Type
     }
 
     /**
+     *
+     * @param mixed $left
+     * @param mixed $right
+     *
+     * @return bool
+     */
+    public function equalsPHP($left, $right) {
+        return $left == $right;
+    }
+
+    /**
      * Register a new type in the type map.
      *
      * @param string $name  The name of the type.

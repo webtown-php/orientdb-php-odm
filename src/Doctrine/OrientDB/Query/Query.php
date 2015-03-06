@@ -20,46 +20,45 @@
 namespace Doctrine\OrientDB\Query;
 
 use Doctrine\OrientDB\Exception;
-use Doctrine\OrientDB\Query\Command\Update;
-use Doctrine\OrientDB\Query\Validator\ValidationException;
 use Doctrine\OrientDB\Query\Command\Credential\Grant;
 use Doctrine\OrientDB\Query\Command\Credential\Revoke;
 use Doctrine\OrientDB\Query\Command\Insert;
-use Doctrine\OrientDB\Query\Command\Select;
+use Doctrine\OrientDB\Query\Command\Update;
 use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
+use Doctrine\OrientDB\Query\Validator\ValidationException;
 
 class Query implements QueryInterface
 {
     protected $command = null;
-    protected $commands = array(
-        'select'            => 'Doctrine\OrientDB\Query\Command\Select',
-        'insert'            => 'Doctrine\OrientDB\Query\Command\Insert',
-        'delete'            => 'Doctrine\OrientDB\Query\Command\Delete',
-        'update'            => 'Doctrine\OrientDB\Query\Command\Update',
-        'update.add'        => 'Doctrine\OrientDB\Query\Command\Update\Add',
-        'update.remove'     => 'Doctrine\OrientDB\Query\Command\Update\Remove',
-        'update.put'        => 'Doctrine\OrientDB\Query\Command\Update\Put',
-        'grant'             => 'Doctrine\OrientDB\Query\Command\Credential\Grant',
-        'revoke'            => 'Doctrine\OrientDB\Query\Command\Credential\Revoke',
-        'class.create'      => 'Doctrine\OrientDB\Query\Command\OClass\Create',
-        'class.drop'        => 'Doctrine\OrientDB\Query\Command\OClass\Drop',
-        'class.alter'       => 'Doctrine\OrientDB\Query\Command\OClass\Alter',
-        'truncate.class'    => 'Doctrine\OrientDB\Query\Command\Truncate\OClass',
-        'truncate.cluster'  => 'Doctrine\OrientDB\Query\Command\Truncate\Cluster',
-        'truncate.record'   => 'Doctrine\OrientDB\Query\Command\Truncate\Record',
-        'references.find'   => 'Doctrine\OrientDB\Query\Command\Reference\Find',
-        'property.create'   => 'Doctrine\OrientDB\Query\Command\Property\Create',
-        'property.drop'     => 'Doctrine\OrientDB\Query\Command\Property\Drop',
-        'property.alter'    => 'Doctrine\OrientDB\Query\Command\Property\Alter',
-        'index.drop'        => 'Doctrine\OrientDB\Query\Command\Index\Drop',
-        'index.create'      => 'Doctrine\OrientDB\Query\Command\Index\Create',
-        'index.count'       => 'Doctrine\OrientDB\Query\Command\Index\Count',
-        'index.put'         => 'Doctrine\OrientDB\Query\Command\Index\Put',
-        'index.remove'      => 'Doctrine\OrientDB\Query\Command\Index\Remove',
-        'index.lookup'      => 'Doctrine\OrientDB\Query\Command\Index\Lookup',
-        'index.rebuild'     => 'Doctrine\OrientDB\Query\Command\Index\Rebuild',
-        'link'              => 'Doctrine\OrientDB\Query\Command\Create\Link',
-    );
+    protected $commands = [
+        'select'           => 'Doctrine\OrientDB\Query\Command\Select',
+        'insert'           => 'Doctrine\OrientDB\Query\Command\Insert',
+        'delete'           => 'Doctrine\OrientDB\Query\Command\Delete',
+        'update'           => 'Doctrine\OrientDB\Query\Command\Update',
+        'update.add'       => 'Doctrine\OrientDB\Query\Command\Update\Add',
+        'update.remove'    => 'Doctrine\OrientDB\Query\Command\Update\Remove',
+        'update.put'       => 'Doctrine\OrientDB\Query\Command\Update\Put',
+        'grant'            => 'Doctrine\OrientDB\Query\Command\Credential\Grant',
+        'revoke'           => 'Doctrine\OrientDB\Query\Command\Credential\Revoke',
+        'class.create'     => 'Doctrine\OrientDB\Query\Command\OClass\Create',
+        'class.drop'       => 'Doctrine\OrientDB\Query\Command\OClass\Drop',
+        'class.alter'      => 'Doctrine\OrientDB\Query\Command\OClass\Alter',
+        'truncate.class'   => 'Doctrine\OrientDB\Query\Command\Truncate\OClass',
+        'truncate.cluster' => 'Doctrine\OrientDB\Query\Command\Truncate\Cluster',
+        'truncate.record'  => 'Doctrine\OrientDB\Query\Command\Truncate\Record',
+        'references.find'  => 'Doctrine\OrientDB\Query\Command\Reference\Find',
+        'property.create'  => 'Doctrine\OrientDB\Query\Command\Property\Create',
+        'property.drop'    => 'Doctrine\OrientDB\Query\Command\Property\Drop',
+        'property.alter'   => 'Doctrine\OrientDB\Query\Command\Property\Alter',
+        'index.drop'       => 'Doctrine\OrientDB\Query\Command\Index\Drop',
+        'index.create'     => 'Doctrine\OrientDB\Query\Command\Index\Create',
+        'index.count'      => 'Doctrine\OrientDB\Query\Command\Index\Count',
+        'index.put'        => 'Doctrine\OrientDB\Query\Command\Index\Put',
+        'index.remove'     => 'Doctrine\OrientDB\Query\Command\Index\Remove',
+        'index.lookup'     => 'Doctrine\OrientDB\Query\Command\Index\Lookup',
+        'index.rebuild'    => 'Doctrine\OrientDB\Query\Command\Index\Rebuild',
+        'link'             => 'Doctrine\OrientDB\Query\Command\Create\Link',
+    ];
 
     /**
      * Builds a query with the given $command on the given $target.
@@ -69,11 +68,10 @@ class Query implements QueryInterface
      *
      * @throws Exception
      */
-    public function __construct(array $target = [], array $commands = [])
-    {
+    public function __construct(array $target = [], array $commands = []) {
         $this->setCommands($commands);
 
-        $commandClass = $this->getCommandClass('select');
+        $commandClass  = $this->getCommandClass('select');
         $this->command = new $commandClass($target);
     }
 
@@ -83,11 +81,11 @@ class Query implements QueryInterface
      * @param   array   $updates
      * @param   string  $class
      * @param   boolean $append
-     * @return  Add
+     *
+     * @return  Command\Update\Add
      */
-    public function add(array $updates, $class, $append = true)
-    {
-        $commandClass = $this->getCommandClass('update.add');
+    public function add(array $updates, $class, $append = true) {
+        $commandClass  = $this->getCommandClass('update.add');
         $this->command = new $commandClass($updates, $class, $append);
 
         return $this->command;
@@ -99,11 +97,11 @@ class Query implements QueryInterface
      * @param   string $class
      * @param   string $attribute
      * @param   string $value
-     * @return  Alter
+     *
+     * @return  Command\OClass\Alter
      */
-    public function alter($class, $attribute, $value)
-    {
-        $commandClass = $this->getCommandClass('class.alter');
+    public function alter($class, $attribute, $value) {
+        $commandClass  = $this->getCommandClass('class.alter');
         $this->command = new $commandClass($class, $attribute, $value);
 
         return $this->command;
@@ -116,11 +114,11 @@ class Query implements QueryInterface
      * @param   string $property
      * @param   string $attribute
      * @param   string $value
-     * @return  Alter
+     *
+     * @return  Command\Property\Alter
      */
-    public function alterProperty($class, $property, $attribute, $value)
-    {
-        $commandClass = $this->getCommandClass('property.alter');
+    public function alterProperty($class, $property, $attribute, $value) {
+        $commandClass  = $this->getCommandClass('property.alter');
         $this->command = new $commandClass($property);
 
         return $this->command->on($class)->changing($attribute, $value);
@@ -129,11 +127,10 @@ class Query implements QueryInterface
     /**
      * Adds a where condition to the query.
      *
-     * @param string  $condition
-     * @param mixed   $value
+     * @param string $condition
+     * @param mixed  $value
      */
-    public function andWhere($condition, $value = null)
-    {
+    public function andWhere($condition, $value = null) {
         return $this->command->andwhere($condition, $value);
     }
 
@@ -141,12 +138,11 @@ class Query implements QueryInterface
      * Converts a "normal" select into an index one.
      * You use do a select on an index you can use the between operator.
      *
-     * @param   string  $key
-     * @param   string  $left
-     * @param   string  $right
+     * @param   string $key
+     * @param   string $left
+     * @param   string $right
      */
-    public function between($key, $left, $right)
-    {
+    public function between($key, $left, $right) {
         return $this->command->between($key, $left, $right);
     }
 
@@ -158,10 +154,10 @@ class Query implements QueryInterface
      * @param   string $property
      * @param   string $type
      * @param   string $linked
+     *
      * @return  mixed
      */
-    public function create($class, $property = null, $type = null, $linked = null)
-    {
+    public function create($class, $property = null, $type = null, $linked = null) {
         return $this->executeClassOrPropertyCommand(
             'create', $class, $property, $type, $linked
         );
@@ -171,11 +167,11 @@ class Query implements QueryInterface
      * Executes a DELETE SQL query on the given class (= $from).
      *
      * @param   string $from
+     *
      * @return  Delete
      */
-    public function delete($from)
-    {
-        $commandClass = $this->getCommandClass('delete');
+    public function delete($from) {
+        $commandClass  = $this->getCommandClass('delete');
         $this->command = new $commandClass($from);
 
         return $this->command;
@@ -187,10 +183,10 @@ class Query implements QueryInterface
      *
      * @param   string $class
      * @param   string $property
+     *
      * @return  mixed
      */
-    public function drop($class, $property = null)
-    {
+    public function drop($class, $property = null) {
         return $this->executeClassOrPropertyCommand('drop', $class, $property);
     }
 
@@ -199,10 +195,10 @@ class Query implements QueryInterface
      *
      * @param   array   $fields
      * @param   boolean $append
+     *
      * @return  Query
      */
-    public function fields(array $fields, $append = true)
-    {
+    public function fields(array $fields, $append = true) {
         return $this->command->fields($fields, $append);
     }
 
@@ -212,8 +208,7 @@ class Query implements QueryInterface
      * @param array   $target
      * @param boolean $append
      */
-    public function from(array $target, $append = true)
-    {
+    public function from(array $target, $append = true) {
         return $this->command->from($target, $append);
     }
 
@@ -222,8 +217,7 @@ class Query implements QueryInterface
      *
      * @return Command
      */
-    public function getCommand()
-    {
+    public function getCommand() {
         return $this->command;
     }
 
@@ -232,8 +226,7 @@ class Query implements QueryInterface
      *
      * @return String
      */
-    public function getRaw()
-    {
+    public function getRaw() {
         return $this->command->getRaw();
     }
 
@@ -242,20 +235,19 @@ class Query implements QueryInterface
      *
      * @return array
      */
-    public function getTokens()
-    {
+    public function getTokens() {
         return $this->command->getTokens();
     }
 
     /**
      * Converts the query into an GRANT with the given $permission.
      *
-     * @param   string  $permission
+     * @param   string $permission
+     *
      * @return  Grant
      */
-    public function grant($permission)
-    {
-        $commandClass = $this->getCommandClass('grant');
+    public function grant($permission) {
+        $commandClass  = $this->getCommandClass('grant');
         $this->command = new $commandClass($permission);
 
         return $this->command;
@@ -269,11 +261,11 @@ class Query implements QueryInterface
      * @param   string  $rid
      * @param   array   $classes
      * @param   boolean $append
+     *
      * @return  Find
      */
-    public function findReferences($rid, array $classes = array(), $append = true)
-    {
-        $commandClass = $this->getCommandClass('references.find');
+    public function findReferences($rid, array $classes = array(), $append = true) {
+        $commandClass  = $this->getCommandClass('references.find');
         $this->command = new $commandClass($rid);
         $this->command->in($classes, $append);
 
@@ -288,10 +280,10 @@ class Query implements QueryInterface
      *
      * @param   array   $in
      * @param   boolean $append
+     *
      * @return  mixed
      */
-    public function in(array $in, $append = true)
-    {
+    public function in(array $in, $append = true) {
         return $this->command->in($in, $append);
     }
 
@@ -301,11 +293,11 @@ class Query implements QueryInterface
      * @param   string $property
      * @param   string $class
      * @param   string $type
+     *
      * @return  Query
      */
-    public function index($property, $type, $class = null)
-    {
-        $commandClass = $this->getCommandClass('index.create');
+    public function index($property, $type, $class = null) {
+        $commandClass  = $this->getCommandClass('index.create');
         $this->command = new $commandClass($property, $type, $class);
 
         return $this->command;
@@ -315,10 +307,11 @@ class Query implements QueryInterface
      * Count the elements of the index $indexName.
      *
      * @param string $indexName
+     *
+     * @return Command\Index\Count
      */
-    public function indexCount($indexName)
-    {
-        $commandClass = $this->getCommandClass('index.count');
+    public function indexCount($indexName) {
+        $commandClass  = $this->getCommandClass('index.count');
         $this->command = new $commandClass($indexName);
 
         return $this->command;
@@ -330,10 +323,11 @@ class Query implements QueryInterface
      * @param string $indexName
      * @param string $key
      * @param string $rid
+     *
+     * @return Command\Index\Put
      */
-    public function indexPut($indexName, $key, $rid)
-    {
-        $commandClass = $this->getCommandClass('index.put');
+    public function indexPut($indexName, $key, $rid) {
+        $commandClass  = $this->getCommandClass('index.put');
         $this->command = new $commandClass($indexName, $key, $rid);
 
         return $this->command;
@@ -345,10 +339,11 @@ class Query implements QueryInterface
      * @param string $indexName
      * @param string $key
      * @param string $rid
+     *
+     * @return Command\Index\Remove
      */
-    public function indexRemove($indexName, $key, $rid = null)
-    {
-        $commandClass = $this->getCommandClass('index.remove');
+    public function indexRemove($indexName, $key, $rid = null) {
+        $commandClass  = $this->getCommandClass('index.remove');
         $this->command = new $commandClass($indexName, $key, $rid);
 
         return $this->command;
@@ -358,10 +353,11 @@ class Query implements QueryInterface
      * Rebuild the index $indexName
      *
      * @param string $indexName
+     *
+     * @return Command\Index\Rebuild
      */
-    public function rebuild($indexName)
-    {
-        $commandClass = $this->getCommandClass('index.rebuild');
+    public function rebuild($indexName) {
+        $commandClass  = $this->getCommandClass('index.rebuild');
         $this->command = new $commandClass($indexName);
 
         return $this->command;
@@ -370,11 +366,10 @@ class Query implements QueryInterface
     /**
      * Converts the query into an INSERT.
      *
-     * @return Query
+     * @return Command\Insert
      */
-    public function insert()
-    {
-        $commandClass = $this->getCommandClass('insert');
+    public function insert() {
+        $commandClass  = $this->getCommandClass('insert');
         $this->command = new $commandClass;
 
         return $this->command;
@@ -384,20 +379,21 @@ class Query implements QueryInterface
      * Inserts the INTO clause to a query.
      *
      * @param  string $target
-     * @return Query
+     *
+     * @return $this
      */
-    public function into($target)
-    {
+    public function into($target) {
         return $this->command->into($target);
     }
 
     /**
      * Adds a limit to the current query.
      *
+     * @param int $limit
+     *
      * @return $this
      */
-    public function limit($limit)
-    {
+    public function limit($limit) {
         return $this->command->limit($limit);
     }
 
@@ -406,8 +402,7 @@ class Query implements QueryInterface
      *
      * @return $this
      */
-    public function skip($records)
-    {
+    public function skip($records) {
         return $this->command->skip($records);
     }
 
@@ -421,19 +416,24 @@ class Query implements QueryInterface
      * @param  string  $property
      * @param  string  $alias
      * @param  boolean $inverse
-     * @return Link
+     *
+     * @return Command\Create\Link
      */
-    public function link($class, $property, $alias, $inverse = false)
-    {
-        $commandClass = $this->getCommandClass('link');
+    public function link($class, $property, $alias, $inverse = false) {
+        $commandClass  = $this->getCommandClass('link');
         $this->command = new $commandClass($class, $property, $alias, $inverse);
 
         return $this->command;
     }
 
-    public function lookup($indexName)
-    {
-        $commandClass = $this->getCommandClass('index.lookup');
+    /**
+     * @param $indexName
+     *
+     * @return Command\Index\Lookup
+     * @throws Exception
+     */
+    public function lookup($indexName) {
+        $commandClass  = $this->getCommandClass('index.lookup');
         $this->command = new $commandClass($indexName);
 
         return $this->command;
@@ -443,10 +443,10 @@ class Query implements QueryInterface
      * Sets the ON clause of a query.
      *
      * @param  string $on
-     * @return Query
+     *
+     * @return $this
      */
-    public function on($on)
-    {
+    public function on($on) {
         return $this->command->on($on);
     }
 
@@ -457,8 +457,7 @@ class Query implements QueryInterface
      * @param boolean $append
      * @param boolean $first
      */
-    public function orderBy($order, $append = true, $first = false)
-    {
+    public function orderBy($order, $append = true, $first = false) {
         return $this->command->orderBy($order, $append, $first);
     }
 
@@ -468,8 +467,7 @@ class Query implements QueryInterface
      * @param string $condition
      * @param mixed  $value
      */
-    public function orWhere($condition, $value = null)
-    {
+    public function orWhere($condition, $value = null) {
         return $this->command->orWhere($condition, $value);
     }
 
@@ -479,11 +477,11 @@ class Query implements QueryInterface
      * @param  array   $updates
      * @param  string  $class
      * @param  boolean $append
-     * @return Remove
+     *
+     * @return Command\Update\Remove
      */
-    public function remove(array $updates, $class, $append = true)
-    {
-        $commandClass = $this->getCommandClass('update.remove');
+    public function remove(array $updates, $class, $append = true) {
+        $commandClass  = $this->getCommandClass('update.remove');
         $this->command = new $commandClass($updates, $class, $append);
 
         return $this->command;
@@ -494,8 +492,7 @@ class Query implements QueryInterface
      *
      * @rerurn mixed
      */
-    public function resetWhere()
-    {
+    public function resetWhere() {
         $this->command->resetWhere();
 
         return $this->command;
@@ -505,11 +502,11 @@ class Query implements QueryInterface
      * Converts the query into an REVOKE with the given $permission.
      *
      * @param  string $permission
+     *
      * @return Revoke
      */
-    public function revoke($permission)
-    {
-        $commandClass = $this->getCommandClass('revoke');
+    public function revoke($permission) {
+        $commandClass  = $this->getCommandClass('revoke');
         $this->command = new $commandClass($permission);
 
         return $this->command;
@@ -521,8 +518,7 @@ class Query implements QueryInterface
      * @param array   $projections
      * @param boolean $append
      */
-    public function select(array $projections, $append = true)
-    {
+    public function select(array $projections, $append = true) {
         return $this->command->select($projections, $append);
     }
 
@@ -530,10 +526,10 @@ class Query implements QueryInterface
      * Sets the type clause of a query.
      *
      * @param  string $type
+     *
      * @return Query
      */
-    public function type($type)
-    {
+    public function type($type) {
         return $this->command->type($type);
     }
 
@@ -541,10 +537,10 @@ class Query implements QueryInterface
      * Adds a subject to the query.
      *
      * @param  string $to
+     *
      * @return Query
      */
-    public function to($to)
-    {
+    public function to($to) {
         return $this->command->to($to);
     }
 
@@ -553,10 +549,10 @@ class Query implements QueryInterface
      *
      * @param  string  $entity
      * @param  boolean $andCluster
+     *
      * @return Query
      */
-    public function truncate($entity, $andCluster = false)
-    {
+    public function truncate($entity, $andCluster = false) {
         try {
             $validator = new RidValidator;
             $validator->check($entity);
@@ -579,10 +575,10 @@ class Query implements QueryInterface
      *
      * @param  array   $values
      * @param  boolean $append
+     *
      * @return Insert
      */
-    public function values(array $values, $append = true)
-    {
+    public function values(array $values, $append = true) {
         return $this->command->values($values, $append);
     }
 
@@ -591,11 +587,11 @@ class Query implements QueryInterface
      *
      * @param  string $property
      * @param  string $class
+     *
      * @return Query
      */
-    public function unindex($property, $class = null)
-    {
-        $commandClass = $this->getCommandClass('index.drop');
+    public function unindex($property, $class = null) {
+        $commandClass  = $this->getCommandClass('index.drop');
         $this->command = new $commandClass($property, $class);
 
         return $this->command;
@@ -606,10 +602,10 @@ class Query implements QueryInterface
      * and the values to be written.
      *
      * @param  string $class
+     *
      * @return Command
      */
-    public function put(array $values, $class, $append = true)
-    {
+    public function put(array $values, $class, $append = true) {
         $commandClass  = $this->getCommandClass('update.put');
         $this->command = new $commandClass($values, $class, $append);
 
@@ -621,8 +617,7 @@ class Query implements QueryInterface
      *
      * @return boolean
      */
-    public function canHydrate()
-    {
+    public function canHydrate() {
         return $this->getCommand()->canHydrate();
     }
 
@@ -630,11 +625,11 @@ class Query implements QueryInterface
      * Changes the internal command to an UPDATE, setting the class to update.
      *
      * @param  string $class
+     *
      * @return Update
      */
-    public function update($class)
-    {
-        $commandClass = $this->getCommandClass('update');
+    public function update($class) {
+        $commandClass  = $this->getCommandClass('update');
         $this->command = new $commandClass($class);
 
         return $this->command;
@@ -646,8 +641,7 @@ class Query implements QueryInterface
      * @param string $condition
      * @param mixed  $value
      */
-    public function where($condition, $value = null)
-    {
+    public function where($condition, $value = null) {
         return $this->command->where($condition, $value);
     }
 
@@ -655,10 +649,10 @@ class Query implements QueryInterface
      * Returns on of the commands that belong to the query.
      *
      * @param  string $id
+     *
      * @return mixed
      */
-    protected function getCommandClass($id)
-    {
+    protected function getCommandClass($id) {
         if (isset($this->commands[$id])) {
             return $this->commands[$id];
         }
@@ -672,9 +666,8 @@ class Query implements QueryInterface
      * @param string $action
      * @param string $class
      */
-    protected function manageClass($action, $class)
-    {
-        $commandClass = $this->getCommandClass("class." . $action);
+    protected function manageClass($action, $class) {
+        $commandClass  = $this->getCommandClass("class." . $action);
         $this->command = new $commandClass($class);
 
         return $this->command;
@@ -687,9 +680,8 @@ class Query implements QueryInterface
      * @param string $class
      * @param string $property
      */
-    protected function manageProperty($action, $class, $property, $type = null, $linked = null)
-    {
-        $commandClass = $this->getCommandClass("property." . $action);
+    protected function manageProperty($action, $class, $property, $type = null, $linked = null) {
+        $commandClass  = $this->getCommandClass("property." . $action);
         $this->command = new $commandClass($property, $type, $linked);
         $this->command->on($class);
 
@@ -706,10 +698,10 @@ class Query implements QueryInterface
      * @param  string $property
      * @param  string $type
      * @param  string $linked
+     *
      * @return mixed
      */
-    protected function executeClassOrPropertyCommand($action, $class, $property = null, $type = null, $linked = null)
-    {
+    protected function executeClassOrPropertyCommand($action, $class, $property = null, $type = null, $linked = null) {
         if ($property) {
             return $this->manageProperty($action, $class, $property, $type, $linked);
         }
@@ -721,10 +713,10 @@ class Query implements QueryInterface
      * Sets the internal command classes to use
      *
      * @param  array $commands
+     *
      * @return true
      */
-    protected function setCommands(array $commands)
-    {
+    protected function setCommands(array $commands) {
         $this->commands = array_merge($this->commands, $commands);
 
         return true;
@@ -733,8 +725,7 @@ class Query implements QueryInterface
     /**
      * Returns the raw SQL statement
      */
-    public function __toString()
-    {
+    public function __toString() {
         return $this->getRaw();
     }
 }

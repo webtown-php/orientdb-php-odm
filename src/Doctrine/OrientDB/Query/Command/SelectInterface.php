@@ -62,7 +62,7 @@ interface SelectInterface
     /**
      * Sets the maximum amount of records retrieved whithin the current SELECT.
      *
-     * @param   integet $limit
+     * @param   integer $limit
      * @return  Select
      */
     public function limit($limit);
@@ -70,7 +70,7 @@ interface SelectInterface
     /**
      * Sets the number of records to skip.
      *
-     * @param integer $limit
+     * @param integer $records
      */
     public function skip($records);
 }

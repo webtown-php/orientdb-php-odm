@@ -61,6 +61,11 @@ class ClassMetadata implements DoctrineMetadata
     const EMBED_MAP = 0x80;
 
     /**
+     * Identifies associations that must use key
+     */
+    const ASSOCIATION_USE_KEY = 0xAA;
+
+    /**
      * Combined bit mask for single-valued associations.
      */
     const TO_ONE = 0x11;
@@ -69,6 +74,29 @@ class ClassMetadata implements DoctrineMetadata
      * Combined bit mask for collection-valued associations.
      */
     const TO_MANY = 0xEE;
+
+    /**
+     * DEFERRED_IMPLICIT means that changes of entities are calculated at commit-time
+     * by doing a property-by-property comparison with the original data. This will
+     * be done for all entities that are in MANAGED state at commit-time.
+     *
+     * This is the default change tracking policy.
+     */
+    const CHANGETRACKING_DEFERRED_IMPLICIT = 1;
+
+    /**
+     * DEFERRED_EXPLICIT means that changes of entities are calculated at commit-time
+     * by doing a property-by-property comparison with the original data. This will
+     * be done only for entities that were explicitly saved (through persist() or a cascade).
+     */
+    const CHANGETRACKING_DEFERRED_EXPLICIT = 2;
+
+    /**
+     * NOTIFY means that Doctrine relies on the entities sending out notifications
+     * when their properties change. Such entity classes must implement
+     * the <tt>NotifyPropertyChanged</tt> interface.
+     */
+    const CHANGETRACKING_NOTIFY = 3;
 
     /**
      * READ-ONLY: The name of the OrientDB class to which this document is mapped
@@ -101,6 +129,13 @@ class ClassMetadata implements DoctrineMetadata
     public $isEmbeddedDocument = false;
 
     /**
+     * READ-ONLY: The policy used for change-tracking on entities of this class.
+     *
+     * @var integer
+     */
+    public $changeTrackingPolicy = self::CHANGETRACKING_DEFERRED_IMPLICIT;
+
+    /**
      * The name of the custom repository class used for the document class.
      * (Optional).
      *
@@ -130,7 +165,12 @@ class ClassMetadata implements DoctrineMetadata
      */
     public $fieldMappings = [];
 
-    public $associationMappings;
+    /**
+     * READONLY
+     *
+     * @var array
+     */
+    public $associationMappings = [];
 
     /**
      * @var callable
@@ -202,7 +242,7 @@ class ClassMetadata implements DoctrineMetadata
      * @inheritdoc
      */
     public function isIdentifier($fieldName) {
-        return ($fieldName === '@rid');
+        return $fieldName === $this->identifier;
     }
 
     /**
@@ -267,6 +307,42 @@ class ClassMetadata implements DoctrineMetadata
         }
 
         return $this->associationMappings[$assocName]['targetClass'];
+    }
+
+    /**
+     * Sets the change tracking policy used by this class.
+     *
+     * @param integer $policy
+     */
+    public function setChangeTrackingPolicy($policy) {
+        $this->changeTrackingPolicy = $policy;
+    }
+
+    /**
+     * Whether the change tracking policy of this class is "deferred explicit".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingDeferredExplicit() {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_EXPLICIT;
+    }
+
+    /**
+     * Whether the change tracking policy of this class is "deferred implicit".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingDeferredImplicit() {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_IMPLICIT;
+    }
+
+    /**
+     * Whether the change tracking policy of this class is "notify".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingNotify() {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_NOTIFY;
     }
 
     /**

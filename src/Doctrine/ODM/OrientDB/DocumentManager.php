@@ -156,12 +156,12 @@ class DocumentManager implements ObjectManager
      * @return Proxy
      */
     public function getReference($rid) {
-        if ($document = $this->uow->tryGetById($rid)) {
-            return $document;
-        }
-
         $oclass = $this->clusterMap->identifyClass(new RID($rid));
         $md     = $this->metadataFactory->getMetadataForOClass($oclass);
+
+        if ($document = $this->uow->tryGetById($rid, $md)) {
+            return $document;
+        }
 
         $document = $this->proxyFactory->getProxy($md->name, [$md->getRidPropertyName() => $rid]);
         $this->uow->registerManaged($document, $rid, []);

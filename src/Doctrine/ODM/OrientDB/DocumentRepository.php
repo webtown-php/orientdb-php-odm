@@ -119,7 +119,7 @@ class DocumentRepository implements ObjectRepository
         }
 
         // try identity map first
-        if (!$document = $this->uow->tryGetById($rid)) {
+        if (!$document = $this->uow->tryGetById($rid, $this->metadata)) {
             $document = $this->getDocumentPersister()->load($rid, $fetchPlan);
         }
 

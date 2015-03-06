@@ -21,7 +21,7 @@ class DateTimeType extends Type
             $datetime = new \DateTime();
             $datetime->setTimestamp($value);
         } else {
-            $datetime = new \DateTIme($value);
+            $datetime = new \DateTime($value);
         }
 
         return $datetime;

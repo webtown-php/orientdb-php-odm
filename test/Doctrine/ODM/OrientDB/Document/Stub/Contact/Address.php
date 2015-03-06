@@ -3,7 +3,7 @@
 namespace test\Doctrine\ODM\OrientDB\Document\Stub\Contact;
 
 /**
-* @Document(class="Address")
+* @Document(class="ContactAddress")
 */
 class Address
 {

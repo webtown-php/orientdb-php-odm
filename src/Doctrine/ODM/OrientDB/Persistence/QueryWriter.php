@@ -11,7 +11,7 @@ namespace Doctrine\ODM\OrientDB\Persistence;
  */
 class QueryWriter
 {
-    private $queries = array();
+    private $queries = [];
 
     public function getQueries() {
         return $this->queries;

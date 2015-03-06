@@ -85,6 +85,20 @@ class DocumentPersister
     }
 
     /**
+     * @param object $document
+     *
+     * @return bool
+     */
+    public function exists($document) {
+        $rid = $this->class->getIdentifierValue($document);
+        $q   = new Query([$rid]);
+        $q->select(['@rid']);
+        $results = $this->binding->execute($q)->getResult();
+
+        return isset($results) && count($results) === 1;
+    }
+
+    /**
      * @param string      $rid
      * @param string      $fetchPlan
      *
@@ -113,20 +127,15 @@ class DocumentPersister
         $mapping = $collection->getMapping();
         switch ($mapping['association']) {
             case ClassMetadata::EMBED_LIST:
-                $this->loadEmbedArrayCollection($collection, true);
-                break;
-
             case ClassMetadata::EMBED_SET:
                 $this->loadEmbedArrayCollection($collection);
                 break;
 
             case ClassMetadata::EMBED_MAP:
+                throw new \Exception('not implemented');
                 break;
 
             case ClassMetadata::LINK_LIST:
-                $this->loadLinkArrayCollection($collection, true);
-                break;
-
             case ClassMetadata::LINK_SET:
                 $this->loadLinkArrayCollection($collection);
                 break;
@@ -137,14 +146,15 @@ class DocumentPersister
         }
     }
 
-    private function loadEmbedArrayCollection(PersistentCollection $collection, $useKey = false) {
+    private function loadEmbedArrayCollection(PersistentCollection $collection) {
         $data = $collection->getData();
         if (count($data) === 0) {
             return;
         }
 
-        $mapping = $collection->getMapping();
         if (is_array($data)) {
+            $mapping  = $collection->getMapping();
+            $useKey   = (bool)($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
             $owner    = $collection->getOwner();
             $metadata = $this->dm->getClassMetadata($mapping['targetClass']);
             foreach ($data as $key => $v) {
@@ -161,13 +171,13 @@ class DocumentPersister
         }
     }
 
-    private function loadLinkArrayCollection(PersistentCollection $collection, $useKey = false) {
+    private function loadLinkArrayCollection(PersistentCollection $collection) {
         $rows = $collection->getData();
         if (count($rows) === 0) {
             return;
         }
-
         $mapping = $collection->getMapping();
+        $useKey  = (bool)($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
         if (is_scalar($rows[0])) {
             $query = new Query(array_values($rows));
             if ($useKey) {

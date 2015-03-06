@@ -23,12 +23,12 @@ class RepositoryTest extends TestCase
     protected function createRepository()
     {
         $rawResult = json_decode('[{
-            "@type": "d", "@rid": "#19:1", "@version": 1, "@class": "Address",
+            "@type": "d", "@rid": "#19:1", "@version": 1, "@class": "ContactAddress",
             "name": "Luca",
             "surname": "Garulli",
             "out": ["#20:1"]
         }, {
-            "@type": "d", "@rid": "#19:1", "@version": 1, "@class": "Address",
+            "@type": "d", "@rid": "#19:1", "@version": 1, "@class": "ContactAddress",
             "name": "Luca",
             "surname": "Garulli",
             "out": ["#20:1"]

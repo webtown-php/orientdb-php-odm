@@ -84,6 +84,8 @@ class Select extends Command implements SelectInterface
      *
      * @param array   $projections
      * @param boolean $append
+     *
+     * @return $this|Select
      */
     public function select(array $projections, $append = true)
     {
@@ -98,6 +100,8 @@ class Select extends Command implements SelectInterface
      * @param array   $order
      * @param boolean $append
      * @param boolean $first
+     *
+     * @return $this|Select
      */
     public function orderBy($order, $append = true, $first = false)
     {
@@ -110,6 +114,8 @@ class Select extends Command implements SelectInterface
      * Sets a limit to the SELECT.
      *
      * @param integer $limit
+     *
+     * @return $this|Select
      */
     public function limit($limit)
     {
@@ -121,7 +127,9 @@ class Select extends Command implements SelectInterface
     /**
      * Sets the number of records to skip.
      *
-     * @param integer $limit
+     * @param integer $records
+     *
+     * @return $this
      */
     public function skip($records)
     {

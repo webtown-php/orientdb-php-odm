@@ -25,7 +25,7 @@ class DocumentManagerTest extends TestCase
 {
     protected function createTestManager() {
         $rawResult = json_decode('[{
-            "@type": "d", "@rid": "#19:0", "@version": 2, "@class": "Address",
+            "@type": "d", "@rid": "#19:0", "@version": 2, "@class": "ContactAddress",
             "name": "Luca",
             "surname": "Garulli",
             "out": ["#20:1"]
@@ -44,7 +44,7 @@ class DocumentManagerTest extends TestCase
         $data = <<<JSON
 {
     "classes": [
-        {"name":"Address", "clusters":[1]}
+        {"name":"ContactAddress", "clusters":[1]}
     ]
 }
 JSON;
@@ -75,7 +75,7 @@ JSON;
     }
 
     public function testManagerActsAsAProxyForExecutingQueries() {
-        $query   = new Query(array('Address'));
+        $query   = new Query(array('ContactAddress'));
         $manager = $this->createTestManager();
         $results = $manager->execute($query);
 

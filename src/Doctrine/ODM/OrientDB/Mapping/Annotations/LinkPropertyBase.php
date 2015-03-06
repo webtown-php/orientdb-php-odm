@@ -14,4 +14,15 @@ class LinkPropertyBase extends PropertyBase
      * @var string[]
      */
     public $cascade;
+
+    /**
+     * @var string
+     */
+    public $inversedBy;
+
+    /**
+     * @var string
+     */
+    public $mappedBy;
+
 }

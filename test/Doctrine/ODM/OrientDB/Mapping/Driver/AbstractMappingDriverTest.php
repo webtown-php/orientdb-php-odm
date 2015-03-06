@@ -39,10 +39,26 @@ abstract class AbstractMappingDriverTest extends TestCase {
      */
     public function testOClassName($class)
     {
-        $this->assertEquals('OUser', $class->getOrientClass());
+        $this->assertEquals('OUser', $class->orientClass);
 
         return $class;
     }
+
+    /**
+     * @depends testLoadMapping
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function testChangeTrackingPolicy($class)
+    {
+        $this->assertEquals(ClassMetadata::CHANGETRACKING_NOTIFY, $class->changeTrackingPolicy);
+        $this->assertTrue($class->isChangeTrackingNotify());
+
+        return $class;
+    }
+
 
     /**
      * @depends testLoadMapping
@@ -90,6 +106,7 @@ abstract class AbstractMappingDriverTest extends TestCase {
 }
 
 /**
+ * @ChangeTrackingPolicy("NOTIFY")
  * @Document(class="OUser")
  */
 class User

@@ -8,6 +8,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\ChangeTrackingPolicy;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedDocument;
@@ -56,23 +57,25 @@ class AnnotationDriver extends AbstractAnnotationDriver
             throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
         }
 
-        if (count($classAnnotations) > 1){
-            $documentAnnots = [];
-            foreach ($classAnnotations as $annot) {
+        $documentAnnots = [];
+        foreach ($classAnnotations as $annot) {
 
-                foreach ($this->entityAnnotationClasses as $annotClass => $i) {
-                    if ($annot instanceof $annotClass) {
-                        $documentAnnots[$i] = $annot;
-                        continue 2;
-                    }
+            foreach ($this->entityAnnotationClasses as $annotClass => $i) {
+                if ($annot instanceof $annotClass) {
+                    $documentAnnots[$i] = $annot;
+                    continue 2;
                 }
             }
-            // find the winning document annotation
-            ksort($documentAnnots);
-            $docAnnotation = reset($documentAnnots);
-        } else {
-            $docAnnotation = end($classAnnotations);
+
+            switch (true) {
+                case $annot instanceof ChangeTrackingPolicy:
+                    $metadata->setChangeTrackingPolicy(constant('Doctrine\\ODM\\OrientDB\\Mapping\\ClassMetadata::CHANGETRACKING_'.$annot->value));
+            }
         }
+
+        // find the winning document annotation
+        ksort($documentAnnots);
+        $docAnnotation = reset($documentAnnots);
 
         $metadata->setOrientClass($docAnnotation->class);
         if ($docAnnotation instanceof EmbeddedDocument) {

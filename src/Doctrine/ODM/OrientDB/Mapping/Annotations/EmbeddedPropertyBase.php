@@ -9,14 +9,4 @@ class EmbeddedPropertyBase extends PropertyBase
      * @var string
      */
     public $targetClass;
-
-    /**
-     * @var string
-     */
-    public $inversedBy;
-
-    /**
-     * @var string
-     */
-    public $mappedBy;
 }

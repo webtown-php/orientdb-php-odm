@@ -1,7 +1,13 @@
 <?php
 
+#region class-level
+
 require_once __DIR__ . '/Document.php';
 require_once __DIR__ . '/EmbeddedDocument.php';
+
+require_once __DIR__ . '/ChangeTrackingPolicy.php';
+
+#endregion
 
 require_once __DIR__ . '/Property.php';
 require_once __DIR__ . '/RID.php';

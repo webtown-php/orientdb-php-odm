@@ -3,8 +3,8 @@
 namespace Doctrine\ODM\OrientDB\Hydrator\Dynamic;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ODM\OrientDB\DocumentManager;
+use Doctrine\ODM\OrientDB\Hydrator\HydratorException;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\PersistentCollection;
@@ -14,6 +14,8 @@ use Doctrine\ODM\OrientDB\UnitOfWork;
 class DynamicHydrator implements HydratorInterface
 {
     const ORIENT_PROPERTY_CLASS = '@class';
+    const ORIENT_PROPERTY_VERSION = '@version';
+    const ORIENT_PROPERTY_TYPE = '@type';
 
     /**
      * @var DocumentManager
@@ -46,18 +48,18 @@ class DynamicHydrator implements HydratorInterface
         $hydratedData = [];
 
         foreach ($this->metadata->fieldMappings as $fieldName => $mapping) {
-            $property = $mapping['name'];
-            $propertyValue = property_exists($data, $property) ? $data->$property : null;
+            $name          = $mapping['name'];
+            $propertyValue = property_exists($data, $name) ? $data->$name : null;
 
             if (!isset($mapping['association'])) {
                 if ($propertyValue === null) {
                     continue;
                 }
 
-                $type = Type::getType($mapping['type']);
+                $type  = Type::getType($mapping['type']);
                 $value = $type->convertToPHPValue($propertyValue);
                 $this->metadata->setFieldValue($document, $fieldName, $value);
-                $hydratedData[$property] = $value;
+                $hydratedData[$name] = $value;
                 continue;
             }
 
@@ -69,67 +71,38 @@ class DynamicHydrator implements HydratorInterface
                     $coll->setData($propertyValue);
                 }
                 $this->metadata->setFieldValue($document, $fieldName, $coll);
-                $hydratedData[$property] = $coll;
+                $hydratedData[$name] = $coll;
+                continue;
+            }
+
+            if ($propertyValue === null) {
                 continue;
             }
 
             if ($mapping['association'] === ClassMetadata::LINK) {
-                if ($propertyValue === null) {
-                    continue;
-                }
                 $link = $this->dm->getReference($propertyValue);
                 $this->metadata->setFieldValue($document, $fieldName, $link);
-                $hydratedData[$property] = $link;
+                $hydratedData[$name] = $link;
+                continue;
+            }
+
+            if ($mapping['association'] === ClassMetadata::EMBED) {
+                // an embed one must have @class, we would support generic JSON properties via another mapping type
+                if (!property_exists($propertyValue, self::ORIENT_PROPERTY_CLASS)) {
+                    throw new HydratorException(sprintf("missing @class for embedded property '%s'", $name));
+                }
+                $oclass           = $propertyValue->{self::ORIENT_PROPERTY_CLASS};
+                $embeddedMetadata = $this->dm->getMetadataFactory()->getMetadataForOClass($oclass);
+                $doc              = $embeddedMetadata->newInstance();
+                $embeddedData     = $this->dm->getHydratorFactory()->hydrate($doc, $propertyValue, $hints);
+                $this->uow->registerManaged($doc, null, $embeddedData);
+                $this->uow->setParentAssociation($doc, $mapping, $document, $name);
+                $this->metadata->setFieldValue($document, $fieldName, $doc);
+                $hydratedData[$name] = $doc;
+                continue;
             }
         }
 
         return $hydratedData;
-    }
-
-    /**
-     * Hydrates the value
-     *
-     * @param       $value
-     * @param array $mapping
-     *
-     * @return mixed|null
-     * @throws \Exception
-     */
-    protected function hydrateValue($value, array $mapping) {
-        if (isset($mapping['type'])) {
-            try {
-                $value = $this->castProperty($mapping, $value);
-            } catch (\Exception $e) {
-                if ($mapping['nullable']) {
-                    $value = null;
-                } else {
-                    throw $e;
-                }
-            }
-        }
-
-        return $value;
-    }
-
-    /**
-     * Casts a value according to how it was annotated.
-     *
-     * @param  array $mapping
-     * @param  mixed $propertyValue
-     *
-     * @return mixed
-     */
-    protected function castProperty(array $mapping, $propertyValue) {
-        $method = 'cast' . Inflector::classify($mapping['type']);
-
-        $this->getCaster()->setValue($propertyValue);
-        $this->getCaster()->setProperty('mapping', $mapping);
-        $this->verifyCastingSupport($this->getCaster(), $method, $mapping['type']);
-
-        $this->castedProperties[$propertyId] = $this->getCaster()->$method();
-    }
-
-    protected function getCastedPropertyCacheKey($type, $value) {
-        return get_class() . "_casted_property_" . $type . "_" . serialize($value);
     }
 }

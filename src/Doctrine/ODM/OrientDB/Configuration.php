@@ -152,7 +152,7 @@ class Configuration
      *
      * @return AnnotationDriver
      */
-    public function newDefaultAnnotationDriver($paths = array(), $useSimpleAnnotationReader = true) {
+    public function newDefaultAnnotationDriver($paths = [], $useSimpleAnnotationReader = true) {
         AnnotationRegistry::registerFile(__DIR__ . '/Mapping/Annotations/DoctrineAnnotations.php');
 
         if ($useSimpleAnnotationReader) {
