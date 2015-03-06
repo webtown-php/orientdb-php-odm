@@ -23,7 +23,7 @@ class Contact
     public $name;
 
     /**
-     * @Link(targetClass="EmailAddress")
+     * @Link(targetClass="EmailAddress", cascade={"persist"})
      * @var EmailAddress
      */
     protected $email;

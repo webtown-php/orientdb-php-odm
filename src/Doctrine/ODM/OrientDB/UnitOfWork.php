@@ -3,15 +3,16 @@
 namespace Doctrine\ODM\OrientDB;
 
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\NotifyPropertyChanged;
 use Doctrine\Common\PropertyChangedListener;
 use Doctrine\Common\Util\ClassUtils;
-use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\Event\LifecycleEventArgs;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\ODM\OrientDB\Persisters\PersistenceBuilder;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\OrientDB\Query\Query;
@@ -160,6 +161,13 @@ class UnitOfWork implements PropertyChangedListener
     private $persisters = [];
 
     /**
+     * The persistence builder instance used in DocumentPersisters.
+     *
+     * @var PersistenceBuilder
+     */
+    private $persistenceBuilder;
+
+    /**
      * Array of parent associations between embedded documents
      *
      * @todo We might need to clean up this array in clear(), doDetach(), etc.
@@ -179,6 +187,20 @@ class UnitOfWork implements PropertyChangedListener
         $this->dm              = $manager;
         $this->evm             = $evm;
         $this->hydratorFactory = $hydratorFactory;
+    }
+
+    /**
+     * Factory for returning new PersistenceBuilder instances used for preparing data into
+     * queries for insert persistence.
+     *
+     * @return PersistenceBuilder $pb
+     */
+    public function getPersistenceBuilder() {
+        if (!$this->persistenceBuilder) {
+            $this->persistenceBuilder = new PersistenceBuilder($this->dm, $this);
+        }
+
+        return $this->persistenceBuilder;
     }
 
     /**
@@ -224,7 +246,8 @@ class UnitOfWork implements PropertyChangedListener
     public function getDocumentPersister($documentName) {
         if (!isset($this->persisters[$documentName])) {
             $class                           = $this->dm->getClassMetadata($documentName);
-            $this->persisters[$documentName] = new Persisters\DocumentPersister($this->dm, $this->evm, $this, $this->hydratorFactory, $class);
+            $pb = $this->getPersistenceBuilder();
+            $this->persisters[$documentName] = new Persisters\DocumentPersister($pb, $this->dm, $this->evm, $this, $this->hydratorFactory, $class);
         }
 
         return $this->persisters[$documentName];
@@ -1153,7 +1176,7 @@ class UnitOfWork implements PropertyChangedListener
                         $this->scheduleOrphanRemoval($orgValue);
                     }
 
-                    $changeSet[$propName] = array($orgValue, $actualValue);
+                    $changeSet[$propName] = [$orgValue, $actualValue];
                     continue;
                 }
 
@@ -1186,7 +1209,7 @@ class UnitOfWork implements PropertyChangedListener
                 if (isset($class->fieldMappings[$propName]['association']) &&
                     $class->fieldMappings[$propName]['association'] & ClassMetadata::TO_MANY
                 ) {
-                    $changeSet[$propName] = array($orgValue, $actualValue);
+                    $changeSet[$propName] = [$orgValue, $actualValue];
                     if ($orgValue instanceof PersistentCollection) {
                         $this->collectionDeletions[] = $orgValue;
                     }
@@ -1257,8 +1280,8 @@ class UnitOfWork implements PropertyChangedListener
         $class                 = $this->dm->getClassMetadata(get_class($parentDocument));
         $topOrExistingDocument = (!$isNewParentDocument || !$class->isEmbeddedDocument);
 
-        if ($value instanceof PersistentCollection && $value->isDirty() && $mapping['isOwningSide']) {
-            if ($topOrExistingDocument || ($mapping['assocation'] & ClassMetadata::ASSOCIATION_USE_KEY) === 0) {
+        if ($value instanceof PersistentCollection && $value->isDirty() && $mapping['isOwningSide'] && $mapping['association'] & ClassMetadata::LINK_MANY) {
+            if ($topOrExistingDocument) {
                 if (!in_array($value, $this->collectionUpdates, true)) {
                     $this->collectionUpdates[] = $value;
                 }

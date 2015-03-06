@@ -76,6 +76,11 @@ class ClassMetadata implements DoctrineMetadata
     const TO_MANY = 0xEE;
 
     /**
+     * Bit mask for linked collection associations
+     */
+    const LINK_MANY = 0x0E;
+
+    /**
      * DEFERRED_IMPLICIT means that changes of entities are calculated at commit-time
      * by doing a property-by-property comparison with the original data. This will
      * be done for all entities that are in MANAGED state at commit-time.

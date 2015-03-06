@@ -10,7 +10,7 @@ use test\PHPUnit\TestCase;
 /**
  * @group functional
  */
-class UnitOfWorkChangesetWithSimpleContactTest extends TestCase
+class UnitOfWorkChangeSetWithSimpleContactTest extends TestCase
 {
     /**
      * @var DocumentManager

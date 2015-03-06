@@ -20,10 +20,10 @@
 
 namespace Doctrine\ODM\OrientDB;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Util\Inflector;
-use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Query;

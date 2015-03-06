@@ -2,6 +2,7 @@
 
 namespace test\Doctrine\ODM\OrientDB\Document\Stub\Embedded;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 /**
@@ -33,4 +34,8 @@ class Contact
      * @var Phone[]|Collection
      */
     public $phones;
+
+    function __construct() {
+        $this->phones = new ArrayCollection();
+    }
 }
