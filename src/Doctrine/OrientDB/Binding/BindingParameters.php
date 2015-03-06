@@ -41,10 +41,9 @@ class BindingParameters
      * @param string $password
      * @param string $database
      */
-    public function __construct($host = null, $port = null, $username = null, $password = null, $database = null)
-    {
-        $this->host = $host ?: self::DEFAULT_HOST;
-        $this->port = $port ?: self::DEFAULT_PORT;
+    public function __construct($host = null, $port = null, $username = null, $password = null, $database = null) {
+        $this->host     = $host ?: self::DEFAULT_HOST;
+        $this->port     = $port ?: self::DEFAULT_PORT;
         $this->username = $username;
         $this->password = $password;
         $this->database = $database;
@@ -55,10 +54,10 @@ class BindingParameters
      * or a parameters array.
      *
      * @param mixed $parameters
+     *
      * @return BindingParameters
      */
-    public static function create($parameters)
-    {
+    public static function create($parameters) {
         if (is_string($parameters)) {
             return self::fromString($parameters);
         }
@@ -74,10 +73,10 @@ class BindingParameters
      * Creates a new binding parameters instance from a URI string.
      *
      * @param string $parameters
+     *
      * @return BindingParameters
      */
-    public static function fromString($uri)
-    {
+    public static function fromString($uri) {
         $parameters = parse_url($uri);
 
         if (isset($parameters['user'])) {
@@ -101,15 +100,15 @@ class BindingParameters
      * Creates a new binding parameters instance from a parameters array.
      *
      * @param array $parameters
+     *
      * @return BindingParameters
      */
-    public static function fromArray(Array $parameters)
-    {
+    public static function fromArray(Array $parameters) {
         $host = isset($parameters['host']) ? $parameters['host'] : self::DEFAULT_HOST;
         $port = isset($parameters['port']) ? $parameters['port'] : self::DEFAULT_PORT;
         $user = isset($parameters['username']) ? $parameters['username'] : null;
         $pass = isset($parameters['password']) ? $parameters['password'] : null;
-        $db = isset($parameters['database']) ? $parameters['database'] : null;
+        $db   = isset($parameters['database']) ? $parameters['database'] : null;
 
         return new self($host, $port, $user, $pass, $db);
     }
@@ -119,8 +118,7 @@ class BindingParameters
      *
      * @return string
      */
-    public function getHost()
-    {
+    public function getHost() {
         return $this->host;
     }
 
@@ -129,8 +127,7 @@ class BindingParameters
      *
      * @return int
      */
-    public function getPort()
-    {
+    public function getPort() {
         return $this->port;
     }
 
@@ -139,8 +136,7 @@ class BindingParameters
      *
      * @return string
      */
-    public function getUsername()
-    {
+    public function getUsername() {
         return $this->username;
     }
 
@@ -149,8 +145,7 @@ class BindingParameters
      *
      * @return string
      */
-    public function getPassword()
-    {
+    public function getPassword() {
         return $this->password;
     }
 
@@ -159,8 +154,7 @@ class BindingParameters
      *
      * @return string
      */
-    public function getDatabase()
-    {
+    public function getDatabase() {
         return $this->database;
     }
 }

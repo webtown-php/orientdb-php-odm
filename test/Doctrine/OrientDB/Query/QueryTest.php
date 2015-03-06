@@ -11,26 +11,22 @@
 
 namespace test\Doctrine\OrientDB\Query;
 
-use test\PHPUnit\TestCase;
-use Doctrine\OrientDB\Query\Query;
-use Doctrine\OrientDB\Query\Command\Insert;
 use Doctrine\OrientDB\Query\Command\Select;
 use Doctrine\OrientDB\Query\Command\Update;
+use Doctrine\OrientDB\Query\Query;
+use test\PHPUnit\TestCase;
 
 class QueryTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->query = new Query();
     }
 
-    public function testQueryImplementsAGenericInterface()
-    {
+    public function testQueryImplementsAGenericInterface() {
         $this->assertInstanceOf("Doctrine\OrientDB\Query\QueryInterface", $this->query);
     }
 
-    public function testDataFiltering()
-    {
+    public function testDataFiltering() {
         $this->query->where('username = ?', "\"admin\"", false);
         $sql = 'SELECT FROM WHERE username = "\"admin\""';
 
@@ -89,13 +85,11 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testSelect()
-    {
+    public function testSelect() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Select', $this->query->select(array()));
     }
 
-    public function testYouCanResetAllTheWheresOfAQuery()
-    {
+    public function testYouCanResetAllTheWheresOfAQuery() {
         $this->query = new Query(array('myClass'));
         $this->query->where('the sky = ?', 'blue');
         $this->query->resetWhere();
@@ -104,61 +98,51 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testInsert()
-    {
+    public function testInsert() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\InsertInterface', $this->query->insert());
     }
 
-    public function testFields()
-    {
+    public function testFields() {
         $this->query->insert();
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\InsertInterface', $this->query->fields(array()));
     }
 
-    public function testInto()
-    {
+    public function testInto() {
         $this->query->insert();
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\InsertInterface', $this->query->into('class'));
     }
 
-    public function testValues()
-    {
+    public function testValues() {
         $this->query->insert();
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\InsertInterface', $this->query->values(array()));
     }
 
-    public function testTo()
-    {
+    public function testTo() {
         $this->query->grant('a');
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Credential\Grant', $this->query->to('c'));
     }
 
-    public function testGrant()
-    {
+    public function testGrant() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\CredentialInterface', $this->query->grant('p'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Credential\Grant', $this->query->grant('p'));
     }
 
-    public function testYouCanCreateARevoke()
-    {
+    public function testYouCanCreateARevoke() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\CredentialInterface', $this->query->revoke('p'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Credential\Revoke', $this->query->revoke('p'));
     }
 
-    public function testCreationOfAClass()
-    {
+    public function testCreationOfAClass() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\OClass\Create', $this->query->create('p'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\OClassInterface', $this->query->create('p'));
     }
 
-    public function testRemovalOfAClass()
-    {
+    public function testRemovalOfAClass() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\OClass\Drop', $this->query->drop('p'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\OClassInterface', $this->query->drop('p'));
     }
 
-    public function testRemovalOfAProperty()
-    {
+    public function testRemovalOfAProperty() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property\Drop', $this->query->drop('p', 'h'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property', $this->query->drop('p', 'h'));
 
@@ -175,8 +159,7 @@ class QueryTest extends TestCase
         $this->assertEquals($sql, $this->query->getRaw());
     }
 
-    public function testCreationOfAProperty()
-    {
+    public function testCreationOfAProperty() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property\Create', $this->query->create('p', 'h'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property', $this->query->create('p', 'h'));
 
@@ -191,8 +174,7 @@ class QueryTest extends TestCase
         $this->assertEquals($sql, $this->query->getRaw());
     }
 
-    public function testFindReferences()
-    {
+    public function testFindReferences() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Reference\Find', $this->query->findReferences("1:1"));
         //$this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Reference\FindInterface', $this->query->findReferences("1:1"));
 
@@ -202,8 +184,7 @@ class QueryTest extends TestCase
         $this->assertEquals($sql, $this->query->getRaw());
     }
 
-    public function testDroppingAnIndex()
-    {
+    public function testDroppingAnIndex() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Drop', $this->query->unindex("class", "property"));
         //$this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\IndexInterface', $this->query->unindex("class", "property"));
 
@@ -218,17 +199,15 @@ class QueryTest extends TestCase
         $this->assertEquals($sql, $this->query->getRaw());
     }
 
-    public function testLookingUpAnIndex()
-    {
+    public function testLookingUpAnIndex() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Lookup', $this->query->lookup('index'));
     }
 
-    public function testCreatingAnIndex()
-    {
+    public function testCreatingAnIndex() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Create', $this->query->index("class", "property"));
         //$this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\IndexInterface', $this->query->index("class", "property"));
 
-        $this->query->index("property", 'unique',"class");
+        $this->query->index("property", 'unique', "class");
         $sql = 'CREATE INDEX class.property unique';
 
         $this->assertEquals($sql, $this->query->getRaw());
@@ -250,8 +229,7 @@ class QueryTest extends TestCase
         $this->assertEquals($sql, $this->query->getRaw());
     }
 
-    public function testRebuildAnIndex()
-    {
+    public function testRebuildAnIndex() {
         $this->query->rebuild('Profile.nick');
         $sql = 'REBUILD INDEX Profile.nick';
 
@@ -263,8 +241,7 @@ class QueryTest extends TestCase
         $this->assertEquals($sql, $this->query->getRaw());
     }
 
-    public function testDeleteSQLQuery()
-    {
+    public function testDeleteSQLQuery() {
         $this->query
             ->delete("Profile")
             ->where("1 = ?", 1)
@@ -275,16 +252,14 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testDeletingEntriesFromAnIndex()
-    {
+    public function testDeletingEntriesFromAnIndex() {
         $this->query->delete("index:indexName");
         $sql = 'DELETE FROM index:indexName';
 
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testCreatingALink()
-    {
+    public function testCreatingALink() {
         $this->query->link('class', "property", "Profile")->with("class2", "property2");
         $sql = 'CREATE LINK Profile FROM class.property TO class2.property2';
 
@@ -296,8 +271,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testUpdating()
-    {
+    public function testUpdating() {
         $this->query
             ->update('class')
             ->set(array('first' => 'uno', 'nano' => 'due', 'linklist' => array(1, 2, 3)))
@@ -315,24 +289,23 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
 
         $this->query
-                ->add(array('first' => '10:22', 'nano' => '10:1'), 'class')
-                ->where('prop = ?', 'val');
+            ->add(array('first' => '10:22', 'nano' => '10:1'), 'class')
+            ->where('prop = ?', 'val');
 
         $sql = 'UPDATE class ADD first = #10:22, nano = #10:1 WHERE prop = "val"';
 
         $this->assertCommandGives($sql, $this->query->getRaw());
 
         $this->query
-                ->remove(array('first' => '12:0', 'nano' => '12:2'), 'class')
-                ->where('prop = ?', 'val');
+            ->remove(array('first' => '12:0', 'nano' => '12:2'), 'class')
+            ->where('prop = ?', 'val');
 
         $sql = 'UPDATE class REMOVE first = #12:0, nano = #12:2 WHERE prop = "val"';
 
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testWheres()
-    {
+    public function testWheres() {
         $this->query->from(array('class'));
         $this->query->where('1 = ?', 1);
         $this->query->andWhere('1 = ?', "1");
@@ -343,8 +316,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testYouCanJustUseAndWhere()
-    {
+    public function testYouCanJustUseAndWhere() {
         $this->query->from(array('class'));
         $this->query->andWhere('1 = ?', 1);
         $this->query->andWhere('1 = ?', "1");
@@ -355,8 +327,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testLimit()
-    {
+    public function testLimit() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\SelectInterface', $this->query->limit(20));
 
         $this->query->from(array('class'))->limit(10);
@@ -365,8 +336,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testSkip()
-    {
+    public function testSkip() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\SelectInterface', $this->query->skip(10));
 
         $this->query->from(array('class'))->skip(10);
@@ -375,8 +345,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testOn()
-    {
+    public function testOn() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property\Create', $this->query->create('p', 'c'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property\Create', $this->query->on('p', 'f'));
 
@@ -388,8 +357,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testAlter()
-    {
+    public function testAlter() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\OClass\Alter', $this->query->alter('c', 'p', 'v'));
 
         $sql = 'ALTER CLASS c p v';
@@ -397,8 +365,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->alter('c', 'p', 'v')->getRaw());
     }
 
-    public function testAlterProperty()
-    {
+    public function testAlterProperty() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Property\Alter', $this->query->alterProperty('p', 'c', 'a', 'v'));
 
         $sql = 'ALTER PROPERTY c.p a v';
@@ -406,8 +373,7 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->alterProperty('c', 'p', 'a', 'v')->getRaw());
     }
 
-    public function testOrderBy()
-    {
+    public function testOrderBy() {
         $this->query->from(array('class'));
         $this->query->orderBy('A B');
         $sql = 'SELECT FROM class ORDER BY A B';
@@ -415,13 +381,11 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testPuttingANewIndex()
-    {
+    public function testPuttingANewIndex() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Put', $this->query->indexPut('i', 'k', 'v'));
     }
 
-    public function testANormalSelectCanBeConvertedIntoAnIndexSelect()
-    {
+    public function testANormalSelectCanBeConvertedIntoAnIndexSelect() {
         $this->query->from(array('index:name'));
         $this->query->between("k", "10.1", "10.2");
         $sql = 'SELECT FROM index:name WHERE k BETWEEN 10.1 AND 10.2';
@@ -429,23 +393,20 @@ class QueryTest extends TestCase
         $this->assertCommandGives($sql, $this->query->getRaw());
     }
 
-    public function testAnIndexCanBeRemoved()
-    {
+    public function testAnIndexCanBeRemoved() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Remove', $this->query->indexRemove('i', 'k', 'v'));
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Remove', $this->query->indexRemove('i', 'k'));
     }
 
-    public function testYouCanCountInAnIndex()
-    {
+    public function testYouCanCountInAnIndex() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Index\Count', $this->query->indexCount('i'));
     }
 
     /**
      * @expectedException Doctrine\OrientDB\Exception
      */
-    public function testAnExceptionIsRaisedWhenTryingToAccessANonExistingMethod()
-    {
-        $query = $this->getMock('Doctrine\OrientDB\Query\Query', array('aMethodCallingABadCommand'));
+    public function testAnExceptionIsRaisedWhenTryingToAccessANonExistingMethod() {
+        $query           = $this->getMock('Doctrine\OrientDB\Query\Query', array('aMethodCallingABadCommand'));
         $getCommandClass = new \ReflectionMethod($query, 'getCommandClass');
         $getCommandClass->setAccessible(true);
 
@@ -460,24 +421,20 @@ class QueryTest extends TestCase
         $query->aMethodCallingABadCommand();
     }
 
-    public function testTokens()
-    {
+    public function testTokens() {
         $select = new Select();
         $this->assertCommandGives($select->getTokens(), $this->query->getTokens());
     }
 
-    public function testTruncatingAClass()
-    {
+    public function testTruncatingAClass() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Truncate\OClass', $this->query->truncate('myFictionaryClass'));
     }
 
-    public function testTruncatingACluster()
-    {
+    public function testTruncatingACluster() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Truncate\Cluster', $this->query->truncate('myFictionaryCluster', true));
     }
 
-    public function testTruncatingARecord()
-    {
+    public function testTruncatingARecord() {
         $this->assertInstanceOf('\Doctrine\OrientDB\Query\Command\Truncate\Record', $this->query->truncate('12:0'));
     }
 }

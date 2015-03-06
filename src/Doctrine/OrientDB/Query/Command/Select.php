@@ -29,8 +29,7 @@ class Select extends Command implements SelectInterface
      *
      * @param array $target
      */
-    public function __construct(array $target = null)
-    {
+    public function __construct(array $target = null) {
         parent::__construct();
 
         if ($target) {
@@ -41,8 +40,7 @@ class Select extends Command implements SelectInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "SELECT :Projections FROM :Target :Where :Between :OrderBy :Skip :Limit";
     }
 
@@ -54,10 +52,10 @@ class Select extends Command implements SelectInterface
      * @param   string $key
      * @param   string $left
      * @param   string $right
+     *
      * @return  Select
      */
-    public function between($key, $left, $right)
-    {
+    public function between($key, $left, $right) {
         $this->resetWhere();
         $this->where($key);
         $this->setTokenValues('Between', array($left, $right));
@@ -70,8 +68,7 @@ class Select extends Command implements SelectInterface
      *
      * @return true
      */
-    public function resetWhere()
-    {
+    public function resetWhere() {
         parent::resetWhere();
 
         $this->clearToken('Between');
@@ -87,8 +84,7 @@ class Select extends Command implements SelectInterface
      *
      * @return $this|Select
      */
-    public function select(array $projections, $append = true)
-    {
+    public function select(array $projections, $append = true) {
         $this->setTokenValues('Projections', $projections, $append);
 
         return $this;
@@ -103,8 +99,7 @@ class Select extends Command implements SelectInterface
      *
      * @return $this|Select
      */
-    public function orderBy($order, $append = true, $first = false)
-    {
+    public function orderBy($order, $append = true, $first = false) {
         $this->setToken('OrderBy', $order, $append, $first);
 
         return $this;
@@ -117,9 +112,8 @@ class Select extends Command implements SelectInterface
      *
      * @return $this|Select
      */
-    public function limit($limit)
-    {
-        $this->setToken('Limit', (int) $limit);
+    public function limit($limit) {
+        $this->setToken('Limit', (int)$limit);
 
         return $this;
     }
@@ -131,9 +125,8 @@ class Select extends Command implements SelectInterface
      *
      * @return $this
      */
-    public function skip($records)
-    {
-        $this->setToken('Skip', (int) $records);
+    public function skip($records) {
+        $this->setToken('Skip', (int)$records);
 
         return $this;
     }
@@ -143,8 +136,7 @@ class Select extends Command implements SelectInterface
      *
      * @return array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Projections' => "Doctrine\OrientDB\Query\Formatter\Query\Select",
             'OrderBy'     => "Doctrine\OrientDB\Query\Formatter\Query\OrderBy",

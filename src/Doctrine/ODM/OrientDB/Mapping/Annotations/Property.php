@@ -18,6 +18,7 @@
  */
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
+
 use Doctrine\Common\Annotations\Annotation;
 
 /**
@@ -41,8 +42,7 @@ class Property extends PropertyBase
      */
     public $nullable = false;
 
-    public function getCast()
-    {
+    public function getCast() {
         return $this->cast;
     }
 }

@@ -30,8 +30,7 @@ abstract class Credential extends Command implements CredentialInterface
      *
      * @param string $permission
      */
-    public function __construct($permission)
-    {
+    public function __construct($permission) {
         parent::__construct();
 
         $this->permission($permission);
@@ -41,10 +40,10 @@ abstract class Credential extends Command implements CredentialInterface
      * Sets a permission for the query.
      *
      * @param   string $permission
+     *
      * @return  Credential
      */
-    public function permission($permission)
-    {
+    public function permission($permission) {
         $this->setToken('Permission', $permission);
 
         return $this;
@@ -54,10 +53,10 @@ abstract class Credential extends Command implements CredentialInterface
      * Sets the $resource on which the credential is given.
      *
      * @param   string $resource
+     *
      * @return  Credential
      */
-    public function on($resource)
-    {
+    public function on($resource) {
         $this->setToken('Resource', $resource);
 
         return $this;
@@ -67,10 +66,10 @@ abstract class Credential extends Command implements CredentialInterface
      * Sets the $role having the credential on a resource.
      *
      * @param   string $role
+     *
      * @return  Credential
      */
-    public function to($role)
-    {
+    public function to($role) {
         $this->setToken('Role', $role);
 
         return $this;
@@ -81,12 +80,11 @@ abstract class Credential extends Command implements CredentialInterface
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'Role'          => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Resource'      => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Permission'    => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Role'       => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Resource'   => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Permission' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
         ));
     }
 }

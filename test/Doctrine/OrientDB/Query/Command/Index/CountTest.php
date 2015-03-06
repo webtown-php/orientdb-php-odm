@@ -11,18 +11,16 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\Index;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Index\Count;
+use test\PHPUnit\TestCase;
 
 class CountTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->count = new Count('indexName');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
             ':Name' => array(),
         );
@@ -30,8 +28,7 @@ class CountTest extends TestCase
         $this->assertTokens($tokens, $this->count->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'SELECT count(*) AS size from index:indexName';
 
         $this->assertCommandGives($query, $this->count->getRaw());

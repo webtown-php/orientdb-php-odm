@@ -11,29 +11,26 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\OClass;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\OClass\Alter;
+use test\PHPUnit\TestCase;
 
 class AlterTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->alter = new Alter('class', 'prop', 'value');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
-            ':Class'        => array(),
-            ':Attribute'    => array(),
-            ':Value'        => array(),
+            ':Class'     => array(),
+            ':Attribute' => array(),
+            ':Value'     => array(),
         );
 
         $this->assertTokens($tokens, $this->alter->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'ALTER CLASS class prop value';
 
         $this->assertCommandGives($query, $this->alter->getRaw());

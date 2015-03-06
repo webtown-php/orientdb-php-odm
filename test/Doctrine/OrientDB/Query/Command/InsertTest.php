@@ -11,36 +11,32 @@
 
 namespace test\Doctrine\OrientDB\Query\Command;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Insert;
+use test\PHPUnit\TestCase;
 
 class InsertTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->insert = new Insert();
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
-            ':Target'  => array(),
-            ':Fields'  => array(),
-            ':Values'  => array()
+            ':Target' => array(),
+            ':Fields' => array(),
+            ':Values' => array()
         );
 
         $this->assertTokens($tokens, $this->insert->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'INSERT INTO () VALUES ()';
 
         $this->assertCommandGives($query, $this->insert->getRaw());
     }
 
-    public function testInsertingFields()
-    {
+    public function testInsertingFields() {
         $this->insert->fields(array('name'));
         $query = 'INSERT INTO (name) VALUES ()';
 
@@ -57,8 +53,7 @@ class InsertTest extends TestCase
         $this->assertCommandGives($query, $this->insert->getRaw());
     }
 
-    public function testSettingTheToToken()
-    {
+    public function testSettingTheToToken() {
         $this->insert->into("city");
         $query = 'INSERT INTO city () VALUES ()';
 
@@ -70,8 +65,7 @@ class InsertTest extends TestCase
         $this->assertCommandGives($query, $this->insert->getRaw());
     }
 
-    public function testInsertValues()
-    {
+    public function testInsertValues() {
         $this->insert->values(array());
         $query = 'INSERT INTO () VALUES ()';
 
@@ -88,12 +82,11 @@ class InsertTest extends TestCase
         $this->assertCommandGives($query, $this->insert->getRaw());
     }
 
-    public function testUsingTheFluentInterface()
-    {
+    public function testUsingTheFluentInterface() {
         $this->insert
-             ->into("myClass")
-             ->fields(array('name', 'relation', 'links'))
-             ->values(array('hello', array('10:1'), array('10:1', '11:1')));
+            ->into("myClass")
+            ->fields(array('name', 'relation', 'links'))
+            ->values(array('hello', array('10:1'), array('10:1', '11:1')));
 
         $sql = 'INSERT INTO myClass (name, relation, links) VALUES ("hello", [10:1], [10:1, 11:1])';
 

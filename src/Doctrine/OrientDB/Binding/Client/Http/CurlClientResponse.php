@@ -28,28 +28,26 @@ class CurlClientResponse
     protected $body;
     protected $protocol;
 
-    const STATUS_OK                             = 200;
-    const STATUS_CREATED                        = 201;
-    const STATUS_ACCEPTED                       = 202;
-    const STATUS_NON_AUTHORITATIVE_INFORMATION  = 203;
-    const STATUS_NO_CONTENT                     = 204;
-    const STATUS_RESET_CONTENT                  = 205;
-    const STATUS_PARTIAL_CONTENT                = 206;
+    const STATUS_OK = 200;
+    const STATUS_CREATED = 201;
+    const STATUS_ACCEPTED = 202;
+    const STATUS_NON_AUTHORITATIVE_INFORMATION = 203;
+    const STATUS_NO_CONTENT = 204;
+    const STATUS_RESET_CONTENT = 205;
+    const STATUS_PARTIAL_CONTENT = 206;
 
     /**
      * Constructs a new object from an existing HTTP response.
      *
      * @param String $response
      */
-    public function __construct($response)
-    {
+    public function __construct($response) {
         @list($this->rawHeaders, $this->body) = explode("\r\n\r\n", $response, 2);
 
         $this->buildHeaders($this->rawHeaders);
     }
 
-    public function __toString()
-    {
+    public function __toString() {
         return $this->getResponse();
     }
 
@@ -58,8 +56,7 @@ class CurlClientResponse
      *
      * @return String
      */
-    public function getBody()
-    {
+    public function getBody() {
         return $this->body;
     }
 
@@ -67,10 +64,10 @@ class CurlClientResponse
      * Returns the value of the specified header.
      *
      * @param string $header Header name.
+     *
      * @return string
      */
-    public function getHeader($header)
-    {
+    public function getHeader($header) {
         return isset($this->headers[$header]) ? $this->headers[$header] : null;
     }
 
@@ -79,9 +76,8 @@ class CurlClientResponse
      *
      * @return array
      */
-    public function getCookies()
-    {
-        $jar = array();
+    public function getCookies() {
+        $jar     = array();
         $headers = $this->getRawHeaders();
         if (preg_match_all('/Set-Cookie: (.*)\b/', $headers, $cookies)) {
             foreach ($cookies[1] as $cookie) {
@@ -90,6 +86,7 @@ class CurlClientResponse
                 $jar[$name] = $value;
             }
         }
+
         return $jar;
     }
 
@@ -98,8 +95,7 @@ class CurlClientResponse
      *
      * @return String
      */
-    public function getResponse()
-    {
+    public function getResponse() {
         return $this->getRawHeaders() . "\r\n\r\n" . $this->getBody();
     }
 
@@ -109,8 +105,7 @@ class CurlClientResponse
      *
      * @return String
      */
-    public function getValidStatusCodes()
-    {
+    public function getValidStatusCodes() {
         return array(
             self::STATUS_OK,
             self::STATUS_ACCEPTED,
@@ -127,10 +122,9 @@ class CurlClientResponse
      *
      * @param string $headers
      */
-    protected function buildHeaders($headers)
-    {
-        $parts = explode("\r\n", $headers);
-        $status = array_shift($parts);
+    protected function buildHeaders($headers) {
+        $parts       = explode("\r\n", $headers);
+        $status      = array_shift($parts);
         $statusParts = explode(' ', $status);
 
         if (array_key_exists(0, $statusParts)) {
@@ -142,8 +136,8 @@ class CurlClientResponse
         }
 
         foreach ($parts as $header) {
-            list($header, $value)   = explode(':', $header, 2);
-            $header                 = trim($header, ' ');
+            list($header, $value) = explode(':', $header, 2);
+            $header = trim($header, ' ');
 
             if (isset($this->headers[$header])) {
                 $this->headers[$header] .= "," . $value;
@@ -158,8 +152,7 @@ class CurlClientResponse
      *
      * @return string
      */
-    protected function getRawHeaders()
-    {
+    protected function getRawHeaders() {
         return $this->rawHeaders;
     }
 
@@ -168,8 +161,7 @@ class CurlClientResponse
      *
      * @param string $protocol
      */
-    protected function setProtocol($protocol)
-    {
+    protected function setProtocol($protocol) {
         $this->protocol = $protocol;
     }
 
@@ -178,8 +170,7 @@ class CurlClientResponse
      *
      * @return string
      */
-    public function getProtocol()
-    {
+    public function getProtocol() {
         return $this->protocol;
     }
 
@@ -188,9 +179,8 @@ class CurlClientResponse
      *
      * @param integer $code
      */
-    protected function setStatusCode($code)
-    {
-        $this->statusCode = (int) $code;
+    protected function setStatusCode($code) {
+        $this->statusCode = (int)$code;
     }
 
     /**
@@ -198,8 +188,7 @@ class CurlClientResponse
      *
      * @return String
      */
-    public function getStatusCode()
-    {
+    public function getStatusCode() {
         return $this->statusCode;
     }
 }

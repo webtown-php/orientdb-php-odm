@@ -69,7 +69,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
             switch (true) {
                 case $annot instanceof ChangeTrackingPolicy:
-                    $metadata->setChangeTrackingPolicy(constant('Doctrine\\ODM\\OrientDB\\Mapping\\ClassMetadata::CHANGETRACKING_'.$annot->value));
+                    $metadata->setChangeTrackingPolicy(constant('Doctrine\\ODM\\OrientDB\\Mapping\\ClassMetadata::CHANGETRACKING_' . $annot->value));
             }
         }
 

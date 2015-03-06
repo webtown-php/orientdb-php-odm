@@ -19,9 +19,9 @@
 
 namespace Doctrine\OrientDB\Binding\Adapter;
 
+use Doctrine\OrientDB\Binding\Client\Http\CurlClientResponse;
 use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use Doctrine\OrientDB\Binding\InvalidQueryException;
-use Doctrine\OrientDB\Binding\Client\Http\CurlClientResponse;
 
 class CurlClientAdapterResult implements HttpBindingResultInterface
 {
@@ -30,16 +30,14 @@ class CurlClientAdapterResult implements HttpBindingResultInterface
     /**
      * @param mixed $response Response object.
      */
-    public function __construct(CurlClientResponse $response)
-    {
+    public function __construct(CurlClientResponse $response) {
         $this->response = $response;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getData()
-    {
+    public function getData() {
         if (!$this->isValid()) {
             throw new InvalidQueryException($this->response->getBody(), $this);
         }
@@ -60,9 +58,8 @@ class CurlClientAdapterResult implements HttpBindingResultInterface
     /**
      * {@inheritdoc}
      */
-    public function getResult()
-    {
-        $json = $this->getData();
+    public function getResult() {
+        $json   = $this->getData();
         $result = isset($json->result) ? $json->result : null;
 
         return $result;
@@ -71,24 +68,21 @@ class CurlClientAdapterResult implements HttpBindingResultInterface
     /**
      * {@inheritdoc}
      */
-    public function isValid()
-    {
+    public function isValid() {
         return in_array($this->response->getStatusCode(), $this->response->getValidStatusCodes());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getInnerResponse()
-    {
+    public function getInnerResponse() {
         return $this->response;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function isValidRid($body)
-    {
+    protected function isValidRid($body) {
         return preg_match('/#\d+:\d+/', $body);
     }
 }

@@ -23,8 +23,7 @@ use Doctrine\OrientDB\Query\Command\Index;
 
 class Rebuild extends Index
 {
-    public function __construct($indexName)
-    {
+    public function __construct($indexName) {
         parent::__construct();
 
         $this->setToken('IndexName', $indexName);
@@ -33,8 +32,7 @@ class Rebuild extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "REBUILD INDEX :IndexName";
     }
 
@@ -43,10 +41,9 @@ class Rebuild extends Index
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'IndexName'  => "Doctrine\OrientDB\Query\Formatter\Query\RebuildIndex",
+            'IndexName' => "Doctrine\OrientDB\Query\Formatter\Query\RebuildIndex",
         ));
     }
 }

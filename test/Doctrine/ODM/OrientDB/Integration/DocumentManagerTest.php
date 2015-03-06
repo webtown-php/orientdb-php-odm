@@ -11,11 +11,10 @@
 namespace test\Doctrine\ODM\OrientDB\Integration;
 
 use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\OrientDB\Query\Query;
 use test\Integration\Document\Address;
-use test\Integration\Document\Post;
 use test\Integration\Document\Profile;
 use test\PHPUnit\TestCase;
-use Doctrine\OrientDB\Query\Query;
 
 /**
  * @group integration
@@ -26,8 +25,7 @@ class DocumentManagerTest extends TestCase
     public $addressId;
     public $profileId;
 
-    public function setup()
-    {
+    public function setup() {
         $this->postId    = $this->getClassId('Post');
         $this->addressId = $this->getClassId('Address');
         $this->profileId = $this->getClassId('Profile');
@@ -36,14 +34,13 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testGettingARelatedCollectionViaLazyLoading()
-    {
+    public function testGettingARelatedCollectionViaLazyLoading() {
         $manager = $this->createDocumentManager([
             'mismatches_tolerance' => true,
         ]);
 
-        $post       = $manager->findByRid($this->postId.':0', '*:0');
-        $comments   = $post->getComments();
+        $post     = $manager->findByRid($this->postId . ':0', '*:0');
+        $comments = $post->getComments();
 
         $this->assertInstanceOf('test\Integration\Document\Comment', $comments[0]);
     }
@@ -51,18 +48,17 @@ class DocumentManagerTest extends TestCase
     public function testFind() {
         $dm = $this->createDocumentManager();
         /** @var Profile $profile */
-        $profile = $dm->find(Profile::class, $this->profileId.':0');
-        $phones = $profile->getPhones()->toArray();
+        $profile = $dm->find(Profile::class, $this->profileId . ':0');
+        $phones  = $profile->getPhones()->toArray();
     }
 
     /**
      * @group integration
      */
-    public function testExecutionOfASelect()
-    {
+    public function testExecutionOfASelect() {
         $manager = $this->createDocumentManager();
 
-        $query = new Query(array('Address'));
+        $query     = new Query(array('Address'));
         $addresses = $manager->execute($query);
 
         $this->assertEquals(40, count($addresses));
@@ -72,11 +68,10 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testFindingARecordWithAnExecuteReturnsAnArrayHowever()
-    {
+    public function testFindingARecordWithAnExecuteReturnsAnArrayHowever() {
         $manager = $this->createDocumentManager();
 
-        $query = new Query(array($this->addressId.':0'));
+        $query     = new Query(array($this->addressId . ':0'));
         $addresses = $manager->execute($query);
 
         $this->assertEquals(1, count($addresses));
@@ -86,12 +81,11 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testExecutionOfAnUpdate()
-    {
+    public function testExecutionOfAnUpdate() {
         $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
-        $query->update('Address')->set(array('my' => 'yours'))->where('@rid = ?', $this->addressId.':30');
+        $query->update('Address')->set(array('my' => 'yours'))->where('@rid = ?', $this->addressId . ':30');
         $result = $manager->execute($query);
 
         $this->assertInternalType('boolean', $result);
@@ -102,8 +96,7 @@ class DocumentManagerTest extends TestCase
      * @group integration
      * @expectedException \Doctrine\OrientDB\Binding\InvalidQueryException
      */
-    public function testAnExceptionGetsRaisedWhenExecutingAWrongQuery()
-    {
+    public function testAnExceptionGetsRaisedWhenExecutingAWrongQuery() {
         $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
@@ -115,10 +108,9 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testFindingARecord()
-    {
+    public function testFindingARecord() {
         $manager = $this->createDocumentManager();
-        $address = $manager->findByRid($this->addressId.':0');
+        $address = $manager->findByRid($this->addressId . ':0');
 
         $this->assertInstanceOf('test\Integration\Document\Address', $address);
     }
@@ -126,13 +118,12 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testFindingARecordWithAFetchPlan()
-    {
+    public function testFindingARecordWithAFetchPlan() {
         $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
-        $post = $manager->findByRid($this->postId.':0', '*:-1');
+        $post = $manager->findByRid($this->postId . ':0', '*:-1');
 
         $this->assertInstanceOf(PersistentCollection::class, $post->comments);
     }
@@ -140,11 +131,10 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testGettingARelatedRecord()
-    {
+    public function testGettingARelatedRecord() {
         $manager = $this->createDocumentManager();
         /** @var Address $address */
-        $address = $manager->findByRid($this->addressId.':0');
+        $address = $manager->findByRid($this->addressId . ':0');
 
         $city = $address->getCity();
         $this->assertInstanceOf('test\Integration\Document\Country', $city);
@@ -154,14 +144,13 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testGettingARelatedCollection()
-    {
+    public function testGettingARelatedCollection() {
         $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
-        $post       = $manager->findByRid($this->postId.':0');
-        $comments   = $post->getComments();
+        $post     = $manager->findByRid($this->postId . ':0');
+        $comments = $post->getComments();
 
         $this->assertInstanceOf('test\Integration\Document\Comment', $comments[0]);
     }
@@ -170,21 +159,19 @@ class DocumentManagerTest extends TestCase
      * @group integration
      * @expectedException \Doctrine\ODM\OrientDB\OClassNotFoundException
      */
-    public function testLookingForANonMappedTypeRaisesAnException()
-    {
+    public function testLookingForANonMappedTypeRaisesAnException() {
         $manager = $this->createDocumentManager([], ['./docs']);
 
-        $manager->findByRid($this->postId.':0');
+        $manager->findByRid($this->postId . ':0');
     }
 
     /**
      * @group integration
      */
-    public function testFindingANonExistingRecord()
-    {
+    public function testFindingANonExistingRecord() {
         $manager = $this->createDocumentManager();
 
-        $address = $manager->findByRid($this->postId.':2000');
+        $address = $manager->findByRid($this->postId . ':2000');
 
         $this->assertInternalType("null", $address);
     }
@@ -192,12 +179,11 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testExecutingASelectOfASingleRecordReturnsAnArrayWithOneRecord()
-    {
+    public function testExecutingASelectOfASingleRecordReturnsAnArrayWithOneRecord() {
         $manager = $this->createDocumentManager();
 
         $query = new Query(array('Address'));
-        $query->where('@rid = ?', $this->addressId.':0');
+        $query->where('@rid = ?', $this->addressId . ':0');
 
         $results = $manager->execute($query);
 
@@ -208,8 +194,7 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testExecutionWithNoOutput()
-    {
+    public function testExecutionWithNoOutput() {
         $manager = $this->createDocumentManager();
 
         $query = new Query();

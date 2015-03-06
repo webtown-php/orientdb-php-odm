@@ -14,7 +14,6 @@
 namespace test\Doctrine\ODM\OrientDB;
 
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Binding\BindingResultInterface;

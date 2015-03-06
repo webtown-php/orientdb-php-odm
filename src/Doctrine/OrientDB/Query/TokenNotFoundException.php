@@ -36,10 +36,9 @@ class TokenNotFoundException extends Exception
      * @param string $token
      * @param string $commandClass
      */
-    public function __construct($token, $commandClass)
-    {
-        $ref = new \ReflectionClass($commandClass);
-        $schema = $ref->getConstant('SCHEMA') ? : "undefined";
+    public function __construct($token, $commandClass) {
+        $ref    = new \ReflectionClass($commandClass);
+        $schema = $ref->getConstant('SCHEMA') ?: "undefined";
 
         $this->message = sprintf(self::MESSAGE, $token, $commandClass, $schema);
     }

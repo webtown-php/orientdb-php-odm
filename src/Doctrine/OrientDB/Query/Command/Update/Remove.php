@@ -31,8 +31,7 @@ class Remove extends Update
      * @param string  $class
      * @param boolean $append
      */
-    public function __construct(array $values, $class, $append = true)
-    {
+    public function __construct(array $values, $class, $append = true) {
         parent::__construct($class);
 
         $this->setTokenValues('RidUpdates', $values, $append);
@@ -41,8 +40,7 @@ class Remove extends Update
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "UPDATE :Class REMOVE :RidUpdates :Where";
     }
 
@@ -51,8 +49,7 @@ class Remove extends Update
      *
      * @return array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'RidUpdates' => "Doctrine\OrientDB\Query\Formatter\Query\RidUpdates",
         ));

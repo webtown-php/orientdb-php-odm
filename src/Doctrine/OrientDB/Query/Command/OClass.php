@@ -29,8 +29,7 @@ class OClass extends Command
      *
      * @param string $class
      */
-    public function __construct($class)
-    {
+    public function __construct($class) {
         parent::__construct();
 
         $this->setClass($class);
@@ -40,10 +39,10 @@ class OClass extends Command
      * Sets the $class for the current query.
      *
      * @param   string $class
+     *
      * @return  void
      */
-    protected function setClass($class)
-    {
+    protected function setClass($class) {
         return $this->setToken('Class', $class);
     }
 }

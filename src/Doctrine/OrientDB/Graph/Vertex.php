@@ -32,8 +32,7 @@ class Vertex implements VertexInterface
      *
      * @param mixed $id
      */
-    public function __construct($id)
-    {
+    public function __construct($id) {
         $this->id = $id;
     }
 
@@ -41,11 +40,10 @@ class Vertex implements VertexInterface
      * Connects the vertex to another $vertex.
      * A $distance, to balance the connection, can be specified.
      *
-     * @param Vertex $vertex
+     * @param Vertex  $vertex
      * @param integer $distance
      */
-    public function connect(VertexInterface $vertex, $distance = 1)
-    {
+    public function connect(VertexInterface $vertex, $distance = 1) {
         $this->connections[$vertex->getId()] = $distance;
     }
 
@@ -54,8 +52,7 @@ class Vertex implements VertexInterface
      *
      * @return Array
      */
-    public function getConnections()
-    {
+    public function getConnections() {
         return $this->connections;
     }
 
@@ -64,8 +61,7 @@ class Vertex implements VertexInterface
      *
      * @return mixed
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
@@ -74,8 +70,7 @@ class Vertex implements VertexInterface
      *
      * @return integer
      */
-    public function getPotential()
-    {
+    public function getPotential() {
         return $this->potential;
     }
 
@@ -84,8 +79,7 @@ class Vertex implements VertexInterface
      *
      * @return Doctrine\OrientDB\Graph\Vertex
      */
-    public function getPotentialFrom()
-    {
+    public function getPotentialFrom() {
         return $this->potentialFrom;
     }
 
@@ -94,8 +88,7 @@ class Vertex implements VertexInterface
      *
      * @return boolean
      */
-    public function isPassed()
-    {
+    public function isPassed() {
         return $this->passed;
     }
 
@@ -103,8 +96,7 @@ class Vertex implements VertexInterface
      * Marks this vertex as passed, meaning that, in the scope of a graph, he
      * has already been processed in order to calculate its potential.
      */
-    public function markPassed()
-    {
+    public function markPassed() {
         $this->passed = true;
     }
 
@@ -113,15 +105,15 @@ class Vertex implements VertexInterface
      * one it has is higher than the new one.
      *
      * @param   integer $potential
-     * @param   Vertex $from
+     * @param   Vertex  $from
+     *
      * @return  boolean
      */
-    public function setPotential($potential, VertexInterface $from)
-    {
-        $potential = (int) $potential;
+    public function setPotential($potential, VertexInterface $from) {
+        $potential = (int)$potential;
 
         if (!$this->getPotential() || $potential < $this->getPotential()) {
-            $this->potential = $potential;
+            $this->potential     = $potential;
             $this->potentialFrom = $from;
 
             return true;

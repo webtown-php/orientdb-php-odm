@@ -6,15 +6,15 @@ use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnot
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use test\PHPUnit\TestCase;
 
-abstract class AbstractMappingDriverTest extends TestCase {
+abstract class AbstractMappingDriverTest extends TestCase
+{
 
     /**
      * @return AbstractAnnotationDriver
      */
     abstract protected function _loadDriver();
 
-    public function createClassMetadata($entityClassName)
-    {
+    public function createClassMetadata($entityClassName) {
         $mappingDriver = $this->_loadDriver();
 
         $class = new ClassMetadata($entityClassName);
@@ -24,9 +24,9 @@ abstract class AbstractMappingDriverTest extends TestCase {
         return $class;
     }
 
-    public function testLoadMapping()
-    {
+    public function testLoadMapping() {
         $entityClassName = User::class;
+
         return $this->createClassMetadata($entityClassName);
     }
 
@@ -37,8 +37,7 @@ abstract class AbstractMappingDriverTest extends TestCase {
      *
      * @return ClassMetadata
      */
-    public function testOClassName($class)
-    {
+    public function testOClassName($class) {
         $this->assertEquals('OUser', $class->orientClass);
 
         return $class;
@@ -51,8 +50,7 @@ abstract class AbstractMappingDriverTest extends TestCase {
      *
      * @return ClassMetadata
      */
-    public function testChangeTrackingPolicy($class)
-    {
+    public function testChangeTrackingPolicy($class) {
         $this->assertEquals(ClassMetadata::CHANGETRACKING_NOTIFY, $class->changeTrackingPolicy);
         $this->assertTrue($class->isChangeTrackingNotify());
 
@@ -67,8 +65,7 @@ abstract class AbstractMappingDriverTest extends TestCase {
      *
      * @return ClassMetadata
      */
-    public function testFieldMappings($class)
-    {
+    public function testFieldMappings($class) {
         $this->assertEquals(10, count($class->fieldMappings));
         $this->assertTrue(isset($class->fieldMappings['id']));
         $this->assertTrue(isset($class->fieldMappings['name']));
@@ -79,10 +76,10 @@ abstract class AbstractMappingDriverTest extends TestCase {
 
     /**
      * @depends testLoadMapping
+     *
      * @param ClassMetadata $class
      */
-    public function testAssociationMappings($class)
-    {
+    public function testAssociationMappings($class) {
         $this->assertEquals(5, count($class->associationMappings));
         $this->assertTrue(isset($class->associationMappings['address']));
         $this->assertTrue(isset($class->associationMappings['phonenumbers']));
@@ -93,10 +90,10 @@ abstract class AbstractMappingDriverTest extends TestCase {
 
     /**
      * @depends testLoadMapping
+     *
      * @param ClassMetadata $class
      */
-    public function testGetAssociationTargetClass($class)
-    {
+    public function testGetAssociationTargetClass($class) {
         $this->assertEquals('test\Doctrine\ODM\OrientDB\Mapping\Driver\Address', $class->getAssociationTargetClass('address'));
         $this->assertEquals('test\Doctrine\ODM\OrientDB\Mapping\Driver\Group', $class->getAssociationTargetClass('groups'));
         $this->assertEquals('test\Doctrine\ODM\OrientDB\Mapping\Driver\Phonenumber', $class->getAssociationTargetClass('phonenumbers'));
@@ -164,8 +161,7 @@ class User
     /**
      * @PrePersist
      */
-    public function doStuffOnPrePersist()
-    {
+    public function doStuffOnPrePersist() {
     }
 
     /**
@@ -177,13 +173,11 @@ class User
     /**
      * @PostPersist
      */
-    public function doStuffOnPostPersist()
-    {
+    public function doStuffOnPostPersist() {
 
     }
 
-    public static function loadMetadata(ClassMetadata $metadata)
-    {
+    public static function loadMetadata(ClassMetadata $metadata) {
 
     }
 }

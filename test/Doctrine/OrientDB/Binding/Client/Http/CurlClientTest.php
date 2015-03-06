@@ -11,8 +11,8 @@
 
 namespace test\Doctrine\OrientDB\Binding\Client\Http;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
+use test\PHPUnit\TestCase;
 
 class CurlClientTest extends TestCase
 {
@@ -21,8 +21,7 @@ class CurlClientTest extends TestCase
      *
      * Test coupled with a Google response
      */
-    public function testYouCanExecuteAGETAfteraPOST()
-    {
+    public function testYouCanExecuteAGETAfteraPOST() {
         $client = new CurlClient();
 
         $client->post('http://www.google.com/', array());
@@ -34,8 +33,7 @@ class CurlClientTest extends TestCase
     /**
      * @expectedException Doctrine\OrientDB\Binding\Client\Http\EmptyResponseException
      */
-    public function testRetrievingAnEmptyResponseRaisesAnException()
-    {
+    public function testRetrievingAnEmptyResponseRaisesAnException() {
         $client = new CurlClient();
 
         $client->execute('GET', '');

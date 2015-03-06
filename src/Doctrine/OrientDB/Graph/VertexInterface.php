@@ -25,7 +25,7 @@ interface VertexInterface
      * Connects the vertex to another $vertex.
      * A $distance, to balance the connection, can be specified.
      *
-     * @param Vertex $vertex
+     * @param Vertex  $vertex
      * @param integer $distance
      */
     public function connect(VertexInterface $vertex, $distance = 1);
@@ -76,7 +76,8 @@ interface VertexInterface
      * one it has is higher than the new one.
      *
      * @param   integer $potential
-     * @param   Vertex $from
+     * @param   Vertex  $from
+     *
      * @return  boolean
      */
     public function setPotential($potential, VertexInterface $from);

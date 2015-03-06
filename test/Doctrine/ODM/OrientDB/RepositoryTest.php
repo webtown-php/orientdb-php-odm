@@ -12,16 +12,14 @@
 
 namespace test\Doctrine\ODM\OrientDB;
 
-use test\PHPUnit\TestCase;
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\ODM\OrientDB\DocumentRepository;
-use Doctrine\ODM\OrientDB\Types\Rid;
+use Doctrine\ODM\OrientDB\Mapping;
+use test\PHPUnit\TestCase;
 
 class RepositoryTest extends TestCase
 {
-    protected function createRepository()
-    {
+    protected function createRepository() {
         $rawResult = json_decode('[{
             "@type": "d", "@rid": "#19:1", "@version": 1, "@class": "ContactAddress",
             "name": "Luca",
@@ -45,8 +43,8 @@ class RepositoryTest extends TestCase
                 ->method('execute')
                 ->will($this->returnValue($result));
 
-        $manager = $this->prepareManager($binding);
-        $uow = $manager->getUnitOfWork();
+        $manager  = $this->prepareManager($binding);
+        $uow      = $manager->getUnitOfWork();
         $metadata = $manager->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
 
         $repository = new DocumentRepository($manager, $uow, $metadata);
@@ -54,45 +52,41 @@ class RepositoryTest extends TestCase
         return $repository;
     }
 
-    protected function prepareManager($binding)
-    {
+    protected function prepareManager($binding) {
         $config = $this->getConfiguration();
         $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Document/Stub']));
+
         return new DocumentManager($binding, $config);
     }
 
-    public function testFindAll()
-    {
+    public function testFindAll() {
         $repository = $this->createRepository();
-        $documents = $repository->findAll();
+        $documents  = $repository->findAll();
 
         $this->assertSame(2, count($documents));
     }
-    
-    public function testYouCanExecuteFindByQueries()
-    {
+
+    public function testYouCanExecuteFindByQueries() {
         $repository = $this->createRepository();
         $documents  = $repository->findByUsername('hello');
-        
+
         $this->assertSame(2, count($documents));
     }
-    
-    public function testYouCanExecuteFindOneByQueries()
-    {
+
+    public function testYouCanExecuteFindOneByQueries() {
         $repository = $this->createRepository();
         $documents  = $repository->findOneByUsername('hello');
-        
+
         $this->assertSame(1, count($documents));
     }
 
     /**
      * @expectedException \RuntimeException
      */
-    public function testYouCantCallWhateverMethodOfARepository()
-    {
-        $dm = $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters()));
-        $uow = $dm->getUnitOfWork();
-        $metadata = $dm->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
+    public function testYouCantCallWhateverMethodOfARepository() {
+        $dm         = $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters()));
+        $uow        = $dm->getUnitOfWork();
+        $metadata   = $dm->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
         $repository = new DocumentRepository($dm, $uow, $metadata);
         $documents  = $repository->findOn();
     }
@@ -100,11 +94,10 @@ class RepositoryTest extends TestCase
     /**
      * @expectedException \RuntimeException
      */
-    public function testYouCanOnlyPassObjectsHavingGetRidMethodAsArgumentsOfFindSomeBySomething()
-    {
-        $dm = $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters()));
-        $uow = $dm->getUnitOfWork();
-        $metadata = $dm->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
+    public function testYouCanOnlyPassObjectsHavingGetRidMethodAsArgumentsOfFindSomeBySomething() {
+        $dm         = $this->prepareManager(new \Doctrine\OrientDB\Binding\HttpBinding(new \Doctrine\OrientDB\Binding\BindingParameters()));
+        $uow        = $dm->getUnitOfWork();
+        $metadata   = $dm->getClassMetadata('test\Doctrine\ODM\OrientDB\Document\Stub\Contact\Address');
         $repository = new DocumentRepository($dm, $uow, $metadata);
         $documents  = $repository->findOneByJeex(new \stdClass());
     }

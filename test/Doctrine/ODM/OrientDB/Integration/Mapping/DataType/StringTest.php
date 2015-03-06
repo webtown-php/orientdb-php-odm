@@ -19,11 +19,10 @@ use test\PHPUnit\TestCase;
  */
 class StringTest extends TestCase
 {
-    public function testHydratingAStringProperty()
-    {
+    public function testHydratingAStringProperty() {
         $manager = $this->createDocumentManager();
         //Country
-        $country = $manager->findByRid('#'.$this->getClassId('Country').':0');
+        $country = $manager->findByRid('#' . $this->getClassId('Country') . ':0');
 
         $this->assertInternalType('string', $country->name);
     }

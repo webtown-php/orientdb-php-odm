@@ -23,8 +23,7 @@ use Doctrine\OrientDB\Query\Formatter\Query;
 
 class ClassList extends Query implements TokenInterface
 {
-    public static function format(array $values)
-    {
+    public static function format(array $values) {
         if ($values) {
             return "[" . self::implodeRegular($values) . "]";
         }

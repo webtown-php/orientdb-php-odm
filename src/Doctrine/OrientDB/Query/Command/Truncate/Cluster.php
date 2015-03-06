@@ -26,8 +26,7 @@ class Cluster extends Truncate
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "TRUNCATE CLUSTER :Name";
     }
 }

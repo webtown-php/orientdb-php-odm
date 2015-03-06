@@ -21,8 +21,8 @@
 namespace test\Integration\Document;
 
 /**
-* @Document(class="ORole")
-*/
+ * @Document(class="ORole")
+ */
 class ORole
 {
     /**

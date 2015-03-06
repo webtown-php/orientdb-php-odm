@@ -7,7 +7,6 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Caster\ReverseCaster;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
 
 /**

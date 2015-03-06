@@ -18,6 +18,7 @@ interface UpdateInterface
      *
      * @param  array   $values
      * @param  boolean $append
+     *
      * @return Update
      */
     public function set(array $values, $append);

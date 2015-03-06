@@ -1,6 +1,7 @@
 <?php
 
 namespace test\Doctrine\ODM\OrientDB\Document\Stub\Embedded;
+
 use Doctrine\Common\Collections\Collection;
 
 /**

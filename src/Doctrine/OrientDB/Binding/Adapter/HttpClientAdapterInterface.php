@@ -30,6 +30,7 @@ interface HttpClientAdapterInterface
      * @param   string $location
      * @param   array  $headers
      * @param   string $body
+     *
      * @return  BindingResultInterface
      */
     public function request($method, $location, array $headers = null, $body = null);

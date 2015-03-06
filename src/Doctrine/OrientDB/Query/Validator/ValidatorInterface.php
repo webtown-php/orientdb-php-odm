@@ -25,6 +25,7 @@ interface ValidatorInterface
      * Cleans ad returns the polished $value.
      *
      * @param   mixed $value
+     *
      * @return  mixed
      * @throws  Doctrine\OrientDB\Query\Validator\ValidationException
      */

@@ -26,8 +26,7 @@ class OClass extends Truncate
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "TRUNCATE CLASS :Name";
     }
 }

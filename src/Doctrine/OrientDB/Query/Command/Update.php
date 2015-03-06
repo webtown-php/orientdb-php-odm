@@ -28,8 +28,7 @@ class Update extends Command implements UpdateInterface
      *
      * @param string $class
      */
-    public function __construct($class)
-    {
+    public function __construct($class) {
         parent::__construct();
 
         $this->setToken('Class', $class);
@@ -38,8 +37,7 @@ class Update extends Command implements UpdateInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "UPDATE :Class SET :Updates :Returns :Where";
     }
 
@@ -49,10 +47,10 @@ class Update extends Command implements UpdateInterface
      *
      * @param  array   $values
      * @param  boolean $append
+     *
      * @return Update
      */
-    public function set(array $values, $append = true)
-    {
+    public function set(array $values, $append = true) {
         $this->setTokenValues('Updates', $values, $append);
 
         return $this;
@@ -63,8 +61,7 @@ class Update extends Command implements UpdateInterface
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Updates' => "Doctrine\OrientDB\Query\Formatter\Query\Updates",
             'Returns' => "Doctrine\OrientDB\Query\Formatter\Query\Returns"
@@ -76,8 +73,7 @@ class Update extends Command implements UpdateInterface
      *
      * @return Array
      */
-    public function getValidReturnTypes()
-    {
+    public function getValidReturnTypes() {
         return array(
             self::RETURN_COUNT,
             self::RETURN_BEFORE,
@@ -88,13 +84,13 @@ class Update extends Command implements UpdateInterface
     /**
      * @inheritdoc
      */
-    public function canHydrate()
-    {
+    public function canHydrate() {
         $val = $this->getTokenValue('Returns');
         if (count($val) === 1) {
             $val = $val[0];
         }
+
         return self::RETURN_BEFORE === $val ||
-            self::RETURN_AFTER === $val;
+        self::RETURN_AFTER === $val;
     }
 }

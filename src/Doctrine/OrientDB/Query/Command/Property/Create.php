@@ -31,8 +31,7 @@ class Create extends Property
      * @param string $type
      * @param string $linked
      */
-    public function __construct($property, $type = null, $linked = null)
-    {
+    public function __construct($property, $type = null, $linked = null) {
         parent::__construct($property);
 
         if ($type) {
@@ -47,20 +46,17 @@ class Create extends Property
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "CREATE PROPERTY :Class.:Property :Type :Linked";
     }
 
-    public function setLinked($linked)
-    {
+    public function setLinked($linked) {
         $this->setToken('Linked', $linked);
 
         return $this;
     }
 
-    public function setType($type)
-    {
+    public function setType($type) {
         $this->setToken('Type', $type);
 
         return $this;
@@ -71,10 +67,9 @@ class Create extends Property
      *
      * @return array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'Linked'    => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Linked' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
         ));
     }
 }

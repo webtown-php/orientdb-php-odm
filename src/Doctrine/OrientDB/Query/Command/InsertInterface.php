@@ -29,6 +29,7 @@ interface InsertInterface
      *
      * @param   array   $fields
      * @param   boolean $append
+     *
      * @return  Insert
      */
     public function fields(array $fields, $append = true);
@@ -36,7 +37,8 @@ interface InsertInterface
     /**
      * Sets the $target cluster in which the new document will be created.
      *
-     * @param   string  $target
+     * @param   string $target
+     *
      * @return  Insert
      */
     public function into($target);
@@ -49,6 +51,7 @@ interface InsertInterface
      *
      * @param   array   $values
      * @param   boolean $append
+     *
      * @return  Insert
      */
     public function values(array $values, $append = true);

@@ -33,8 +33,7 @@ class Put extends Update
      * @param string  $class
      * @param boolean $append
      */
-    public function __construct(array $values, $class, $append = true)
-    {
+    public function __construct(array $values, $class, $append = true) {
         parent::__construct($class);
 
         $this->setTokenValues('Updates', $values, $append);
@@ -43,8 +42,7 @@ class Put extends Update
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "UPDATE :Class PUT :Updates :Where";
     }
 
@@ -53,8 +51,7 @@ class Put extends Update
      *
      * @return array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Updates' => "Doctrine\OrientDB\Query\Formatter\Query\MapUpdates",
         ));

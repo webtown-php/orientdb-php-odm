@@ -33,8 +33,7 @@ class Graph implements GraphInterface
     /**
      * {@inheritdoc}
      */
-    public function add(VertexInterface $vertex)
-    {
+    public function add(VertexInterface $vertex) {
         if (array_key_exists($vertex->getId(), $this->getVertices())) {
             throw new Exception('Unable to insert multiple Vertices with the same ID in a Graph');
         }
@@ -47,8 +46,7 @@ class Graph implements GraphInterface
     /**
      * {@inheritdoc}
      */
-    public function getVertex($id)
-    {
+    public function getVertex($id) {
         $vertices = $this->getVertices();
 
         if (!array_key_exists($id, $vertices)) {
@@ -61,8 +59,7 @@ class Graph implements GraphInterface
     /**
      * {@inheritdoc}
      */
-    public function getVertices()
-    {
+    public function getVertices() {
         return $this->vertices;
     }
 }

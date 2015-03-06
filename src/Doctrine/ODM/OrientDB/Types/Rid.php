@@ -30,8 +30,7 @@ class Rid
      *
      * @param string $rid
      */
-    public function __construct($rid)
-    {
+    public function __construct($rid) {
         $validator = new RidValidator();
         $this->rid = $validator->check($rid);
     }
@@ -41,8 +40,7 @@ class Rid
      *
      * @return string
      */
-    public function getValue()
-    {
+    public function getValue() {
         return $this->rid;
     }
 }

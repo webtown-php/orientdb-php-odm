@@ -34,8 +34,9 @@ interface BindingInterface
      * The second argument specifies when to use COMMAND or QUERY as the
      * underlying command.
      *
-     * @param Query $query.
+     * @param Query  $query     .
      * @param string $fetchPlan Optional fetch plan for the query.
+     *
      * @return BindingResultInterface
      */
     public function execute(Query $query, $fetchPlan = null);
@@ -54,7 +55,9 @@ interface BindingInterface
      * Retrieves details regarding the specified database.
      *
      * @api
+     *
      * @param string $database
+     *
      * @return BindingResultInterface
      */
     public function getDatabase($database = null);

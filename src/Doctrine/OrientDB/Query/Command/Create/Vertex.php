@@ -30,8 +30,7 @@ class Vertex extends Command implements UpdateInterface
      * @param string $class
      * @param string $cluster
      */
-    public function __construct($class, $cluster = '')
-    {
+    public function __construct($class, $cluster = '') {
         parent::__construct();
 
         $this->setToken('Class', $class);
@@ -41,8 +40,7 @@ class Vertex extends Command implements UpdateInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "CREATE VERTEX :Class :Cluster SET :Fields";
     }
 
@@ -52,10 +50,10 @@ class Vertex extends Command implements UpdateInterface
      *
      * @param  array   $values
      * @param  boolean $append
+     *
      * @return Update
      */
-    public function set(array $values, $append = true)
-    {
+    public function set(array $values, $append = true) {
         $this->setTokenValues('Fields', $values, $append);
 
         return $this;
@@ -66,8 +64,7 @@ class Vertex extends Command implements UpdateInterface
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Cluster' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
             'Fields'  => "Doctrine\OrientDB\Query\Formatter\Query\Updates"

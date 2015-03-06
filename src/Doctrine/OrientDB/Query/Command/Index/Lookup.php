@@ -19,8 +19,8 @@
 
 namespace Doctrine\OrientDB\Query\Command\Index;
 
-use Doctrine\OrientDB\Query\Command\Index;
 use Doctrine\OrientDB\Query\Command;
+use Doctrine\OrientDB\Query\Command\Index;
 
 class Lookup extends Index
 {
@@ -29,8 +29,7 @@ class Lookup extends Index
      *
      * @param string $index
      */
-    public function __construct($index)
-    {
+    public function __construct($index) {
         parent::__construct();
 
         $this->setToken('Index', $index);
@@ -39,8 +38,7 @@ class Lookup extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "SELECT FROM index::Index :Where";
     }
 
@@ -49,8 +47,7 @@ class Lookup extends Index
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Index' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
         ));

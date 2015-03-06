@@ -30,8 +30,7 @@ class Delete extends Command
      *
      * @param string $from
      */
-    public function __construct($from)
-    {
+    public function __construct($from) {
         parent::__construct();
 
         $this->setClass($from);
@@ -40,8 +39,7 @@ class Delete extends Command
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "DELETE FROM :Class :Returns :Where";
     }
 
@@ -50,8 +48,7 @@ class Delete extends Command
      *
      * @param string $class
      */
-    protected function setClass($class)
-    {
+    protected function setClass($class) {
         $this->setToken('Class', $class);
     }
 
@@ -60,8 +57,7 @@ class Delete extends Command
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Returns' => "Doctrine\OrientDB\Query\Formatter\Query\Returns"
         ));
@@ -72,8 +68,7 @@ class Delete extends Command
      *
      * @return Array
      */
-    public function getValidReturnTypes()
-    {
+    public function getValidReturnTypes() {
         return array(
             self::RETURN_COUNT,
             self::RETURN_BEFORE
@@ -83,8 +78,7 @@ class Delete extends Command
     /**
      * @inheritdoc
      */
-    public function canHydrate()
-    {
+    public function canHydrate() {
         return self::RETURN_BEFORE === $this->getTokenValue('Returns');
     }
 }

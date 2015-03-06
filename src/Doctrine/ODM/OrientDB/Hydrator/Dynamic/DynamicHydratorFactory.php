@@ -4,7 +4,6 @@ namespace Doctrine\ODM\OrientDB\Hydrator\Dynamic;
 
 use Doctrine\Common\EventManager;
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\Events;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
@@ -30,7 +29,7 @@ class DynamicHydratorFactory implements HydratorFactoryInterface
      * @inheritdoc
      */
     public function setDocumentManager(DocumentManager $dm) {
-        $this->dm = $dm;
+        $this->dm  = $dm;
         $this->evm = $dm->getEventManager();
     }
 
@@ -39,7 +38,7 @@ class DynamicHydratorFactory implements HydratorFactoryInterface
      */
     public function getHydratorFor($className) {
         if (!isset($this->hydrators[$className])) {
-            $metadata = $this->dm->getClassMetadata($className);
+            $metadata                    = $this->dm->getClassMetadata($className);
             $this->hydrators[$className] = new DynamicHydrator($this->dm, $this->dm->getUnitOfWork(), $metadata);
         }
 

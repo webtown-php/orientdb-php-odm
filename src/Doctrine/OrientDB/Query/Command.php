@@ -22,10 +22,10 @@ namespace Doctrine\OrientDB\Query;
 
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\LogicException;
-use Doctrine\OrientDB\Query\Formatter\QueryInterface as QueryFormatterInterface;
 use Doctrine\OrientDB\Query\Formatter\Query as Formatter;
-use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
+use Doctrine\OrientDB\Query\Formatter\QueryInterface as QueryFormatterInterface;
 use Doctrine\OrientDB\Query\Validator\Escaper as EscapeValidator;
+use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 
 abstract class Command implements CommandInterface
 {
@@ -38,26 +38,24 @@ abstract class Command implements CommandInterface
     /**
      * These are the valid return types for commands
      */
-    const RETURN_COUNT  = 'COUNT';
+    const RETURN_COUNT = 'COUNT';
     const RETURN_BEFORE = 'BEFORE';
-    const RETURN_AFTER  = 'AFTER';
+    const RETURN_AFTER = 'AFTER';
 
     /**
      * Builds a new object, creating the SQL statement from the class SCHEMA
      * and initializing the tokens.
      */
-    public function __construct()
-    {
-        $this->tokens = $this->getTokens();
-        $this->ridValidator = new RidValidator();
+    public function __construct() {
+        $this->tokens          = $this->getTokens();
+        $this->ridValidator    = new RidValidator();
         $this->escapeValidator = new EscapeValidator();
     }
 
     /**
      * Returns the schema template for the command.
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return null;
     }
 
@@ -67,10 +65,10 @@ abstract class Command implements CommandInterface
      *
      * @param  string $condition
      * @param  string $value
+     *
      * @return Command
      */
-    public function andWhere($condition, $value = null)
-    {
+    public function andWhere($condition, $value = null) {
         return $this->where($condition, $value, true, "AND");
     }
 
@@ -80,8 +78,7 @@ abstract class Command implements CommandInterface
      * @param array   $target
      * @param boolean $append
      */
-    public function from(array $target, $append = true)
-    {
+    public function from(array $target, $append = true) {
         $this->setTokenvalues('Target', $target, $append);
 
         return $this;
@@ -92,8 +89,7 @@ abstract class Command implements CommandInterface
      *
      * @return string
      */
-    public function getRaw()
-    {
+    public function getRaw() {
         return $this->getValidStatement();
     }
 
@@ -103,8 +99,7 @@ abstract class Command implements CommandInterface
      *
      * @return array
      */
-    public function getTokens()
-    {
+    public function getTokens() {
         preg_match_all("/(\:\w+)/", $this->getSchema(), $matches);
         $tokens = array();
 
@@ -119,10 +114,10 @@ abstract class Command implements CommandInterface
      * Returns the value of a token.
      *
      * @param  string $token
+     *
      * @return mixed
      */
-    public function getTokenValue($token)
-    {
+    public function getTokenValue($token) {
         return $this->checkToken($this->tokenize($token));
     }
 
@@ -132,10 +127,10 @@ abstract class Command implements CommandInterface
      *
      * @param  string $condition
      * @param  string $value
+     *
      * @return Command
      */
-    public function orWhere($condition, $value = null)
-    {
+    public function orWhere($condition, $value = null) {
         return $this->where($condition, $value, true, "OR");
     }
 
@@ -144,8 +139,7 @@ abstract class Command implements CommandInterface
      *
      * @return true
      */
-    public function resetWhere()
-    {
+    public function resetWhere() {
         $this->clearToken('Where');
 
         return true;
@@ -156,8 +150,7 @@ abstract class Command implements CommandInterface
      *
      * @param QueryFormatterInterface $formatter
      */
-    public function setFormatter(QueryFormatterInterface $formatter)
-    {
+    public function setFormatter(QueryFormatterInterface $formatter) {
         $this->formatter = $formatter;
     }
 
@@ -169,20 +162,19 @@ abstract class Command implements CommandInterface
      * @param boolean $append
      * @param string  $clause
      */
-    public function where($condition, $value = null, $append = false, $clause = "WHERE")
-    {
+    public function where($condition, $value = null, $append = false, $clause = "WHERE") {
         if (is_array($value)) {
             $condition = $this->formatWhereConditionWithMultipleTokens($condition, $value, $this->escapeValidator);
         } else {
             if ($value === null) {
                 $condition = preg_replace("/=\s*\?/", "IS ?", $condition, 1);
-                $value = 'NULL';
+                $value     = 'NULL';
             } else if (is_bool($value)) {
                 $value = $value ? 'TRUE' : 'FALSE';
             } else if (is_int($value) || is_float($value)) {
                 // Preserve $value as is
             } else {
-                $rid = $this->ridValidator->check($value, true);
+                $rid   = $this->ridValidator->check($value, true);
                 $value = $rid ? $rid : '"' . $this->escapeValidator->check($value, true) . '"';
             }
 
@@ -204,8 +196,7 @@ abstract class Command implements CommandInterface
      *
      * @return boolean
      */
-    public function canHydrate()
-    {
+    public function canHydrate() {
         return true;
     }
 
@@ -214,8 +205,7 @@ abstract class Command implements CommandInterface
      *
      * @param string $return
      */
-    public function returns($returns)
-    {
+    public function returns($returns) {
         //check if the Return clause is even supported
         $returnTypes = $this->getValidReturnTypes();
         if (count($returnTypes) <= 0) {
@@ -235,8 +225,7 @@ abstract class Command implements CommandInterface
      *
      * @return array()
      */
-    public function getValidReturnTypes()
-    {
+    public function getValidReturnTypes() {
         return array();
     }
 
@@ -248,8 +237,7 @@ abstract class Command implements CommandInterface
      * @param mixed   $values
      * @param boolean $first
      */
-    protected function appendToken($token, $values, $first = false)
-    {
+    protected function appendToken($token, $values, $first = false) {
         foreach ($values as $key => $value) {
             if ($first) {
                 array_unshift($this->tokens[$token], $value);
@@ -269,8 +257,7 @@ abstract class Command implements CommandInterface
      * @param string $key
      * @param mixed  $value
      */
-    protected function appendTokenAsString($token, $key, $value)
-    {
+    protected function appendTokenAsString($token, $key, $value) {
         $this->tokens[$token][$key] = $value;
     }
 
@@ -281,8 +268,7 @@ abstract class Command implements CommandInterface
      * @param string $key
      * @param mixed  $value
      */
-    protected function appendTokenAsInteger($token, $key, $value)
-    {
+    protected function appendTokenAsInteger($token, $key, $value) {
         $this->tokens[$token][] = $value;
     }
 
@@ -290,11 +276,11 @@ abstract class Command implements CommandInterface
      * Checks if a token is set, returning it if it is.
      *
      * @param  string $token
+     *
      * @return mixed
      * @throws TokenNotFoundException
      */
-    protected function checkToken($token)
-    {
+    protected function checkToken($token) {
         if (!array_key_exists($token, $this->tokens)) {
             throw new TokenNotFoundException($token, get_called_class());
         }
@@ -307,8 +293,7 @@ abstract class Command implements CommandInterface
      *
      * @param string $token
      */
-    protected function clearToken($token)
-    {
+    protected function clearToken($token) {
         $token = $this->tokenize($token);
         $this->checkToken($token);
         $this->tokens[$token] = array();
@@ -320,8 +305,7 @@ abstract class Command implements CommandInterface
      *
      * @return QueryFormatterInterface
      */
-    protected function getFormatter()
-    {
+    protected function getFormatter() {
         return $this->formatter ?: new Formatter();
     }
 
@@ -330,8 +314,7 @@ abstract class Command implements CommandInterface
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array(
             'Target'   => "Doctrine\OrientDB\Query\Formatter\Query\Target",
             'Where'    => "Doctrine\OrientDB\Query\Formatter\Query\Where",
@@ -346,16 +329,16 @@ abstract class Command implements CommandInterface
      * Returns the formatter for a particular token.
      *
      * @param  string $token
+     *
      * @return Array
      * @throws string
      */
-    protected function getTokenFormatter($token)
-    {
+    protected function getTokenFormatter($token) {
         $formatters = $this->getTokenFormatters();
 
         if (!array_key_exists($token, $formatters)) {
-            $message = "The class %s does not know how to format the %s token\n".
-                       "Have you added it in the getTokenFormatters() method?";
+            $message = "The class %s does not know how to format the %s token\n" .
+                "Have you added it in the getTokenFormatters() method?";
 
             throw new Exception(sprintf($message, get_called_class(), $token));
         }
@@ -368,8 +351,7 @@ abstract class Command implements CommandInterface
      *
      * @return array
      */
-    protected function getTokenReplaces()
-    {
+    protected function getTokenReplaces() {
         $replaces = array();
 
         foreach ($this->tokens as $token => $value) {
@@ -387,9 +369,8 @@ abstract class Command implements CommandInterface
      *
      * @return string
      */
-    protected function getValidStatement()
-    {
-        $schema = $this->getSchema();
+    protected function getValidStatement() {
+        $schema    = $this->getSchema();
         $statement = $this->replaceTokens($schema);
         $statement = preg_replace('/( ){2,}/', ' ', $statement);
 
@@ -400,7 +381,8 @@ abstract class Command implements CommandInterface
      * Substitutes multiple tokens ($values) in the WHERE $condition.
      *
      * @param  string $condition
-     * @param  array $values
+     * @param  array  $values
+     *
      * @return string
      * @throws LogicException
      */
@@ -425,10 +407,10 @@ abstract class Command implements CommandInterface
      * the current object.
      *
      * @param  string $statement
+     *
      * @return string
      */
-    protected function replaceTokens($statement)
-    {
+    protected function replaceTokens($statement) {
         $replaces = $this->getTokenReplaces();
 
         return str_replace(array_keys($replaces), $replaces, $statement);
@@ -441,10 +423,10 @@ abstract class Command implements CommandInterface
      * @param  string  $tokenValue
      * @param  boolean $append
      * @param  boolean $first
+     *
      * @return true
      */
-    public function setToken($token, $tokenValue, $append = false, $first = false)
-    {
+    public function setToken($token, $tokenValue, $append = false, $first = false) {
         return $this->setTokenValues($token, array($tokenValue), $append, $first);
     }
 
@@ -456,10 +438,10 @@ abstract class Command implements CommandInterface
      * @param  boolean $append
      * @param  boolean $first
      * @param  boolean $filter
+     *
      * @return true
      */
-    protected function setTokenValues($token, array $tokenValues, $append = true, $first = false)
-    {
+    protected function setTokenValues($token, array $tokenValues, $append = true, $first = false) {
         $token = $this->tokenize($token);
         $this->checkToken($token);
 
@@ -480,8 +462,7 @@ abstract class Command implements CommandInterface
      *
      * @param string $token
      */
-    protected function unsetToken($token)
-    {
+    protected function unsetToken($token) {
         unset($this->tokens[$token]);
     }
 
@@ -489,10 +470,10 @@ abstract class Command implements CommandInterface
      * Tokenizes a string.
      *
      * @param  string $token
+     *
      * @return string
      */
-    protected function tokenize($token)
-    {
+    protected function tokenize($token) {
         return $this->getFormatter()->tokenize($token);
     }
 }

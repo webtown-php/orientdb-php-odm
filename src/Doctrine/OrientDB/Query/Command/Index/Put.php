@@ -19,8 +19,8 @@
 
 namespace Doctrine\OrientDB\Query\Command\Index;
 
-use Doctrine\OrientDB\Query\Command\Index;
 use Doctrine\OrientDB\Query\Command;
+use Doctrine\OrientDB\Query\Command\Index;
 
 class Put extends Index
 {
@@ -32,8 +32,7 @@ class Put extends Index
      * @param string $key
      * @param string $rid
      */
-    public function __construct($indexName, $key, $rid)
-    {
+    public function __construct($indexName, $key, $rid) {
         parent::__construct();
 
         $this->setToken('Name', $indexName);
@@ -44,8 +43,7 @@ class Put extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "INSERT INTO index::Name (key,rid) values (\":Key\", :Value)";
     }
 
@@ -54,8 +52,7 @@ class Put extends Index
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Name'  => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
             'Key'   => "Doctrine\OrientDB\Query\Formatter\Query\Regular",

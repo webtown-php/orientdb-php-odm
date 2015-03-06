@@ -26,15 +26,13 @@ class InvalidQueryException extends Exception
 {
     protected $result;
 
-    public function __construct($message, BindingResultInterface $result)
-    {
+    public function __construct($message, BindingResultInterface $result) {
         $this->result = $result;
 
         parent::__construct($message);
     }
 
-    public function getBindingResult()
-    {
+    public function getBindingResult() {
         return $this->result;
     }
 }

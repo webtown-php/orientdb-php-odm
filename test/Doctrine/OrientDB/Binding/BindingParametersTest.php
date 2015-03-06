@@ -11,13 +11,12 @@
 
 namespace test\Doctrine\OrientDB\Binding;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Binding\BindingParameters;
+use test\PHPUnit\TestCase;
 
 class BindingParametersTest extends TestCase
 {
-    public function testDefaultParameters()
-    {
+    public function testDefaultParameters() {
         $parameters = new BindingParameters();
 
         $this->assertSame('127.0.0.1', $parameters->getHost());
@@ -27,8 +26,7 @@ class BindingParametersTest extends TestCase
         $this->assertNull($parameters->getDatabase());
     }
 
-    public function testCustomParameters()
-    {
+    public function testCustomParameters() {
         $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
 
         $this->assertSame(TEST_ODB_HOST, $parameters->getHost());
@@ -38,8 +36,7 @@ class BindingParametersTest extends TestCase
         $this->assertSame(TEST_ODB_DATABASE, $parameters->getDatabase());
     }
 
-    public function testParametersFromEmptyURIString()
-    {
+    public function testParametersFromEmptyURIString() {
         $parameters = BindingParameters::fromString('');
 
         $this->assertSame('127.0.0.1', $parameters->getHost());
@@ -49,8 +46,7 @@ class BindingParametersTest extends TestCase
         $this->assertNull($parameters->getDatabase());
     }
 
-    public function testParametersFromMinimalURIString()
-    {
+    public function testParametersFromMinimalURIString() {
         $parameters = BindingParameters::fromString('http://10.0.0.1:6000');
 
         $this->assertSame('10.0.0.1', $parameters->getHost());
@@ -60,8 +56,7 @@ class BindingParametersTest extends TestCase
         $this->assertNull($parameters->getDatabase());
     }
 
-    public function testParametersFromURIStringWithDatabase()
-    {
+    public function testParametersFromURIStringWithDatabase() {
         $parameters = BindingParameters::fromString('http://10.0.0.1:6000/dbase');
 
         $this->assertSame('10.0.0.1', $parameters->getHost());
@@ -71,8 +66,7 @@ class BindingParametersTest extends TestCase
         $this->assertSame('dbase', $parameters->getDatabase());
     }
 
-    public function testParametersFromURIStringWithAuthentication()
-    {
+    public function testParametersFromURIStringWithAuthentication() {
         $parameters = BindingParameters::fromString('http://foo:bar@10.0.0.1:6000');
 
         $this->assertSame('10.0.0.1', $parameters->getHost());
@@ -82,8 +76,7 @@ class BindingParametersTest extends TestCase
         $this->assertNull($parameters->getDatabase());
     }
 
-    public function testParametersFromCompleteURIString()
-    {
+    public function testParametersFromCompleteURIString() {
         $parameters = BindingParameters::fromString('http://foo:bar@10.0.0.1:6000/dbase');
 
         $this->assertSame('10.0.0.1', $parameters->getHost());
@@ -94,8 +87,7 @@ class BindingParametersTest extends TestCase
     }
 
 
-    public function testParametersFromEmptyArray()
-    {
+    public function testParametersFromEmptyArray() {
         $parameters = BindingParameters::fromArray(array());
 
         $this->assertSame('127.0.0.1', $parameters->getHost());
@@ -105,8 +97,7 @@ class BindingParametersTest extends TestCase
         $this->assertNull($parameters->getDatabase());
     }
 
-    public function testParametersFromMinimalArray()
-    {
+    public function testParametersFromMinimalArray() {
         $config = array(
             'host' => '10.0.0.1',
             'port' => 6000,
@@ -121,11 +112,10 @@ class BindingParametersTest extends TestCase
         $this->assertNull($parameters->getDatabase());
     }
 
-    public function testParametersFromCompleteArray()
-    {
+    public function testParametersFromCompleteArray() {
         $config = array(
-            'host' => TEST_ODB_HOST,
-            'port' => TEST_ODB_PORT,
+            'host'     => TEST_ODB_HOST,
+            'port'     => TEST_ODB_PORT,
             'username' => TEST_ODB_USER,
             'password' => TEST_ODB_PASSWORD,
             'database' => TEST_ODB_DATABASE,
@@ -144,11 +134,10 @@ class BindingParametersTest extends TestCase
      * @expectedException InvalidArgumentException
      * @expectedExceptionMessage Invalid parameters type
      */
-    public function testParametersCreateAcceptsOnlyStringsOrArrays()
-    {
+    public function testParametersCreateAcceptsOnlyStringsOrArrays() {
         $this->assertInstanceOf('Doctrine\OrientDB\Binding\BindingParameters', BindingParameters::create(array()));
         $this->assertInstanceOf('Doctrine\OrientDB\Binding\BindingParameters', BindingParameters::create(''));
 
-        BindingParameters::create((object) array());
+        BindingParameters::create((object)array());
     }
 }

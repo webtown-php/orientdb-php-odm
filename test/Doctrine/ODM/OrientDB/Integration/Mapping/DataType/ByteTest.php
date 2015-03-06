@@ -19,10 +19,9 @@ use test\PHPUnit\TestCase;
  */
 class ByteTest extends TestCase
 {
-    public function testHydrationOfAByteProperty()
-    {
+    public function testHydrationOfAByteProperty() {
         $manager = $this->createDocumentManager();
-        $role = $manager->findByRid("#4:0");
+        $role    = $manager->findByRid("#4:0");
 
         $this->assertInternalType('integer', $role->mode);
     }

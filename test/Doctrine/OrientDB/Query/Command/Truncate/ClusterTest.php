@@ -11,20 +11,18 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\Truncate;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Truncate\Cluster as TruncateCluster;
+use test\PHPUnit\TestCase;
 
 class ClusterTest extends TestCase
 {
-    public function testYouGenerateAValidSQLToTruncateAClass()
-    {
+    public function testYouGenerateAValidSQLToTruncateAClass() {
         $truncate = new TruncateCluster('myClass');
 
         $this->assertCommandGives("TRUNCATE CLUSTER myClass", $truncate->getRaw());
     }
 
-    public function testTheNameArgumentIsFiltered()
-    {
+    public function testTheNameArgumentIsFiltered() {
         $truncate = new TruncateCluster('myClass 54..');
 
         $this->assertCommandGives("TRUNCATE CLUSTER myClass54", $truncate->getRaw());

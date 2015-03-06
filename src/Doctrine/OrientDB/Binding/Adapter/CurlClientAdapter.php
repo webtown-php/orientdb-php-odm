@@ -28,16 +28,14 @@ class CurlClientAdapter implements HttpClientAdapterInterface
     /**
      * @param CurlClient $client
      */
-    public function __construct(CurlClient $client = null)
-    {
+    public function __construct(CurlClient $client = null) {
         $this->client = $client ?: new CurlClient();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function request($method, $location, array $headers = null, $body = null)
-    {
+    public function request($method, $location, array $headers = null, $body = null) {
         if ($headers) {
             foreach ($headers as $k => $v) {
                 $this->client->setHeader($k, $v);
@@ -61,8 +59,7 @@ class CurlClientAdapter implements HttpClientAdapterInterface
     /**
      * {@inheritdoc}
      */
-    public function setAuthentication($username, $password)
-    {
+    public function setAuthentication($username, $password) {
         $credential = !isset($username, $password) ? null : "$username:$password";
         $this->client->setAuthentication($credential);
     }
@@ -70,8 +67,7 @@ class CurlClientAdapter implements HttpClientAdapterInterface
     /**
      * {@inheritdoc}
      */
-    public function getClient()
-    {
+    public function getClient() {
         return $this->client;
     }
 }

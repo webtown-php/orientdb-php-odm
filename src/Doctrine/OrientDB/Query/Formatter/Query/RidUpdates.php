@@ -19,14 +19,13 @@
 
 namespace Doctrine\OrientDB\Query\Formatter\Query;
 
-use       Doctrine\OrientDB\Query\Formatter\Query;
+use Doctrine\OrientDB\Query\Formatter\Query;
 use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 
 class RidUpdates extends Query implements TokenInterface
 {
-    public static function format(array $values)
-    {
-        $rids = array();
+    public static function format(array $values) {
+        $rids      = array();
         $validator = new RidValidator;
 
         foreach ($values as $key => $value) {

@@ -19,8 +19,8 @@
 
 namespace test\Doctrine\OrientDB\Query\Validator;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Validator\ValidationException;
+use test\PHPUnit\TestCase;
 
 class ValidationTest extends TestCase
 {
@@ -28,8 +28,7 @@ class ValidationTest extends TestCase
      * @expectedException Doctrine\OrientDB\Query\Validator\ValidationException
      * @expectedExceptionMessage Validation of "text" as V failed
      */
-    public function testException()
-    {
+    public function testException() {
         throw new ValidationException('text', 'V');
     }
 
@@ -37,8 +36,7 @@ class ValidationTest extends TestCase
      * @expectedException Doctrine\OrientDB\Query\Validator\ValidationException
      * @expectedExceptionMessage Validation of "a, b" as V failed
      */
-    public function testExceptionWithArrayArgument()
-    {
+    public function testExceptionWithArrayArgument() {
         throw new ValidationException(array('a', 'b'), 'V');
     }
 }

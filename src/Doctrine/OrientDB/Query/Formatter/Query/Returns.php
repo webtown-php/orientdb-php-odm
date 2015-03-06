@@ -23,8 +23,7 @@ use Doctrine\OrientDB\Query\Formatter\Query;
 
 class Returns extends Query implements TokenInterface
 {
-    public static function format(array $values)
-    {
+    public static function format(array $values) {
         return count($values) > 0 ? "RETURN " . $values[0] : null;
     }
 }

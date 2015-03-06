@@ -52,8 +52,8 @@ class DocumentRepository implements ObjectRepository
      * @param ClassMetadata   $metadata
      */
     public function __construct(DocumentManager $dm, UnitOfWork $uow, ClassMetadata $metadata) {
-        $this->dm = $dm;
-        $this->uow = $uow;
+        $this->dm       = $dm;
+        $this->uow      = $uow;
         $this->metadata = $metadata;
     }
 
@@ -241,8 +241,7 @@ class DocumentRepository implements ObjectRepository
     /**
      * @return Persisters\DocumentPersister
      */
-    protected function getDocumentPersister()
-    {
+    protected function getDocumentPersister() {
         return $this->uow->getDocumentPersister($this->metadata->name);
     }
 }

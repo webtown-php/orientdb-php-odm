@@ -22,7 +22,6 @@ namespace Doctrine\OrientDB\Graph\Algorithm;
 
 use Doctrine\OrientDB\Graph\GraphInterface;
 use Doctrine\OrientDB\Graph\VertexInterface;
-use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\LogicException;
 
 class Dijkstra implements AlgorithmInterface
@@ -38,8 +37,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @param GraphInterface $graph
      */
-    public function __construct(GraphInterface $graph)
-    {
+    public function __construct(GraphInterface $graph) {
         $this->graph = $graph;
     }
 
@@ -48,8 +46,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return integer
      */
-    public function getDistance()
-    {
+    public function getDistance() {
         if (!$this->isSolved()) {
             throw new LogicException(
                 "Cannot calculate the distance of a non-solved algorithm:\nDid you forget to call ->solve()?"
@@ -64,8 +61,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return VertexInterface
      */
-    public function getEndingVertex()
-    {
+    public function getEndingVertex() {
         return $this->endingVertex;
     }
 
@@ -74,9 +70,8 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return string
      */
-    public function getLiteralShortestPath()
-    {
-        $path = $this->solve();
+    public function getLiteralShortestPath() {
+        $path    = $this->solve();
         $literal = '';
 
         foreach ($path as $p) {
@@ -92,8 +87,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return Array
      */
-    public function getShortestPath()
-    {
+    public function getShortestPath() {
         $path   = array();
         $vertex = $this->getEndingVertex();
 
@@ -112,8 +106,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return VertexInterface
      */
-    public function getStartingVertex()
-    {
+    public function getStartingVertex() {
         return $this->startingVertex;
     }
 
@@ -122,8 +115,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @param VertexInterface $vertex
      */
-    public function setEndingVertex(VertexInterface $vertex)
-    {
+    public function setEndingVertex(VertexInterface $vertex) {
         $this->endingVertex = $vertex;
     }
 
@@ -132,17 +124,15 @@ class Dijkstra implements AlgorithmInterface
      *
      * @param VertexInterface $vertex
      */
-    public function setStartingVertex(VertexInterface $vertex)
-    {
-        $this->paths[] = array($vertex);
+    public function setStartingVertex(VertexInterface $vertex) {
+        $this->paths[]        = array($vertex);
         $this->startingVertex = $vertex;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function solve()
-    {
+    public function solve() {
         if (!$this->getStartingVertex() || !$this->getEndingVertex()) {
             throw new LogicException("Cannot solve the algorithm without both starting and ending vertices");
         }
@@ -160,10 +150,9 @@ class Dijkstra implements AlgorithmInterface
      *
      * @param VertexInterface $vertex
      */
-    protected function calculatePotentials(VertexInterface $vertex)
-    {
+    protected function calculatePotentials(VertexInterface $vertex) {
         $connections = $vertex->getConnections();
-        $sorted = array_flip($connections);
+        $sorted      = array_flip($connections);
 
         krsort($sorted);
 
@@ -198,8 +187,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return GraphInterface
      */
-    protected function getGraph()
-    {
+    protected function getGraph() {
         return $this->graph;
     }
 
@@ -208,8 +196,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return Array
      */
-    protected function getPaths()
-    {
+    protected function getPaths() {
         return $this->paths;
     }
 
@@ -218,8 +205,7 @@ class Dijkstra implements AlgorithmInterface
      *
      * @return boolean
      */
-    protected function isSolved()
-    {
-        return (bool) $this->solution;
+    protected function isSolved() {
+        return (bool)$this->solution;
     }
 }

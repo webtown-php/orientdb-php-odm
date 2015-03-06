@@ -11,18 +11,16 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\OClass;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\OClass\Create;
+use test\PHPUnit\TestCase;
 
 class CreateTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->create = new Create('p');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
             ':Class' => array(),
         );
@@ -30,8 +28,7 @@ class CreateTest extends TestCase
         $this->assertTokens($tokens, $this->create->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'CREATE CLASS p';
 
         $this->assertCommandGives($query, $this->create->getRaw());

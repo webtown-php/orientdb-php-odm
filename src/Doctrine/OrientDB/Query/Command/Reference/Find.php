@@ -29,8 +29,7 @@ class Find extends Command implements FindInterface
      *
      * @param string $rid
      */
-    public function __construct($rid)
-    {
+    public function __construct($rid) {
         parent::__construct();
 
         $this->setRid($rid);
@@ -39,20 +38,19 @@ class Find extends Command implements FindInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "FIND REFERENCES :Rid :ClassList";
     }
 
     /**
      * Restricts the classes to look into to find the record.
      *
-     * @param   array $classes
+     * @param   array   $classes
      * @param   boolean $append
+     *
      * @return  Find
      */
-    public function in(array $classes, $append = true)
-    {
+    public function in(array $classes, $append = true) {
         $this->setTokenValues('ClassList', $classes, $append);
 
         return $this;
@@ -63,8 +61,7 @@ class Find extends Command implements FindInterface
      *
      * @param string $rid
      */
-    protected function setRid($rid)
-    {
+    protected function setRid($rid) {
         $this->setToken('Rid', $rid);
     }
 
@@ -73,10 +70,9 @@ class Find extends Command implements FindInterface
      *
      * @return array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'ClassList'    => "Doctrine\OrientDB\Query\Formatter\Query\ClassList",
+            'ClassList' => "Doctrine\OrientDB\Query\Formatter\Query\ClassList",
         ));
     }
 }

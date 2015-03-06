@@ -27,8 +27,7 @@ class Drop extends OClass implements OClassInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "DROP CLASS :Class";
     }
 }

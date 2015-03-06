@@ -31,8 +31,7 @@ class Edge extends Command implements UpdateInterface
      * @param string $from
      * @param string $to
      */
-    public function __construct($class, $from, $to)
-    {
+    public function __construct($class, $from, $to) {
         parent::__construct();
 
         $this->setToken('Class', $class);
@@ -43,8 +42,7 @@ class Edge extends Command implements UpdateInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "CREATE EDGE :Class FROM :From TO :To SET :Fields";
     }
 
@@ -54,10 +52,10 @@ class Edge extends Command implements UpdateInterface
      *
      * @param  array   $values
      * @param  boolean $append
+     *
      * @return Update
      */
-    public function set(array $values, $append = true)
-    {
+    public function set(array $values, $append = true) {
         $this->setTokenValues('Fields', $values, $append);
 
         return $this;
@@ -68,8 +66,7 @@ class Edge extends Command implements UpdateInterface
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'From'   => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
             'To'     => "Doctrine\OrientDB\Query\Formatter\Query\Regular",

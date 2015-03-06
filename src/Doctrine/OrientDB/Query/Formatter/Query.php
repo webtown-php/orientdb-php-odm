@@ -20,18 +20,16 @@
 
 namespace Doctrine\OrientDB\Query\Formatter;
 
-use Doctrine\OrientDB\Exception;
-
 class Query implements QueryInterface
 {
     /**
      * Tokenizes a string.
      *
      * @param   string $token
+     *
      * @return  string
      */
-    public static function tokenize($token)
-    {
+    public static function tokenize($token) {
         return ":{$token}";
     }
 
@@ -39,10 +37,10 @@ class Query implements QueryInterface
      * Untokenizes a string.
      *
      * @param   string $token
+     *
      * @return  string
      */
-    public static function untokenize($token)
-    {
+    public static function untokenize($token) {
         return substr($token, 1);
     }
 
@@ -51,10 +49,10 @@ class Query implements QueryInterface
      * integers.
      *
      * @param   string $string
+     *
      * @return  string
      */
-    public static function stripNonSQLCharacters($string, $nonFilter = null)
-    {
+    public static function stripNonSQLCharacters($string, $nonFilter = null) {
         return preg_replace("/[^\w|:|@|#|$nonFilter]/", '', $string);
     }
 
@@ -63,10 +61,10 @@ class Query implements QueryInterface
      * regular characters a-z and integers.
      *
      * @param   array $strings
+     *
      * @return  array
      */
-    protected static function stripNonSQLCharactersArray(array $strings, $nonFilter = null)
-    {
+    protected static function stripNonSQLCharactersArray(array $strings, $nonFilter = null) {
         return array_map(function ($string) use ($nonFilter) {
             return Query::stripNonSQLCharacters($string, $nonFilter);
         }, $strings);
@@ -76,22 +74,22 @@ class Query implements QueryInterface
      * Implodes and array using a comma.
      *
      * @param   array $array
+     *
      * @return  string
      */
-    protected static function implode(array $array)
-    {
+    protected static function implode(array $array) {
         return implode(', ', $array);
     }
 
     /**
      * Implodes the $values in a string regularly formatted.
      *
-     * @param   array   $values
+     * @param   array $values
+     *
      * @return  string
      */
-    protected static function implodeRegular(array $values, $nonFilter = null)
-    {
-        $values = self::stripNonSQLCharactersArray($values, $nonFilter);
+    protected static function implodeRegular(array $values, $nonFilter = null) {
+        $values         = self::stripNonSQLCharactersArray($values, $nonFilter);
         $nonEmptyValues = array();
 
         foreach ($values as $value) {

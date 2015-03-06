@@ -25,7 +25,8 @@ interface CredentialInterface
     /**
      * Sets the $permission to grant/revoke.
      *
-     * @param   string  $permission
+     * @param   string $permission
+     *
      * @return  Credential
      */
     public function permission($permission);
@@ -33,7 +34,8 @@ interface CredentialInterface
     /**
      * Sets the $resource on which a credential is granted/revoked.
      *
-     * @param  string  $resource
+     * @param  string $resource
+     *
      * @return Credential
      */
     public function on($resource);
@@ -41,7 +43,8 @@ interface CredentialInterface
     /**
      * Sets the user/group subject of the credential addition/removal.
      *
-     * @param   string  $role
+     * @param   string $role
+     *
      * @return  Credential
      */
     public function to($role);

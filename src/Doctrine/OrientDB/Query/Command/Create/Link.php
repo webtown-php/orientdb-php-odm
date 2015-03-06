@@ -32,8 +32,7 @@ class Link extends Command
      * @param string  $alias
      * @param boolean $inverse
      */
-    public function __construct($class, $property, $alias, $inverse = false)
-    {
+    public function __construct($class, $property, $alias, $inverse = false) {
         parent::__construct();
 
         $this->setToken('SourceClass', $class);
@@ -48,8 +47,7 @@ class Link extends Command
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "CREATE LINK :Name FROM :SourceClass.:SourceProperty TO :DestinationClass.:DestinationProperty :Inverse";
     }
 
@@ -58,10 +56,10 @@ class Link extends Command
      *
      * @param   string $class
      * @param   string $property
+     *
      * @return  Link
      */
-    public function with($class, $property)
-    {
+    public function with($class, $property) {
         $this->setToken('DestinationClass', $class);
         $this->setToken('DestinationProperty', $property);
 
@@ -73,8 +71,7 @@ class Link extends Command
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Inverse'             => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
             'SourceClass'         => "Doctrine\OrientDB\Query\Formatter\Query\Regular",

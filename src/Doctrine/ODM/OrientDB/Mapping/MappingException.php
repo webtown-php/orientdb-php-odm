@@ -72,10 +72,10 @@ class MappingException extends \Exception
     /**
      * @param string $className
      * @param string $fieldName
+     *
      * @return MappingException
      */
-    public static function simpleReferenceRequiresTargetDocument($className, $fieldName)
-    {
+    public static function simpleReferenceRequiresTargetDocument($className, $fieldName) {
         return new self("target document must be specified for simple reference: $className::$fieldName");
     }
 
@@ -84,8 +84,7 @@ class MappingException extends \Exception
      *
      * @return MappingException
      */
-    public static function typeExists($name)
-    {
+    public static function typeExists($name) {
         return new self('type ' . $name . ' already exists.');
     }
 
@@ -94,8 +93,7 @@ class MappingException extends \Exception
      *
      * @return MappingException
      */
-    public static function typeNotFound($name)
-    {
+    public static function typeNotFound($name) {
         return new self('type to be overwritten ' . $name . ' does not exist.');
     }
 }

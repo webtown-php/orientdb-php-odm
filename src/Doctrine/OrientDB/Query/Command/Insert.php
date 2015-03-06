@@ -28,10 +28,10 @@ class Insert extends Command implements InsertInterface
      *
      * @param  array   $fields
      * @param  boolean $append
+     *
      * @return Insert
      */
-    public function fields(array $fields, $append = true)
-    {
+    public function fields(array $fields, $append = true) {
         $this->setTokenValues('Fields', $fields, $append);
 
         return $this;
@@ -40,8 +40,7 @@ class Insert extends Command implements InsertInterface
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "INSERT INTO :Target (:Fields) VALUES (:Values)";
     }
 
@@ -49,10 +48,10 @@ class Insert extends Command implements InsertInterface
      * Sets the class in which the query will insert informations.
      *
      * @param  string $target
+     *
      * @return Insert
      */
-    public function into($target)
-    {
+    public function into($target) {
         $this->setToken('Target', $target);
 
         return $this;
@@ -63,10 +62,10 @@ class Insert extends Command implements InsertInterface
      *
      * @param  array   $values
      * @param  boolean $append
+     *
      * @return Insert
      */
-    public function values(array $values, $append = true)
-    {
+    public function values(array $values, $append = true) {
         $this->setTokenValues('Values', $values, $append);
 
         return $this;
@@ -77,8 +76,7 @@ class Insert extends Command implements InsertInterface
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'Fields' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
             'Values' => "Doctrine\OrientDB\Query\Formatter\Query\Values"

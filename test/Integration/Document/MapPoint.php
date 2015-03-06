@@ -21,8 +21,8 @@
 namespace test\Integration\Document;
 
 /**
-* @Document(class="MapPoint")
-*/
+ * @Document(class="MapPoint")
+ */
 class MapPoint
 {
     /**

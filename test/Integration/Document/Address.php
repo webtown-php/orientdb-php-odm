@@ -21,8 +21,8 @@
 namespace test\Integration\Document;
 
 /**
-* @Document(class="Address")
-*/
+ * @Document(class="Address")
+ */
 class Address
 {
     /**
@@ -38,13 +38,11 @@ class Address
     /**
      * @return City
      */
-    public function getCity()
-    {
+    public function getCity() {
         return $this->city;
     }
 
-    public function setCity($city)
-    {
+    public function setCity($city) {
         $this->city = $city;
     }
 }

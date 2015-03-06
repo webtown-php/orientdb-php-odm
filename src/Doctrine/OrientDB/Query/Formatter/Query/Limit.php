@@ -23,8 +23,7 @@ use Doctrine\OrientDB\Query\Formatter\Query;
 
 class Limit extends Query implements TokenInterface
 {
-    public static function format(array $values)
-    {
+    public static function format(array $values) {
         foreach ($values as $limit) {
             if (is_numeric($limit) && $limit > 0) {
                 return "LIMIT $limit";

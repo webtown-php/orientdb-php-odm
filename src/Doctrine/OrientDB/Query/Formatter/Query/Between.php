@@ -23,8 +23,7 @@ use Doctrine\OrientDB\Query\Formatter\Query;
 
 class Between extends Query implements TokenInterface
 {
-    public static function format(array $values)
-    {
+    public static function format(array $values) {
         if (count($values) === 2) {
             return "BETWEEN " . $values[0] . " AND " . $values[1];
         }

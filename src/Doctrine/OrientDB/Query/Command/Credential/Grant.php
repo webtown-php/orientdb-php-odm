@@ -26,8 +26,7 @@ class Grant extends Credential
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "GRANT :Permission ON :Resource TO :Role";
     }
 }

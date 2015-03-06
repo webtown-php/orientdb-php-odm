@@ -17,13 +17,11 @@ class PersistenceTest extends TestCase
      */
     protected $manager;
 
-    protected function setUp()
-    {
+    protected function setUp() {
         $this->manager = $this->createDocumentManager();
     }
 
-    public function testPersistDocument()
-    {
+    public function testPersistDocument() {
         $document       = new Country();
         $document->name = 'SinglePersistTest';
 
@@ -40,11 +38,11 @@ class PersistenceTest extends TestCase
 
     /**
      * @depends testPersistDocument
+     *
      * @param $rid
      */
-    public function testUpdateDocument($rid)
-    {
-        $document = $this->manager->findByRid($rid);
+    public function testUpdateDocument($rid) {
+        $document       = $this->manager->findByRid($rid);
         $document->name = 'SingleUpdateTest';
 
         unset($document);
@@ -59,10 +57,10 @@ class PersistenceTest extends TestCase
 
     /**
      * @depends testUpdateDocument
+     *
      * @param $rid
      */
-    public function testDeleteDocument($rid)
-    {
+    public function testDeleteDocument($rid) {
         $document = $this->manager->findByRid($rid);
         $this->manager->remove($document);
         $this->manager->flush();

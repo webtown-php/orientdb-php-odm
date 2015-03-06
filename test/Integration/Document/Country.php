@@ -21,8 +21,8 @@
 namespace test\Integration\Document;
 
 /**
-* @Document(class="Country")
-*/
+ * @Document(class="Country")
+ */
 class Country
 {
     /**
@@ -38,8 +38,7 @@ class Country
     /**
      * @return mixed
      */
-    public function getRid()
-    {
+    public function getRid() {
         return $this->rid;
     }
 }

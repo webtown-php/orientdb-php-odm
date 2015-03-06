@@ -12,7 +12,7 @@ class ClassMetadataFactoryTest extends TestCase
 {
     public function testGetMetadataForOClass() {
         $mdf = $this->createDocumentManager()->getMetadataFactory();
-        $md = $mdf->getMetadataForOClass('Address');
+        $md  = $mdf->getMetadataForOClass('Address');
         $this->assertInstanceOf(ClassMetadata::class, $md);
     }
 
@@ -25,20 +25,19 @@ class ClassMetadataFactoryTest extends TestCase
     }
 
     public function testLoadClassMetadataEvent() {
-        $dm  = $this->createDocumentManager();
+        $dm = $this->createDocumentManager();
         $dm->getEventManager()->addEventListener(Events::loadClassMetadata, $this);
         $mdf = $dm->getMetadataFactory();
-        $md = $mdf->getMetadataFor(Address::class);
+        $md  = $mdf->getMetadataFor(Address::class);
         $this->assertTrue($md->hasField('about'));
     }
 
-    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs)
-    {
+    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
         /** @var ClassMetadata $classMetadata */
         $classMetadata = $eventArgs->getClassMetadata();
-        $field = array(
+        $field         = array(
             'fieldName' => 'about',
-            'type' => 'string'
+            'type'      => 'string'
         );
         $classMetadata->mapField($field);
     }

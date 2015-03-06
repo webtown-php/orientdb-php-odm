@@ -32,6 +32,7 @@ interface QueryInterface
      * Doctrine\OrientDB uses double-colon by default.
      *
      * @param   string $key
+     *
      * @return  string
      */
     public static function tokenize($key);
@@ -40,6 +41,7 @@ interface QueryInterface
      * Untokenizes a token: converts a token to a plain string.
      *
      * @param   string $token
+     *
      * @return  string
      */
     public static function untokenize($token);

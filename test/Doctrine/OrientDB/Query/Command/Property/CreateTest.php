@@ -11,38 +11,34 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\Property;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Property\Create;
+use test\PHPUnit\TestCase;
 
 class CreateTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->create = new Create('p');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
-            ':Class' => array(),
+            ':Class'    => array(),
             ':Property' => array(),
-            ':Type' => array(),
-            ':Linked' => array(),
+            ':Type'     => array(),
+            ':Linked'   => array(),
         );
 
         $this->assertTokens($tokens, $this->create->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'CREATE PROPERTY .p';
 
         $this->assertCommandGives($query, $this->create->getRaw());
     }
 
-    public function testUsingTheFluentInterface()
-    {
-        $query = 'CREATE PROPERTY c.p map link';
+    public function testUsingTheFluentInterface() {
+        $query        = 'CREATE PROPERTY c.p map link';
         $this->create = new Create('p', 'map', 'link');
 
         $this->assertCommandGives($query, $this->create->on('c')->getRaw());

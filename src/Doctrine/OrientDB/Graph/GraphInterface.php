@@ -25,6 +25,7 @@ interface GraphInterface
      * Adds a new vertex to the current graph.
      *
      * @param   VertexInterface $vertex
+     *
      * @return  GraphInterface
      * @throws  Doctrine\OrientDB\Exception
      */
@@ -34,6 +35,7 @@ interface GraphInterface
      * Returns the vertex identified with the $id associated to this graph.
      *
      * @param   mixed $id
+     *
      * @return  VertexInterface
      * @throws  Doctrine\OrientDB\Exception
      */

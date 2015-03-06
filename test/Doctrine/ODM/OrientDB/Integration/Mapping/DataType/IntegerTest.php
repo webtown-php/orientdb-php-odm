@@ -21,28 +21,25 @@ class IntegerTest extends TestCase
 {
     public $postId;
 
-    public function setup()
-    {
+    public function setup() {
         $this->postId = $this->getClassId('Post');
     }
 
-    public function testHydrationOfAnIntegerProperty()
-    {
+    public function testHydrationOfAnIntegerProperty() {
         $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
-        $post = $manager->findByRid("#".$this->postId.":0");
+        $post = $manager->findByRid("#" . $this->postId . ":0");
         $this->assertInternalType('integer', $post->id);
     }
 
-    public function testMismatchedAttributesAreConvertedIfTheMapperToleratesMismatches()
-    {
+    public function testMismatchedAttributesAreConvertedIfTheMapperToleratesMismatches() {
         $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
 
-        $post = $manager->findByRid("#".$this->postId.":0");
+        $post = $manager->findByRid("#" . $this->postId . ":0");
 
         $this->assertInternalType('integer', $post->title);
     }

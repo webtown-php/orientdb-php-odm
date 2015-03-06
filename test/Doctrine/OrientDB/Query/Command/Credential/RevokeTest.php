@@ -16,31 +16,27 @@ use test\PHPUnit\TestCase;
 
 class RevokeTest extends TestCase
 {
-    public function setUp()
-    {
+    public function setUp() {
         $this->revoke = new Revoke('myPermission');
     }
 
-    public function testRevokeHasSomeKnownTokens()
-    {
+    public function testRevokeHasSomeKnownTokens() {
         $tokens = array(
             ':Permission' => array(),
-            ':Resource' => array(),
-            ':Role' => array(),
+            ':Resource'   => array(),
+            ':Role'       => array(),
         );
 
         $this->assertTokens($tokens, $this->revoke->getTokens());
     }
 
-    public function testSynthaxIsRightAfterObjectCreation()
-    {
+    public function testSynthaxIsRightAfterObjectCreation() {
         $query = 'REVOKE myPermission ON FROM';
 
         $this->assertCommandGives($query, $this->revoke->getRaw());
     }
 
-    public function testRevokeCommandWorksAndCanBeOverwritten()
-    {
+    public function testRevokeCommandWorksAndCanBeOverwritten() {
         $query = 'REVOKE myPermission ON FROM';
 
         $this->assertCommandGives($query, $this->revoke->getRaw());
@@ -51,21 +47,19 @@ class RevokeTest extends TestCase
         $this->assertCommandGives($query, $this->revoke->getRaw());
     }
 
-    public function testUsingTheFluentInterface()
-    {
+    public function testUsingTheFluentInterface() {
         $this->revoke
-                ->permission("read")
-                ->to("myUser")
-                ->to("myOtherUser")
-                ->on("server");
+            ->permission("read")
+            ->to("myUser")
+            ->to("myOtherUser")
+            ->on("server");
 
         $sql = 'REVOKE read ON server FROM myOtherUser';
 
         $this->assertEquals($sql, $this->revoke->getRaw());
     }
 
-    public function testOnCommandWorksAndCanBeOverwritten()
-    {
+    public function testOnCommandWorksAndCanBeOverwritten() {
         $this->revoke->on('resource');
         $query = 'REVOKE myPermission ON resource FROM';
 
@@ -77,8 +71,7 @@ class RevokeTest extends TestCase
         $this->assertCommandGives($query, $this->revoke->getRaw());
     }
 
-    public function testToCommandWorksAndCanBeOverwritten()
-    {
+    public function testToCommandWorksAndCanBeOverwritten() {
         $this->revoke->to('user');
         $query = 'REVOKE myPermission ON FROM user';
 

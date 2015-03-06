@@ -18,6 +18,7 @@ interface QueryInterface
      * @param   array   $updates
      * @param   string  $class
      * @param   boolean $append
+     *
      * @return  Add
      */
     public function add(array $updates, $class, $append);
@@ -28,6 +29,7 @@ interface QueryInterface
      * @param   string $class
      * @param   string $attribute
      * @param   string $value
+     *
      * @return  Alter
      */
     public function alter($class, $attribute, $value);
@@ -39,6 +41,7 @@ interface QueryInterface
      * @param   string $property
      * @param   string $attribute
      * @param   string $value
+     *
      * @return  Alter
      */
     public function alterProperty($class, $property, $attribute, $value);
@@ -46,8 +49,8 @@ interface QueryInterface
     /**
      * Adds a where condition to the query.
      *
-     * @param string  $condition
-     * @param mixed   $value
+     * @param string $condition
+     * @param mixed  $value
      */
     public function andWhere($condition, $value);
 
@@ -55,9 +58,9 @@ interface QueryInterface
      * Converts a "normal" select into an index one.
      * You use do a select on an index you can use the between operator.
      *
-     * @param   string  $key
-     * @param   string  $left
-     * @param   string  $right
+     * @param   string $key
+     * @param   string $left
+     * @param   string $right
      */
     public function between($key, $left, $right);
 
@@ -69,6 +72,7 @@ interface QueryInterface
      * @param   string $property
      * @param   string $type
      * @param   string $linked
+     *
      * @return  mixed
      */
     public function create($class, $property);
@@ -77,6 +81,7 @@ interface QueryInterface
      * Executes a DELETE SQL query on the given class (= $from).
      *
      * @param   string $from
+     *
      * @return  Delete
      */
     public function delete($from);
@@ -87,6 +92,7 @@ interface QueryInterface
      *
      * @param   string $class
      * @param   string $property
+     *
      * @return  mixed
      */
     public function drop($class, $property);
@@ -96,6 +102,7 @@ interface QueryInterface
      *
      * @param   array   $fields
      * @param   boolean $append
+     *
      * @return  Query
      */
     public function fields(array $fields, $append);
@@ -125,7 +132,8 @@ interface QueryInterface
     /**
      * Converts the query into an GRANT with the given $permission.
      *
-     * @param   string  $permission
+     * @param   string $permission
+     *
      * @return  Grant
      */
     public function grant($permission);
@@ -138,6 +146,7 @@ interface QueryInterface
      * @param   string  $rid
      * @param   array   $classes
      * @param   boolean $append
+     *
      * @return  Find
      */
     public function findReferences($rid, array $classes, $append);
@@ -150,6 +159,7 @@ interface QueryInterface
      *
      * @param   array   $in
      * @param   boolean $append
+     *
      * @return  mixed
      */
     public function in(array $in, $append);
@@ -160,6 +170,7 @@ interface QueryInterface
      * @param   string $property
      * @param   string $class
      * @param   string $type
+     *
      * @return  Query
      */
     public function index($property, $class, $type);
@@ -200,6 +211,7 @@ interface QueryInterface
      * Inserts the INTO clause to a query.
      *
      * @param   string $target
+     *
      * @return  Query
      */
     public function into($target);
@@ -228,6 +240,7 @@ interface QueryInterface
      * @param   string  $property
      * @param   string  $alias
      * @param   boolean $inverse
+     *
      * @return  Link
      */
     public function link($class, $property, $alias, $inverse);
@@ -236,6 +249,7 @@ interface QueryInterface
      * Sets the ON clause of a query.
      *
      * @param   string $on
+     *
      * @return  Query
      */
     public function on($on);
@@ -252,8 +266,8 @@ interface QueryInterface
     /**
      * Adds an OR clause to the query.
      *
-     * @param string  $condition
-     * @param mixed   $value
+     * @param string $condition
+     * @param mixed  $value
      */
     public function orWhere($condition, $value);
 
@@ -263,6 +277,7 @@ interface QueryInterface
      * @param   array   $updates
      * @param   string  $class
      * @param   boolean $append
+     *
      * @return  Remove
      */
     public function remove(array $updates, $class, $append);
@@ -277,7 +292,8 @@ interface QueryInterface
     /**
      * Converts the query into an REVOKE with the given $permission.
      *
-     * @param   string  $permission
+     * @param   string $permission
+     *
      * @return  Revoke
      */
     public function revoke($permission);
@@ -294,6 +310,7 @@ interface QueryInterface
      * Sets the type clause of a query.
      *
      * @param   string $type
+     *
      * @return  Query
      */
     public function type($type);
@@ -301,7 +318,8 @@ interface QueryInterface
     /**
      * Adds a subject to the query.
      *
-     * @param   string   $to
+     * @param   string $to
+     *
      * @return  Query
      */
     public function to($to);
@@ -311,6 +329,7 @@ interface QueryInterface
      *
      * @param   array   $values
      * @param   boolean $append
+     *
      * @return  Insert
      */
     public function values(array $values, $append);
@@ -320,6 +339,7 @@ interface QueryInterface
      *
      * @param   string $property
      * @param   string $class
+     *
      * @return  Query
      */
     public function unindex($property, $class);
@@ -331,8 +351,8 @@ interface QueryInterface
     /**
      * Adds the WHERE clause.
      *
-     * @param string  $condition
-     * @param mixed   $value
+     * @param string $condition
+     * @param mixed  $value
      */
     public function where($condition, $value = null);
 }

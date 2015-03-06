@@ -19,8 +19,8 @@
 
 namespace Doctrine\OrientDB\Query\Command\Index;
 
-use Doctrine\OrientDB\Query\Command\Index;
 use Doctrine\OrientDB\Query\Command;
+use Doctrine\OrientDB\Query\Command\Index;
 
 class Count extends Index
 {
@@ -33,8 +33,7 @@ class Count extends Index
      * @param string $class
      * @param string $type
      */
-    public function __construct($indexName)
-    {
+    public function __construct($indexName) {
         parent::__construct();
 
         $this->setToken('Name', $indexName);
@@ -43,8 +42,7 @@ class Count extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "SELECT count(*) AS size from index::Name";
     }
 
@@ -53,10 +51,9 @@ class Count extends Index
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'Name'  => 'Doctrine\OrientDB\Query\Formatter\Query\Regular',
+            'Name' => 'Doctrine\OrientDB\Query\Formatter\Query\Regular',
         ));
     }
 }

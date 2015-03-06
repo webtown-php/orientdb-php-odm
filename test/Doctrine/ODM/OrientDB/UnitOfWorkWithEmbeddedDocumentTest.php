@@ -41,10 +41,10 @@ class UnitOfWorkWithEmbeddedDocumentTest extends TestCase
         $md      = $this->manager->getClassMetadata(Contact::class);
         $c->name = "Sydney";
 
-        $em = new EmailAddress();
-        $em->type = "work";
+        $em        = new EmailAddress();
+        $em->type  = "work";
         $em->email = "syd@gmail.com";
-        $c->email = $em;
+        $c->email  = $em;
 
         $uow->computeChangeSet($md, $c);
         $cs = $uow->getDocumentChangeSet($c);

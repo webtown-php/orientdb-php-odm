@@ -19,8 +19,8 @@
 
 namespace Doctrine\OrientDB\Query\Command\Index;
 
-use Doctrine\OrientDB\Query\Command\Index;
 use Doctrine\OrientDB\Query\Command;
+use Doctrine\OrientDB\Query\Command\Index;
 
 class Create extends Index
 {
@@ -33,8 +33,7 @@ class Create extends Index
      * @param string $class
      * @param string $type
      */
-    public function __construct($property, $type, $class = null)
-    {
+    public function __construct($property, $type, $class = null) {
         parent::__construct();
 
         if ($class) {
@@ -48,8 +47,7 @@ class Create extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "CREATE INDEX :IndexClass:Property :Type";
     }
 
@@ -57,10 +55,10 @@ class Create extends Index
      * Sets the type of the index to create.
      *
      * @param   string $type
+     *
      * @return  Create
      */
-    public function type($type)
-    {
+    public function type($type) {
         $this->setToken('Type', $type);
 
         return $this;

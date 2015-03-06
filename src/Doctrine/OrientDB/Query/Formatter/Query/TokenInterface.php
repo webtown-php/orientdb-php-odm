@@ -25,7 +25,8 @@ interface TokenInterface
     /**
      * Formats the token according to the implementer class' internal rules.
      *
-     * @param   array   $values
+     * @param   array $values
+     *
      * @return  string
      */
     public static function format(array $values);

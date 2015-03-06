@@ -30,6 +30,7 @@ interface SelectInterface
      * @param   string $key
      * @param   string $left
      * @param   string $right
+     *
      * @return  Select
      */
     public function between($key, $left, $right);
@@ -40,6 +41,7 @@ interface SelectInterface
      *
      * @param   array   $projections
      * @param   boolean $append
+     *
      * @return  Select
      */
     public function select(array $projections, $append);
@@ -55,6 +57,7 @@ interface SelectInterface
      * @param   string  $order
      * @param   boolean $append
      * @param   boolean $first
+     *
      * @return  Select
      */
     public function orderBy($order, $append, $first);
@@ -63,6 +66,7 @@ interface SelectInterface
      * Sets the maximum amount of records retrieved whithin the current SELECT.
      *
      * @param   integer $limit
+     *
      * @return  Select
      */
     public function limit($limit);

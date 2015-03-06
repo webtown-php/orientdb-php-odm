@@ -21,8 +21,8 @@
 namespace test\Integration\Document;
 
 /**
-* @Document(class="Comment")
-*/
+ * @Document(class="Comment")
+ */
 class Comment
 {
     /**

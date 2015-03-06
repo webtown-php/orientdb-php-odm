@@ -11,10 +11,10 @@
 
 namespace test\Doctrine\OrientDB\Integration;
 
-use test\PHPUnit\TestCase;
-use Doctrine\OrientDB\Query\Query;
 use Doctrine\OrientDB\Binding\HttpBinding;
 use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
+use Doctrine\OrientDB\Query\Query;
+use test\PHPUnit\TestCase;
 
 /**
  * @group integration
@@ -28,32 +28,29 @@ class QueryBuilderTest extends TestCase
 
     public $binding;
 
-    public function setup()
-    {
-        $this->binding = $this->createHttpBinding();
+    public function setup() {
+        $this->binding    = $this->createHttpBinding();
         $this->profile_id = $this->binding->getClass('Profile')->getData()->clusters[0];
         $this->address_id = $this->binding->getClass('Address')->getData()->clusters[0];
-        $this->post_id = $this->binding->getClass('Post')->getData()->clusters[0];
+        $this->post_id    = $this->binding->getClass('Post')->getData()->clusters[0];
         $this->comment_id = $this->binding->getClass('Comment')->getData()->clusters[0];
     }
 
-    public function testSelect()
-    {
+    public function testSelect() {
         $query = new Query();
 
         $this->assertHttpStatus(200, $this->doQuery($query->from(array('address'))));
         $this->assertHttpStatus(200, $this->doQuery($query->select(array('@version', 'street'))));
     }
 
-    public function testSelectBetween()
-    {
+    public function testSelectBetween() {
         $query = new Query();
 
-        $this->assertHttpStatus(200, $this->doQuery($query->from(array('Profile'))->between('@rid', '#'.$this->profile_id.':0', '#'.$this->profile_id.':5')));
+        $this->assertHttpStatus(200, $this->doQuery($query->from(array('Profile'))
+                                                          ->between('@rid', '#' . $this->profile_id . ':0', '#' . $this->profile_id . ':5')));
     }
 
-    public function testSelectLimit()
-    {
+    public function testSelectLimit() {
         $query = new Query();
 
         $result = $this->doQuery($query->from(array('Address'))->limit(20));
@@ -68,43 +65,40 @@ class QueryBuilderTest extends TestCase
         $this->assertHttpStatus(200, $result);
         $this->assertSame(20, $this->getResultCount($result));
 
-        $query = new Query();
+        $query  = new Query();
         $result = $this->doQuery($query->from(array('Address'))->limit('a'));
 
         $this->assertHttpStatus(200, $result);
         $this->assertGreaterThan(21, $this->getResultCount($result));
     }
 
-    public function testSelectByRID()
-    {
+    public function testSelectByRID() {
         $query = new Query();
-        $query->from(array($this->profile_id.':1'));
+        $query->from(array($this->profile_id . ':1'));
 
         $result = $this->doQuery($query);
         $this->assertHttpStatus(200, $result);
-        $this->assertFirstRid($this->profile_id.':1', $result);
+        $this->assertFirstRid($this->profile_id . ':1', $result);
     }
 
-    public function testSelectOrderBy()
-    {
+    public function testSelectOrderBy() {
         $query = new Query();
-        $query->from(array($this->profile_id.':0', $this->profile_id.':1'))
+        $query->from(array($this->profile_id . ':0', $this->profile_id . ':1'))
               ->orderBy('@rid ASC')
               ->orderBy('street DESC');
 
         $result = $this->doQuery($query);
         $this->assertHttpStatus(200, $result);
-        $this->assertFirstRid($this->profile_id.':0', $result);
+        $this->assertFirstRid($this->profile_id . ':0', $result);
 
         $query->orderBy('@rid DESC', false);
 
         $result = $this->doQuery($query);
         $this->assertHttpStatus(200, $result);
-        $this->assertFirstRid($this->profile_id.':1', $result);
+        $this->assertFirstRid($this->profile_id . ':1', $result);
     }
 
-    public function testSelectComplex()
-    {
+    public function testSelectComplex() {
         $query = new Query();
         $query->limit(10)
               ->limit(20)
@@ -116,8 +110,7 @@ class QueryBuilderTest extends TestCase
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testInsertRecord()
-    {
+    public function testInsertRecord() {
         $binding = $this->createHttpBinding();
 
         $before = $this->getResultCount($binding->command('SELECT count(*) FROM Address'));
@@ -137,8 +130,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testInsertRecord
      */
-    public function testDeleteRecord()
-    {
+    public function testDeleteRecord() {
         $binding = $this->createHttpBinding();
 
         $before = $this->getResultCount($binding->command('SELECT count(*) FROM Address'));
@@ -157,19 +149,17 @@ class QueryBuilderTest extends TestCase
     /**
      * @todo Ugly as hell...
      */
-    public function testInsertRecordAgain()
-    {
+    public function testInsertRecordAgain() {
         $this->testInsertRecord();
     }
 
     /**
      * @depends testInsertRecordAgain
      */
-    public function testTruncateRecord()
-    {
+    public function testTruncateRecord() {
         $binding = $this->createHttpBinding();
-        $before = $this->getResultCount($binding->command('SELECT count(*) FROM Address'));
-        $query = new Query();
+        $before  = $this->getResultCount($binding->command('SELECT count(*) FROM Address'));
+        $query   = new Query();
 
         $query->from(array('Address'))
               ->where('street = ?', '5th avenue')
@@ -184,8 +174,7 @@ class QueryBuilderTest extends TestCase
         $this->assertSame($after, $before - 1);
     }
 
-    public function testGrantCredentials()
-    {
+    public function testGrantCredentials() {
         $query = new Query();
 
         $query->grant('READ')
@@ -195,8 +184,7 @@ class QueryBuilderTest extends TestCase
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testRevokeCredentials()
-    {
+    public function testRevokeCredentials() {
         $query = new Query();
         $query->revoke('READ')
               ->to('reader')
@@ -205,10 +193,9 @@ class QueryBuilderTest extends TestCase
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testIndexCreate()
-    {
+    public function testIndexCreate() {
         $binding = $this->createHttpBinding();
-        $query = new Query();
+        $query   = new Query();
 
         $query->index('index_name_2', 'unique');
         $result = $this->doQuery($query, $binding);
@@ -230,25 +217,23 @@ class QueryBuilderTest extends TestCase
 
     }
 
-    public function testIndexCount()
-    {
+    public function testIndexCount() {
         $query = new Query();
 
         $query->indexCount('index_name_2');
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testExecutingAIndexLookup()
-    {
+    public function testExecutingAIndexLookup() {
         $query = new Query();
 
         $query->lookup('index_name_2');
         $this->assertHttpStatus(200, $this->doQuery($query));
 
         $query->where('fakekey = ?', 2);
-        $jsonResult = json_decode($this->doQuery($query)->getInnerResponse()->getBody(),true);
+        $jsonResult = json_decode($this->doQuery($query)->getInnerResponse()->getBody(), true);
         $this->assertHttpStatus(200, $this->doQuery($query));
-        $this->assertCount(0,$jsonResult['result']);
+        $this->assertCount(0, $jsonResult['result']);
 
         $query = new Query();
         $query->from(array('index:index_name_2'))
@@ -257,8 +242,7 @@ class QueryBuilderTest extends TestCase
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testAddEntryToIndex()
-    {
+    public function testAddEntryToIndex() {
         $query = new Query();
 
         $query->indexCount('index_name_2');
@@ -273,8 +257,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($after, $before + 1);
     }
 
-    public function testRemoveEntryFromIndex()
-    {
+    public function testRemoveEntryFromIndex() {
         $query = new Query();
 
         $query->indexCount('index_name_2');
@@ -288,8 +271,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($after, $before - 1);
     }
 
-    public function testIndexDrop()
-    {
+    public function testIndexDrop() {
         $query = new Query();
 
         $query->indexCount('index_name_2');
@@ -308,24 +290,21 @@ class QueryBuilderTest extends TestCase
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testRebuildIndex()
-    {
+    public function testRebuildIndex() {
         $query = new Query();
         $query->rebuild('*');
 
-        $this->assertHttpStatus(200,$this->doQuery($query));
+        $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testFindReferences()
-    {
+    public function testFindReferences() {
         $query = new Query();
 
         $query->findReferences('19:0');
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testClassCreate()
-    {
+    public function testClassCreate() {
         $class = 'MyCustomTestClass' . microtime();
         $query = new Query();
 
@@ -338,8 +317,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testClassCreate
      */
-    public function testTruncateClass($class)
-    {
+    public function testTruncateClass($class) {
         $query = new Query();
         $query->truncate($class);
 
@@ -349,8 +327,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testClassCreate
      */
-    public function testTruncateCluster($class)
-    {
+    public function testTruncateCluster($class) {
         $query = new Query();
 
         $query->truncate($class, true);
@@ -360,8 +337,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testClassCreate
      */
-    public function testAlterClass($class)
-    {
+    public function testAlterClass($class) {
         $query = new Query();
 
         $query->alter($class, 'SUPERCLASS', 'OUser');
@@ -373,8 +349,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testAlterClass
      */
-    public function testCreateProperty($class)
-    {
+    public function testCreateProperty($class) {
         $query = new Query();
 
         $query->create($class, 'customTestProperty', 'string');
@@ -386,8 +361,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testCreateProperty
      */
-    public function testAlterProperty($class)
-    {
+    public function testAlterProperty($class) {
         $query = new Query();
 
         $query->alterProperty($class, 'customTestProperty', 'notnull', 'false');
@@ -402,8 +376,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testAlterProperty
      */
-    public function testDropProperty($class)
-    {
+    public function testDropProperty($class) {
         $query = new Query();
 
         $query->drop($class, 'customTestProperty');
@@ -415,13 +388,12 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testAlterClass
      */
-    public function testDropClass($class)
-    {
+    public function testDropClass($class) {
         $query = new Query();
 
         $query->drop($class);
         $response = $this->doQuery($query)->getInnerResponse();
-        $json = json_decode($response->getBody(),true);
+        $json     = json_decode($response->getBody(), true);
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertTrue($json['result'][0]['value']);
@@ -430,52 +402,49 @@ class QueryBuilderTest extends TestCase
         return $class;
     }
 
-    public function testLinkObjects()
-    {
+    public function testLinkObjects() {
         $query = new Query();
 
         $query->link('Company', 'id', 'in', true)->with('ORole', 'id');
         $this->assertHttpStatus(200, $this->doQuery($query));
     }
 
-    public function testUpdate()
-    {
-        $query = new Query();
+    public function testUpdate() {
+        $query   = new Query();
         $binding = $this->createHttpBinding();
 
         $viaRossi = 'Via Rossi';
         $query->update('Address')->set(array('street' => $viaRossi))
-              ->orWhere('@rid = ?', $this->address_id.':3');
+              ->orWhere('@rid = ?', $this->address_id . ':3');
         $this->assertHttpStatus(200, $this->doQuery($query, $binding));
 
-        $records = $binding->command('SELECT FROM Address WHERE @rid = #'.$this->address_id.':3')->getResult();
+        $records = $binding->command('SELECT FROM Address WHERE @rid = #' . $this->address_id . ':3')->getResult();
         $this->assertSame($viaRossi, $records[0]->street);
 
         $viaVerdi = "Via Verdi";
         $query->update('Address')->set(array('street' => $viaVerdi))
-              ->orWhere('@rid = ?', $this->address_id.':3');
+              ->orWhere('@rid = ?', $this->address_id . ':3');
         $this->assertHttpStatus(200, $this->doQuery($query, $binding));
 
-        $records = $binding->command('SELECT FROM Address WHERE @rid = #'.$this->address_id.':3')->getResult();
+        $records = $binding->command('SELECT FROM Address WHERE @rid = #' . $this->address_id . ':3')->getResult();
         $this->assertSame($viaVerdi, $records[0]->street);
     }
 
-    public function testAddLink()
-    {
-        $query = new Query();
-        $binding = $this->createHttpBinding();
-        $postRid = $this->post_id . ':0';
+    public function testAddLink() {
+        $query      = new Query();
+        $binding    = $this->createHttpBinding();
+        $postRid    = $this->post_id . ':0';
         $commentRid = $this->comment_id . ':1';
 
-        $records = $binding->command('SELECT FROM '. $postRid)->getResult();
-        $before = count($records[0]->comments);
+        $records = $binding->command('SELECT FROM ' . $postRid)->getResult();
+        $before  = count($records[0]->comments);
 
         $query->add(array('comments' => $commentRid), 'post')
               ->where('@rid = ?', $postRid);
         $this->assertHttpStatus(200, $this->doQuery($query, $binding));
 
         $records = $binding->command('SELECT FROM ' . $postRid)->getResult();
-        $after = count($records[0]->comments);
+        $after   = count($records[0]->comments);
 
         $this->assertSame($after, $before + 1);
     }
@@ -483,32 +452,30 @@ class QueryBuilderTest extends TestCase
     /**
      * @depends testAddLink
      */
-    public function testRemoveLink()
-    {
-        $query = new Query();
-        $binding = $this->createHttpBinding();
-        $postRid = $this->post_id . ':0';
+    public function testRemoveLink() {
+        $query      = new Query();
+        $binding    = $this->createHttpBinding();
+        $postRid    = $this->post_id . ':0';
         $commentRid = $this->comment_id . ':1';
 
-        $records = $binding->command('SELECT FROM '.$postRid)->getResult();
-        $before = count($records[0]->comments);
+        $records = $binding->command('SELECT FROM ' . $postRid)->getResult();
+        $before  = count($records[0]->comments);
 
         $query->remove(array('comments' => $commentRid), 'post')
               ->where('@rid = ?', $postRid);
         $this->assertHttpStatus(200, $this->doQuery($query, $binding));
 
-        $records = $binding->command('SELECT FROM '.$postRid)->getResult();
-        $after = count($records[0]->comments);
+        $records = $binding->command('SELECT FROM ' . $postRid)->getResult();
+        $after   = count($records[0]->comments);
 
         $this->assertSame($after, $before - 1);
     }
 
-    public function testPutLink()
-    {
+    public function testPutLink() {
         $query         = new Query();
         $binding       = $this->createHttpBinding();
-        $davidProfile  = '#'. $this->profile_id.':0';
-        $rexterProfile = '#'. $this->profile_id.':4';
+        $davidProfile  = '#' . $this->profile_id . ':0';
+        $rexterProfile = '#' . $this->profile_id . ':4';
 
         $binding->command('UPDATE Profile REMOVE followers');
 
@@ -522,38 +489,33 @@ class QueryBuilderTest extends TestCase
         $this->assertSame($davidProfile, $records[0]->followers->David);
     }
 
-    public function testTruncateNonExistingClass()
-    {
+    public function testTruncateNonExistingClass() {
         $query = new Query();
 
         $query->truncate('NON_EXISTING_CLASS');
         $this->assertHttpStatus(500, $this->doQuery($query));
     }
 
-    public function testTruncateNonExistingCluster()
-    {
+    public function testTruncateNonExistingCluster() {
         $query = new Query();
 
         $query->truncate('NON_EXISTING_CLUSTER', true);
         $this->assertHttpStatus(500, $this->doQuery($query));
     }
 
-    protected function doQuery($query, HttpBinding $binding = null)
-    {
+    protected function doQuery($query, HttpBinding $binding = null) {
         $binding = $binding ?: $this->binding;
-        $result = $binding->command($query->getRaw());
+        $result  = $binding->command($query->getRaw());
 
         return $result;
     }
 
-    protected function assertFirstRid($rid, HttpBindingResultInterface $result)
-    {
+    protected function assertFirstRid($rid, HttpBindingResultInterface $result) {
         $records = $result->getResult();
         $this->assertSame("#$rid", $records[0]->{'@rid'}, "The first RID of the results is $rid");
     }
 
-    protected function getResultCount(HttpBindingResultInterface $result)
-    {
+    protected function getResultCount(HttpBindingResultInterface $result) {
         $response = json_decode($result->getInnerResponse()->getBody());
 
         if (array_key_exists(0, $response->result) && property_exists($response->result[0], 'count')) {

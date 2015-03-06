@@ -16,31 +16,27 @@ use test\PHPUnit\TestCase;
 
 class GrantTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->grant = new Grant('myPermission');
     }
 
-    public function testSchema()
-    {
+    public function testSchema() {
         $tokens = array(
             ':Permission' => array(),
-            ':Resource' => array(),
-            ':Role' => array(),
+            ':Resource'   => array(),
+            ':Role'       => array(),
         );
 
         $this->assertTokens($tokens, $this->grant->getTokens());
     }
 
-    public function testSynthaxIsRightAfterConstruction()
-    {
+    public function testSynthaxIsRightAfterConstruction() {
         $query = 'GRANT myPermission ON TO';
 
         $this->assertCommandGives($query, $this->grant->getRaw());
     }
 
-    public function testGrantCommandWorksAndCanBeOverWritten()
-    {
+    public function testGrantCommandWorksAndCanBeOverWritten() {
         $query = 'GRANT myPermission ON TO';
 
         $this->assertCommandGives($query, $this->grant->getRaw());
@@ -51,21 +47,19 @@ class GrantTest extends TestCase
         $this->assertCommandGives($query, $this->grant->getRaw());
     }
 
-    public function testUsingTheFluentInterface()
-    {
+    public function testUsingTheFluentInterface() {
         $this->grant
-                ->permission("read")
-                ->to("myUser")
-                ->to("myOtherUser")
-                ->on("server");
+            ->permission("read")
+            ->to("myUser")
+            ->to("myOtherUser")
+            ->on("server");
 
         $sql = 'GRANT read ON server TO myOtherUser';
 
         $this->assertCommandGives($sql, $this->grant->getRaw());
     }
 
-    public function testOnCommandWorksAndCanBeOverwritten()
-    {
+    public function testOnCommandWorksAndCanBeOverwritten() {
         $this->grant->on('resource');
         $query = 'GRANT myPermission ON resource TO';
 
@@ -77,8 +71,7 @@ class GrantTest extends TestCase
         $this->assertCommandGives($query, $this->grant->getRaw());
     }
 
-    public function testToCommandWorksAndCanBeOverwritten()
-    {
+    public function testToCommandWorksAndCanBeOverwritten() {
         $this->grant->to('user');
         $query = 'GRANT myPermission ON TO user';
 

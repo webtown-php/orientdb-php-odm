@@ -12,7 +12,6 @@ use Doctrine\ODM\OrientDB\Collections\ArrayCollection;
 use Doctrine\ODM\OrientDB\Event\LifecycleEventArgs;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\ODM\OrientDB\Persistence\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\OrientDB\Query\Query;
@@ -369,10 +368,9 @@ class UnitOfWork implements PropertyChangedListener
      * Executes all document insertions for documents of the specified type.
      *
      * @param ClassMetadata $class
-     * @param array $options Array of options to be used with batchInsert()
+     * @param array         $options Array of options to be used with batchInsert()
      */
-    private function executeInserts(ClassMetadata $class, array $options = array())
-    {
+    private function executeInserts(ClassMetadata $class, array $options = array()) {
         $className = $class->name;
         $persister = $this->getDocumentPersister($className);
 
@@ -394,9 +392,9 @@ class UnitOfWork implements PropertyChangedListener
             /* Inline call to UnitOfWork::registerManager(), but only update the
              * identifier in the original document data.
              */
-            $oid = spl_object_hash($document);
-            $this->documentIdentifiers[$oid] = $id;
-            $this->documentStates[$oid] = self::STATE_MANAGED;
+            $oid                                                  = spl_object_hash($document);
+            $this->documentIdentifiers[$oid]                      = $id;
+            $this->documentStates[$oid]                           = self::STATE_MANAGED;
             $this->originalDocumentData[$oid][$class->identifier] = $id;
             $this->addToIdentityMap($document);
         }
@@ -419,10 +417,9 @@ class UnitOfWork implements PropertyChangedListener
      * Cascades the postPersist events to embedded documents.
      *
      * @param ClassMetadata $class
-     * @param object $document
+     * @param object        $document
      */
-    private function cascadePostPersist(ClassMetadata $class, $document)
-    {
+    private function cascadePostPersist(ClassMetadata $class, $document) {
         $hasPostPersistListeners = $this->evm->hasListeners(Events::postPersist);
 
         foreach ($class->fieldMappings as $mapping) {
@@ -445,7 +442,7 @@ class UnitOfWork implements PropertyChangedListener
             }
 
             foreach ($value as $embeddedDocument) {
-                if ( ! isset($mapping['targetClass'])) {
+                if (!isset($mapping['targetClass'])) {
                     $embeddedClass = $this->dm->getClassMetadata(get_class($embeddedDocument));
                 }
 
@@ -650,11 +647,11 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return Internal\CommitOrderCalculator
      */
-    private function getCommitOrderCalculator()
-    {
+    private function getCommitOrderCalculator() {
         if ($this->commitOrderCalculator === null) {
             $this->commitOrderCalculator = new Internal\CommitOrderCalculator();
         }
+
         return $this->commitOrderCalculator;
     }
 
@@ -1374,18 +1371,17 @@ class UnitOfWork implements PropertyChangedListener
      * @param mixed  $oldValue     The old value of the property.
      * @param mixed  $newValue     The new value of the property.
      */
-    public function propertyChanged($document, $propertyName, $oldValue, $newValue)
-    {
-        $oid = spl_object_hash($document);
+    public function propertyChanged($document, $propertyName, $oldValue, $newValue) {
+        $oid   = spl_object_hash($document);
         $class = $this->dm->getClassMetadata(get_class($document));
 
-        if ( ! isset($class->fieldMappings[$propertyName])) {
+        if (!isset($class->fieldMappings[$propertyName])) {
             return; // ignore non-persistent fields
         }
 
         // Update changeset and mark document for synchronization
         $this->documentChangeSets[$oid][$propertyName] = [$oldValue, $newValue];
-        if ( ! isset($this->scheduledForDirtyCheck[$class->name][$oid])) {
+        if (!isset($this->scheduledForDirtyCheck[$class->name][$oid])) {
             $this->scheduleForDirtyCheck($document);
         }
     }
@@ -1756,8 +1752,7 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return ClassMetadata[]
      */
-    private function getCommitOrder(array $documentChangeSet = null)
-    {
+    private function getCommitOrder(array $documentChangeSet = null) {
         if ($documentChangeSet === null) {
             $documentChangeSet = array_merge(
                 $this->documentInsertions,
@@ -1791,13 +1786,13 @@ class UnitOfWork implements PropertyChangedListener
         // Calculate dependencies for new nodes
         while ($class = array_pop($newNodes)) {
             foreach ($class->associationMappings as $assoc) {
-                if ( ! ($assoc['isOwningSide'] && isset($assoc['targetClass']))) {
+                if (!($assoc['isOwningSide'] && isset($assoc['targetClass']))) {
                     continue;
                 }
 
                 $targetClass = $this->dm->getClassMetadata($assoc['targetClass']);
 
-                if ( ! $calc->hasClass($targetClass->name)) {
+                if (!$calc->hasClass($targetClass->name)) {
                     $calc->addClass($targetClass);
 
                     $newNodes[] = $targetClass;

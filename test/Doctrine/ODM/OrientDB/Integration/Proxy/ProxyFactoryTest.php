@@ -13,22 +13,20 @@ use test\PHPUnit\TestCase;
 class ProxyFactoryTest extends TestCase
 {
 
-    public function testGenerate()
-    {
-        $manager = $this->createDocumentManager();
-        $metadata = $manager->getClassMetadata('test\Integration\Document\Country');
+    public function testGenerate() {
+        $manager      = $this->createDocumentManager();
+        $metadata     = $manager->getClassMetadata('test\Integration\Document\Country');
         $proxyFactory = $manager->getProxyFactory();
         $proxyFactory->generateProxyClasses(array($metadata));
 
-        $filename = $this->getProxyDirectory().'/__CG__testIntegrationDocumentCountry.php';
+        $filename = $this->getProxyDirectory() . '/__CG__testIntegrationDocumentCountry.php';
         $this->assertFileExists($filename);
     }
 
-    public function testLazyLoad()
-    {
+    public function testLazyLoad() {
         $manager = $this->createDocumentManager();
 
-        $rid = '#'.$this->getClassId('City').':0';
+        $rid   = '#' . $this->getClassId('City') . ':0';
         $proxy = $manager->getReference($rid);
         $this->assertEquals($rid, $proxy->getRid());
         $this->assertFalse($proxy->__isInitialized());
@@ -36,21 +34,19 @@ class ProxyFactoryTest extends TestCase
         $this->assertTrue($proxy->__isInitialized());
     }
 
-    public function testEagerLoad()
-    {
+    public function testEagerLoad() {
         $manager = $this->createDocumentManager();
-        $rid = '#'.$this->getClassId('City').':0';
-        $proxy = $manager->findByRid($rid);
+        $rid     = '#' . $this->getClassId('City') . ':0';
+        $proxy   = $manager->findByRid($rid);
         $this->assertTrue($proxy->__isInitialized());
         $this->assertEquals($rid, $proxy->getRid());
         $this->assertEquals('Rome1', $proxy->name);
     }
 
-    public function testCloner()
-    {
+    public function testCloner() {
         $manager = $this->createDocumentManager();
-        $rid = '#'.$this->getClassId('City').':0';
-        $proxy = $manager->getReference($rid);
+        $rid     = '#' . $this->getClassId('City') . ':0';
+        $proxy   = $manager->getReference($rid);
 
         $clone = clone $proxy;
         $this->assertFalse($proxy->__isInitialized());

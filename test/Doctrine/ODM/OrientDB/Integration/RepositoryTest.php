@@ -22,8 +22,7 @@ class RepositoryTest extends TestCase
     public $postId;
     public $addressId;
 
-    public function setup()
-    {
+    public function setup() {
         $this->postId    = $this->getClassId('Post');
         $this->addressId = $this->getClassId('Address');
     }
@@ -33,8 +32,7 @@ class RepositoryTest extends TestCase
      *
      * @return \Doctrine\ODM\OrientDB\DocumentRepository
      */
-    protected function createRepository($class)
-    {
+    protected function createRepository($class) {
         $manager = $this->createDocumentManager(array(
             'mismatches_tolerance' => true,
         ));
@@ -44,53 +42,47 @@ class RepositoryTest extends TestCase
         return $repository;
     }
 
-    public function testFindingADocumentOfTheRepo()
-    {
-        $class = 'test\Integration\Document\Post';
+    public function testFindingADocumentOfTheRepo() {
+        $class      = 'test\Integration\Document\Post';
         $repository = $this->createRepository($class);
 
-        $this->assertInstanceOf($class, $repository->find($this->postId.':0'));
+        $this->assertInstanceOf($class, $repository->find($this->postId . ':0'));
     }
 
-    public function testYouCanSpecifyFetchplansWithTheRepo()
-    {
-        $class = 'test\Integration\Document\Post';
+    public function testYouCanSpecifyFetchplansWithTheRepo() {
+        $class      = 'test\Integration\Document\Post';
         $repository = $this->createRepository($class);
 
         /** @var Post $post */
         $post = $repository->findWithPlan($this->postId . ':0', '*:0');
         $this->assertInstanceOf(PersistentCollection::class, $post->getComments());
 
-        $post = $repository->findWithPlan($this->postId . ':0', '*:-1');
+        $post     = $repository->findWithPlan($this->postId . ':0', '*:-1');
         $comments = $post->getComments()->toArray();
     }
 
     /**
      * @expectedException \Doctrine\OrientDB\Exception
      */
-    public function testFindingADocumentOfAnotherRepoRaisesAnException()
-    {
+    public function testFindingADocumentOfAnotherRepoRaisesAnException() {
         $repository = $this->createRepository('test\Integration\Document\Post');
-        $repository->find($this->addressId.':0');
+        $repository->find($this->addressId . ':0');
     }
 
-    public function testFindingANonExistingDocument()
-    {
+    public function testFindingANonExistingDocument() {
         $repository = $this->createRepository('test\Integration\Document\Post');
 
         $this->assertNull($repository->find('18:985023989'));
     }
 
-    public function testRetrievingAllTheRepo()
-    {
+    public function testRetrievingAllTheRepo() {
         $repository = $this->createRepository('test\Integration\Document\Post');
-        $posts = $repository->findAll();
+        $posts      = $repository->findAll();
 
         $this->assertEquals(7, count($posts));
     }
 
-    public function testRetrievingByCriteria()
-    {
+    public function testRetrievingByCriteria() {
         $repository = $this->createRepository('test\Integration\Document\Post');
 
         $posts = $repository->findBy(array('title' => 'aaaa'), array('@rid' => 'DESC'));
@@ -108,8 +100,7 @@ class RepositoryTest extends TestCase
         $this->assertCount(1, $posts);
     }
 
-    public function testRetrievingARecordByCriteria()
-    {
+    public function testRetrievingARecordByCriteria() {
         $repository = $this->createRepository('test\Integration\Document\Post');
 
         $post = $repository->findOneBy(array('title' => 0), array('@rid' => 'DESC'));

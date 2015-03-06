@@ -23,8 +23,7 @@ use Doctrine\OrientDB\Exception;
 
 class ValidationException extends Exception
 {
-    public function __construct($value, $class)
-    {
+    public function __construct($value, $class) {
         if (is_array($value)) {
             $value = implode(', ', $value);
         }

@@ -12,19 +12,17 @@
 
 namespace test\Doctrine\OrientDB\Binding;
 
-use test\PHPUnit\TestCase;
-use Doctrine\OrientDB\Binding\HttpBinding;
 use Doctrine\OrientDB\Binding\BindingParameters;
-use Doctrine\OrientDB\Binding\Adapter\CurlClientAdapter;
+use Doctrine\OrientDB\Binding\HttpBinding;
 use Doctrine\OrientDB\Client\Http\CurlClient;
+use test\PHPUnit\TestCase;
 
 /**
  * @group integration
  */
 class HttpBindingTest extends TestCase
 {
-    public function testConnectToDatabase()
-    {
+    public function testConnectToDatabase() {
         $binding = $this->createHttpBinding(array(
             'odb.username' => TEST_ODB_USER,
             'odb.password' => TEST_ODB_PASSWORD,
@@ -34,8 +32,7 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(200, $binding->connect(TEST_ODB_DATABASE));
     }
 
-    public function testConnectToDatabaseWithWrongCredentials()
-    {
+    public function testConnectToDatabaseWithWrongCredentials() {
         $binding = $this->createHttpBinding(array(
             'odb.username' => 'invalid',
             'odb.password' => 'invalid',
@@ -44,16 +41,14 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(401, $binding->connect('INVALID_DB'));
     }
 
-    public function testDisconnectFromTheServer()
-    {
+    public function testDisconnectFromTheServer() {
         $binding = $this->createHttpBinding();
 
         $response = $binding->disconnect()->getInnerResponse();
         $this->assertEquals('Logged out', $response->getBody());
     }
 
-    public function testClassMethods()
-    {
+    public function testClassMethods() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(500, $binding->getClass('OMG'), 'Get a non existing class');
@@ -61,8 +56,7 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(204, $binding->deleteClass('OMG'), 'Delete a class');
     }
 
-    public function testClusterMethod()
-    {
+    public function testClusterMethod() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(500, $binding->cluster('Address'));
@@ -76,31 +70,27 @@ class HttpBindingTest extends TestCase
         $this->assertCount(10, $result['result'], 'The limit is wrong');
     }
 
-    public function testServerMethod()
-    {
+    public function testServerMethod() {
 
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->getServer());
     }
 
-    public function testDatabaseMethod()
-    {
+    public function testDatabaseMethod() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->getDatabase(TEST_ODB_DATABASE), 'Get informations about an existing database');
         $this->assertHttpStatus(401, $binding->getDatabase('INVALID_DB'), 'Get informations about a non-existing database');
     }
 
-    public function testListDatabasesMethod()
-    {
+    public function testListDatabasesMethod() {
         $binding = $this->createHttpBinding();
         $this->assertHttpStatus(200, $response = $binding->listDatabases(), 'List existing databases');
         $this->assertInternalType('array', $response->getData()->databases);
     }
 
-    public function testCreateDatabaseMethod()
-    {
+    public function testCreateDatabaseMethod() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->createDatabase(TEST_ODB_DATABASE . '_temporary'), 'Create a new database');
@@ -110,16 +100,14 @@ class HttpBindingTest extends TestCase
     /**
      * @depends testCreateDatabaseMethod
      */
-    public function testDeleteDatabaseMethod()
-    {
+    public function testDeleteDatabaseMethod() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(204, $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary'), 'Delete a existing database');
         $this->assertHttpStatus(500, $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary'), 'Delete a non-existing database');
     }
 
-    public function testCommandMethod()
-    {
+    public function testCommandMethod() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->command('SELECT FROM Address'), 'Execute a simple select');
@@ -129,8 +117,7 @@ class HttpBindingTest extends TestCase
         # HTTPTODO: status code should be 400 or 404
     }
 
-    public function testQueryMethod()
-    {
+    public function testQueryMethod() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->query('SELECT FROM Address'), 'Executes a SELECT');
@@ -138,8 +125,7 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(500, $binding->query("UPDATE Profile SET online = false"), 'Tries to execute an UPDATE with the query command');
     }
 
-    public function testSettingAuthentication()
-    {
+    public function testSettingAuthentication() {
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
         $adapter->expects($this->at(1))
                 ->method('setAuthentication')
@@ -149,18 +135,17 @@ class HttpBindingTest extends TestCase
                 ->with(TEST_ODB_USER, TEST_ODB_PASSWORD);
 
         $parameters = new BindingParameters();
-        $binding = new HttpBinding($parameters, $adapter);
+        $binding    = new HttpBinding($parameters, $adapter);
 
         $binding->setAuthentication();
         $binding->setAuthentication(TEST_ODB_USER, TEST_ODB_PASSWORD);
     }
 
-    public function testInjectHttpClientAdapter()
-    {
+    public function testInjectHttpClientAdapter() {
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
 
         $parameters = new BindingParameters();
-        $binding = new HttpBinding($parameters, $adapter);
+        $binding    = new HttpBinding($parameters, $adapter);
 
         $this->assertSame($adapter, $binding->getAdapter());
     }
@@ -168,18 +153,16 @@ class HttpBindingTest extends TestCase
     /**
      * @expectedException Doctrine\OrientDB\Exception
      */
-    public function testResolveDatabase()
-    {
+    public function testResolveDatabase() {
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
 
         $parameters = new BindingParameters();
-        $binding = new HttpBinding($parameters, $adapter);
+        $binding    = new HttpBinding($parameters, $adapter);
 
         $binding->deleteClass('MyClass');
     }
 
-    public function testDocumentMethods()
-    {
+    public function testDocumentMethods() {
         $binding = $this->createHttpBinding();
 
         $this->assertHttpStatus(500, $binding->getDocument('991'), 'Retrieves a document with an invalid RID');
@@ -188,8 +171,7 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(200, $binding->getDocument('1:0'), 'Retrieves a valid document');
     }
 
-    public function testCreateDocument()
-    {
+    public function testCreateDocument() {
         $binding = $this->createHttpBinding();
 
         $document = json_encode(array('@class' => 'Address', 'name' => 'Pippo'));
@@ -199,7 +181,7 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(201, $creation, 'Creates a valid document');
         $body = str_replace('#', '', $creation->getInnerResponse()->getBody());
 
-        $decode = json_decode($body,true);
+        $decode = json_decode($body, true);
 
         return $decode['@rid'];
     }
@@ -207,18 +189,17 @@ class HttpBindingTest extends TestCase
     /**
      * @depends testCreateDocument
      */
-    public function testUpdateAnExistingRecord($rid)
-    {
+    public function testUpdateAnExistingRecord($rid) {
         $binding = $this->createHttpBinding();
 
         $binding->getAdapter()->getClient()->restart();
 
-        $_document = json_decode($binding->getDocument($rid)->getInnerResponse()->getBody(),true);
-        $document = json_encode(array('@rid' => $rid, '@class' => 'Address','name' => 'Test','@version' => $_document['@version']));
+        $_document = json_decode($binding->getDocument($rid)->getInnerResponse()->getBody(), true);
+        $document  = json_encode(array('@rid' => $rid, '@class' => 'Address', 'name' => 'Test', '@version' => $_document['@version']));
         $putResult = $binding->putDocument($rid, $document);
 
         $this->assertEquals(200, $putResult->getInnerResponse()->getStatusCode(), "Wrong Status Code");
-        $document = json_encode(array('@rid' => 898989, '@class' => 'Address','name' => 'Test','@version' => $_document['@version']));
+        $document = json_encode(array('@rid' => 898989, '@class' => 'Address', 'name' => 'Test', '@version' => $_document['@version']));
         $this->assertHttpStatus(500, $binding->putDocument('9991', $document), 'Updates an invalid document');
 
         return $rid;
@@ -227,8 +208,7 @@ class HttpBindingTest extends TestCase
     /**
      * @depends testUpdateAnExistingRecord
      */
-    public function testDeleteADocument($rid)
-    {
+    public function testDeleteADocument($rid) {
         $binding = $this->createHttpBinding();
 
         $binding->getAdapter()->getClient()->restart();
@@ -239,8 +219,7 @@ class HttpBindingTest extends TestCase
 
     }
 
-    public function testGetDatabaseName()
-    {
+    public function testGetDatabaseName() {
         $binding = $this->createHttpBinding();
         $this->assertEquals(TEST_ODB_DATABASE, $binding->getDatabaseName());
     }
@@ -248,10 +227,9 @@ class HttpBindingTest extends TestCase
     /**
      * @see https://github.com/Reinmar/Orient/commit/6110c61778cd7592f4c1e4f5530ea84e79c0f9cd
      */
-    public function testFetchPlansAreProperlyEncoded()
-    {
-        $host = TEST_ODB_HOST;
-        $port = TEST_ODB_PORT;
+    public function testFetchPlansAreProperlyEncoded() {
+        $host     = TEST_ODB_HOST;
+        $port     = TEST_ODB_PORT;
         $database = TEST_ODB_DATABASE;
 
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
@@ -260,15 +238,14 @@ class HttpBindingTest extends TestCase
                 ->with('GET', "http://$host:$port/query/$database/sql/SELECT%20OMNOMNOMN/2/%2A%3A1%20field1%3A3", null, null);
 
         $parameters = new BindingParameters($host, $port, null, null, $database);
-        $binding = new HttpBinding($parameters, $adapter);
+        $binding    = new HttpBinding($parameters, $adapter);
 
         $binding->query("SELECT OMNOMNOMN", 2, "*:1 field1:3");
     }
 
-    public function testOptionalDatabaseArgumentDoesNotSwitchCurrentDatabase()
-    {
-        $host = TEST_ODB_HOST;
-        $port = TEST_ODB_PORT;
+    public function testOptionalDatabaseArgumentDoesNotSwitchCurrentDatabase() {
+        $host     = TEST_ODB_HOST;
+        $port     = TEST_ODB_PORT;
         $database = TEST_ODB_DATABASE;
 
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
@@ -283,7 +260,7 @@ class HttpBindingTest extends TestCase
                 ->with('POST', "http://$host:$port/command/$database/sql/SELECT%203", null, null);
 
         $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
-        $binding = new HttpBinding($parameters);
+        $binding    = new HttpBinding($parameters);
         $binding->setAdapter($adapter);
 
         $binding->command('SELECT 1');

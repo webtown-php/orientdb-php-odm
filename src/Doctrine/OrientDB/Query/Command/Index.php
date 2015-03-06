@@ -28,8 +28,7 @@ class Index extends Command
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
             'IndexClass' => "Doctrine\OrientDB\Query\Formatter\Query\IndexClass",
         ));

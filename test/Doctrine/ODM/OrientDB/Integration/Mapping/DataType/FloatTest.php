@@ -19,11 +19,10 @@ use test\PHPUnit\TestCase;
  */
 class FloatTest extends TestCase
 {
-    public function testHydrationOfAFloatProperty()
-    {
+    public function testHydrationOfAFloatProperty() {
         $manager = $this->createDocumentManager();
         //MapPoint
-        $point = $manager->findByRid("#".$this->getClassId('MapPoint').":0");
+        $point = $manager->findByRid("#" . $this->getClassId('MapPoint') . ":0");
 
         $this->assertInternalType('float', $point->y);
     }

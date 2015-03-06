@@ -16,8 +16,7 @@ class ManagerEventArgs extends BaseManagerEventArgs
      *
      * @return \Doctrine\ODM\OrientDB\DocumentManager
      */
-    public function getDocumentManager()
-    {
+    public function getDocumentManager() {
         return $this->getObjectManager();
     }
 }

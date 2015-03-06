@@ -12,56 +12,49 @@
 
 namespace test\Doctrine\OrientDB\Query\Validator;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Validator\Rid;
+use test\PHPUnit\TestCase;
 
 
 class RidTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->validator = new Rid();
     }
 
-    public function testTheValidatorAcceptsAValidRid()
-    {
+    public function testTheValidatorAcceptsAValidRid() {
         $this->assertEquals('#1:1', $this->validator->check('1:1'));
     }
 
-    public function testTheValidatorAcceptsAValidPrefixedRid()
-    {
+    public function testTheValidatorAcceptsAValidPrefixedRid() {
         $this->assertEquals('#1:1', $this->validator->check('#1:1'));
     }
 
     /**
      * @expectedException Doctrine\OrientDB\Query\Validator\ValidationException
      */
-    public function testTheValidatorDoesNotAcceptsStringsOnly()
-    {
+    public function testTheValidatorDoesNotAcceptsStringsOnly() {
         $this->validator->check('hola');
     }
 
     /**
      * @expectedException Doctrine\OrientDB\Query\Validator\ValidationException
      */
-    public function testTheValidatorDoesNotAcceptsIntegersOnly()
-    {
+    public function testTheValidatorDoesNotAcceptsIntegersOnly() {
         $this->validator->check('11');
     }
 
     /**
      * @expectedException Doctrine\OrientDB\Query\Validator\ValidationException
      */
-    public function testTheValidatorDoesNotAcceptsRidsWithMultiplesPrefixes()
-    {
+    public function testTheValidatorDoesNotAcceptsRidsWithMultiplesPrefixes() {
         $this->validator->check('##1:1');
     }
 
     /**
      * @expectedException Doctrine\OrientDB\Query\Validator\ValidationException
      */
-    public function testEmptyRid()
-    {
+    public function testEmptyRid() {
         $this->validator->check('');
     }
 }

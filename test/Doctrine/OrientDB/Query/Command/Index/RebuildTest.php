@@ -11,18 +11,16 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\Index;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Index\Rebuild;
+use test\PHPUnit\TestCase;
 
 class RebuildTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->rebuild = new Rebuild('indexName');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
             ':IndexName' => array(),
         );
@@ -30,8 +28,7 @@ class RebuildTest extends TestCase
         $this->assertTokens($tokens, $this->rebuild->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'REBUILD INDEX indexName';
 
         $this->assertCommandGives($query, $this->rebuild->getRaw());

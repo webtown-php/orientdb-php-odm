@@ -33,11 +33,10 @@ class CurlClient
      * @param boolean $restart
      * @param integer $timeout
      */
-    public function __construct($restart = false, $timeout = 10)
-    {
+    public function __construct($restart = false, $timeout = 10) {
         $this->restart = $restart;
         $this->cookies = array();
-        $this->curl = $this->createCurlHandle();
+        $this->curl    = $this->createCurlHandle();
 
         $this->setTimeout($timeout);
     }
@@ -45,8 +44,7 @@ class CurlClient
     /**
      * Closes the underlying cURL handle.
      */
-    public function __destruct()
-    {
+    public function __destruct() {
         if (is_resource($this->curl)) {
             curl_close($this->curl);
         }
@@ -57,8 +55,7 @@ class CurlClient
      *
      * @param integer $timeout
      */
-    public function setTimeout($timeout)
-    {
+    public function setTimeout($timeout) {
         curl_setopt($this->curl, CURLOPT_TIMEOUT, $timeout);
     }
 
@@ -67,8 +64,7 @@ class CurlClient
      *
      * @return string
      */
-    protected function getRequestCookies()
-    {
+    protected function getRequestCookies() {
         $pairs = array();
 
         foreach ($this->cookies as $k => $v) {
@@ -83,14 +79,14 @@ class CurlClient
      *
      * @param  String $method
      * @param  String $location
+     *
      * @return CurlClientResponse
      * @throws Inconsistent
      */
-    public function execute($method, $location)
-    {
+    public function execute($method, $location) {
         curl_setopt_array($this->curl, array(
-            CURLOPT_URL => $location,
-            CURLOPT_COOKIE => $this->getRequestCookies(),
+            CURLOPT_URL           => $location,
+            CURLOPT_COOKIE        => $this->getRequestCookies(),
             CURLOPT_CUSTOMREQUEST => $method,
         ));
 
@@ -99,7 +95,7 @@ class CurlClient
             throw new EmptyResponseException($this, $location);
         }
 
-        $response = new CurlClientResponse($response);
+        $response      = new CurlClientResponse($response);
         $this->cookies = array_merge($this->cookies, $response->getCookies());
 
         if ($this->restart == true) {
@@ -113,10 +109,10 @@ class CurlClient
      * Executes a DELETE on a resource.
      *
      * @param  String $location
+     *
      * @return CurlClientResponse
      */
-    public function delete($location, $body = null)
-    {
+    public function delete($location, $body = null) {
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, "DELETE");
 
         if ($body) {
@@ -130,10 +126,10 @@ class CurlClient
      * GETs a resource.
      *
      * @param  String $location
+     *
      * @return CurlClientResponse
      */
-    public function get($location)
-    {
+    public function get($location) {
         curl_setopt($this->curl, CURLOPT_HTTPGET, true);
 
         return $this->execute('GET', $location);
@@ -144,10 +140,10 @@ class CurlClient
      *
      * @param  String $location
      * @param  String $body
+     *
      * @return CurlClientResponse
      */
-    public function post($location, $body)
-    {
+    public function post($location, $body) {
         curl_setopt($this->curl, CURLOPT_POST, 1);
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, $body);
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -160,10 +156,10 @@ class CurlClient
      *
      * @param  String $location
      * @param  String $body
+     *
      * @return CurlClientResponse
      */
-    public function put($location, $body)
-    {
+    public function put($location, $body) {
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'PUT');
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, $body);
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -176,8 +172,7 @@ class CurlClient
      *
      * @param String $credentials
      */
-    public function setAuthentication($credentials)
-    {
+    public function setAuthentication($credentials) {
         $this->authentication = $credentials;
         curl_setopt($this->curl, CURLOPT_USERPWD, $credentials);
     }
@@ -188,20 +183,18 @@ class CurlClient
      * @param type $header
      * @param type $value
      */
-    public function setHeader($header, $value)
-    {
+    public function setHeader($header, $value) {
         curl_setopt($this->curl, CURLOPT_HTTPHEADER, array("$header: $value"));
     }
 
     /**
      * Reinitializes the client for a completely new session.
      */
-    public function restart()
-    {
+    public function restart() {
         curl_close($this->curl);
 
         $this->cookies = array();
-        $this->curl = $this->createCurlHandle();
+        $this->curl    = $this->createCurlHandle();
     }
 
     /**
@@ -209,10 +202,9 @@ class CurlClient
      *
      * @return array
      */
-    protected function getDefaultCurlOptions()
-    {
+    protected function getDefaultCurlOptions() {
         return array(
-            CURLOPT_HEADER => true,
+            CURLOPT_HEADER         => true,
             CURLOPT_RETURNTRANSFER => true,
         );
     }
@@ -222,8 +214,7 @@ class CurlClient
      *
      * @return resource
      */
-    protected function createCurlHandle()
-    {
+    protected function createCurlHandle() {
         $options = $this->getDefaultCurlOptions();
 
         if (isset($this->authentication)) {

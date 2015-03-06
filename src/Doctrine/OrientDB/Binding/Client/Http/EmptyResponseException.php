@@ -31,9 +31,8 @@ class EmptyResponseException extends Exception
      * @param string $client
      * @param string $location
      */
-    public function __construct($client, $location)
-    {
-        $this->client = $client;
+    public function __construct($client, $location) {
+        $this->client   = $client;
         $this->location = $location;
 
         $clientClass = get_class($client);
@@ -46,8 +45,7 @@ class EmptyResponseException extends Exception
      *
      * @return mixed
      */
-    public function getClient()
-    {
+    public function getClient() {
         return $this->client;
     }
 
@@ -56,8 +54,7 @@ class EmptyResponseException extends Exception
      *
      * @return string
      */
-    public function getLocation()
-    {
+    public function getLocation() {
         return $this->location;
     }
 }

@@ -11,36 +11,32 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\Index;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Index\Drop;
+use test\PHPUnit\TestCase;
 
 class DropTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->drop = new Drop('p', 'c');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
             ':IndexClass' => array(),
-            ':Property' => array(),
+            ':Property'   => array(),
         );
 
         $this->assertTokens($tokens, $this->drop->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'DROP INDEX c.p';
 
         $this->assertCommandGives($query, $this->drop->getRaw());
     }
 
-    public function testConstructionOfAnIndexWithoutClass()
-    {
-        $query = 'DROP INDEX p';
+    public function testConstructionOfAnIndexWithoutClass() {
+        $query      = 'DROP INDEX p';
         $this->drop = new Drop('p');
 
         $this->assertCommandGives($query, $this->drop->getRaw());

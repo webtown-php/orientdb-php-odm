@@ -24,8 +24,7 @@ use Doctrine\OrientDB\Query\Formatter\Query\EmbeddedRid as EmbeddedRidFormatter;
 
 class Remove extends Index
 {
-    public function __construct($indexName, $key, $rid = null, TokenFormatter $ridFormatter = null)
-    {
+    public function __construct($indexName, $key, $rid = null, TokenFormatter $ridFormatter = null) {
         parent::__construct();
 
         $ridFormatter = $ridFormatter ?: new EmbeddedRidFormatter;
@@ -36,7 +35,7 @@ class Remove extends Index
         }
 
         if ($rid) {
-            $rid = $ridFormatter::format(array($rid));
+            $rid    = $ridFormatter::format(array($rid));
             $method = $key ? 'andWhere' : 'where';
 
             $this->$method("rid = $rid");
@@ -46,8 +45,7 @@ class Remove extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "DELETE FROM index::Name :Where";
     }
 
@@ -56,10 +54,9 @@ class Remove extends Index
      *
      * @return Array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'Name'  => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Name' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
         ));
     }
 }

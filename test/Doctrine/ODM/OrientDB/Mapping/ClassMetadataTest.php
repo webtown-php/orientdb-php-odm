@@ -13,15 +13,14 @@
 namespace test\Doctrine\ODM\OrientDB\Mapping;
 
 use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
-use test\PHPUnit\TestCase;
 use Doctrine\ODM\OrientDB\Mapping;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use test\PHPUnit\TestCase;
 
 /**
-* @Document(class="Mapped")
-*/
+ * @Document(class="Mapped")
+ */
 class Mapped
 {
     /**
@@ -56,8 +55,7 @@ class ClassMetadataTest extends TestCase
      */
     private $metadata;
 
-    public function setup()
-    {
+    public function setup() {
         $this->metadata = new ClassMetadata(Mapped::class);
         $this->metadata->initializeReflection(new RuntimeReflectionService());
 
@@ -67,13 +65,11 @@ class ClassMetadataTest extends TestCase
         $this->metadata->mapLinkSet(['fieldName' => 'multiassoc', 'name' => 'multiassoc']);
     }
 
-    function testGetName()
-    {
+    function testGetName() {
         $this->assertEquals(Mapped::class, $this->metadata->getName());
     }
 
-    function testGetIdentifier()
-    {
+    function testGetIdentifier() {
         $this->assertEquals(array('rid'), $this->metadata->getIdentifier());
     }
 
@@ -82,58 +78,48 @@ class ClassMetadataTest extends TestCase
         $this->assertEquals('#1:1', $this->metadata->getIdentifierValue($i));
     }
 
-    function testGetReflectionClass()
-    {
+    function testGetReflectionClass() {
         $this->assertInstanceOf('\ReflectionClass', $this->metadata->getReflectionClass());
     }
 
-    function testIsIdentifier()
-    {
+    function testIsIdentifier() {
         $this->assertEquals(true, $this->metadata->isIdentifier('@rid'));
         $this->assertEquals(false, $this->metadata->isIdentifier('id'));
     }
 
-    function testHasField()
-    {
+    function testHasField() {
         $this->assertEquals(true, $this->metadata->hasField('field'));
         $this->assertEquals(false, $this->metadata->hasField('OMNOMNOMNOMN'));
     }
 
-    function testHasAssociation()
-    {
+    function testHasAssociation() {
         $this->assertEquals(true, $this->metadata->hasAssociation('assoc'));
         $this->assertEquals(false, $this->metadata->hasAssociation('OMNOMNOMNOMN'));
     }
 
-    function testIsSingleValuedAssociation()
-    {
+    function testIsSingleValuedAssociation() {
         $this->assertEquals(true, $this->metadata->isSingleValuedAssociation('assoc'));
         $this->assertEquals(false, $this->metadata->isSingleValuedAssociation('multiassoc'));
     }
 
-    function testIsCollectionValuedAssociation()
-    {
+    function testIsCollectionValuedAssociation() {
         $this->assertEquals(false, $this->metadata->isCollectionValuedAssociation('assoc'));
         $this->assertEquals(true, $this->metadata->isCollectionValuedAssociation('multiassoc'));
     }
 
-    function testGetFieldNames()
-    {
+    function testGetFieldNames() {
         $this->assertEquals(array('field', 'assoc', 'multiassoc'), $this->metadata->getFieldNames());
     }
 
-    function testGetAssociationNames()
-    {
+    function testGetAssociationNames() {
         $this->assertEquals(array('assoc', 'multiassoc'), $this->metadata->getAssociationNames());
     }
 
-    function testGetTypeOfField()
-    {
+    function testGetTypeOfField() {
         $this->assertEquals('string', $this->metadata->getTypeOfField('field'));
     }
 
-    function testGetAssociationTargetClass()
-    {
+    function testGetAssociationTargetClass() {
         $this->setExpectedException(\InvalidArgumentException::class);
         $this->assertEquals(null, $this->metadata->getAssociationTargetClass('OMNOMNOMNOMN'));
     }

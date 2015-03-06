@@ -28,10 +28,10 @@ class Alter extends Property
      *
      * @param   string $attribute
      * @param   string $value
+     *
      * @return  Alter
      */
-    public function changing($attribute, $value)
-    {
+    public function changing($attribute, $value) {
         $this->setToken('Attribute', $attribute);
         $this->setToken('Value', $value);
 
@@ -41,8 +41,7 @@ class Alter extends Property
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "ALTER PROPERTY :Class.:Property :Attribute :Value";
     }
 
@@ -51,13 +50,12 @@ class Alter extends Property
      *
      * @return array
      */
-    protected function getTokenFormatters()
-    {
+    protected function getTokenFormatters() {
         return array(
-            'Class'         => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Property'      => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Attribute'     => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Value'         => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Class'     => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Property'  => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Attribute' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
+            'Value'     => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
         );
     }
 }

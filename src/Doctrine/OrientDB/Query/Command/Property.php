@@ -28,8 +28,7 @@ class Property extends Command implements PropertyInterface
      *
      * @param <type> $property
      */
-    public function __construct($property)
-    {
+    public function __construct($property) {
         parent::__construct();
 
         $this->setProperty($property);
@@ -38,11 +37,11 @@ class Property extends Command implements PropertyInterface
     /**
      * Sets the class of the property.
      *
-     * @param   string    $class
+     * @param   string $class
+     *
      * @return  Property
      */
-    public function on($class)
-    {
+    public function on($class) {
         $this->setToken('Class', $class);
 
         return $this;
@@ -53,8 +52,7 @@ class Property extends Command implements PropertyInterface
      *
      * @param string $property
      */
-    protected function setProperty($property)
-    {
+    protected function setProperty($property) {
         $this->setToken('Property', $property);
     }
 }

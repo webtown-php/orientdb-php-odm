@@ -19,12 +19,12 @@
 
 namespace Doctrine\OrientDB\Binding;
 
-use Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface;
 use Doctrine\OrientDB\Binding\Adapter\CurlClientAdapter;
+use Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
-use Doctrine\OrientDB\Query\Query;
-use Doctrine\OrientDB\Query\Command\Select;
 use Doctrine\OrientDB\Exception as OrientException;
+use Doctrine\OrientDB\Query\Command\Select;
+use Doctrine\OrientDB\Query\Query;
 
 class HttpBinding implements HttpBindingInterface
 {
@@ -35,14 +35,13 @@ class HttpBinding implements HttpBindingInterface
     /**
      * Instantiates a new binding.
      *
-     * @param BindingParameters $parameters
+     * @param BindingParameters          $parameters
      * @param HttpClientAdapterInterface $adapter
      */
-    public function __construct(BindingParameters $parameters, HttpClientAdapterInterface $adapter = null)
-    {
-        $this->server = "{$parameters->getHost()}:{$parameters->getPort()}";
+    public function __construct(BindingParameters $parameters, HttpClientAdapterInterface $adapter = null) {
+        $this->server   = "{$parameters->getHost()}:{$parameters->getPort()}";
         $this->database = $parameters->getDatabase();
-        $this->adapter = $adapter ?: new CurlClientAdapter(new CurlClient());
+        $this->adapter  = $adapter ?: new CurlClientAdapter(new CurlClient());
 
         $this->setAuthentication($parameters->getUsername(), $parameters->getPassword());
     }
@@ -52,11 +51,11 @@ class HttpBinding implements HttpBindingInterface
      *
      * @param string $method
      * @param string $database
-     * @param array $arguments
+     * @param array  $arguments
+     *
      * @return string
      */
-    protected function getLocation($method, $database = null, array $arguments = null)
-    {
+    protected function getLocation($method, $database = null, array $arguments = null) {
         $location = "http://{$this->server}/$method";
 
         if ($database) {
@@ -75,12 +74,12 @@ class HttpBinding implements HttpBindingInterface
      *
      * @param string $database
      * @param string $query
-     * @param int $limit
+     * @param int    $limit
      * @param string $fetchPlan
+     *
      * @return string
      */
-    protected function getQueryLocation($database, $query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS)
-    {
+    protected function getQueryLocation($database, $query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS) {
         $arguments = array($language, $query);
 
         if (isset($limit)) {
@@ -100,10 +99,10 @@ class HttpBinding implements HttpBindingInterface
      * @param string $database
      * @param string $rid
      * @param string $fetchPlan
+     *
      * @return string
      */
-    protected function getDocumentLocation($database, $rid = null, $fetchPlan = null)
-    {
+    protected function getDocumentLocation($database, $rid = null, $fetchPlan = null) {
         $this->ensureDatabase($database);
         $arguments = array($rid);
 
@@ -119,10 +118,10 @@ class HttpBinding implements HttpBindingInterface
      *
      * @param string $database
      * @param string $class
+     *
      * @return string
      */
-    protected function getClassLocation($database, $class)
-    {
+    protected function getClassLocation($database, $class) {
         $this->ensureDatabase($database);
 
         return $this->getLocation('class', $database, array($class));
@@ -133,11 +132,11 @@ class HttpBinding implements HttpBindingInterface
      *
      * @param string $database
      * @param string $cluster
-     * @param int $limit
+     * @param int    $limit
+     *
      * @return string
      */
-    protected function getClusterLocation($database, $cluster, $limit = null)
-    {
+    protected function getClusterLocation($database, $cluster, $limit = null) {
         $this->ensureDatabase($database);
 
         return $this->getLocation('cluster', $database, array($cluster, $limit));
@@ -147,10 +146,10 @@ class HttpBinding implements HttpBindingInterface
      * Returns the URL to fetch a database.
      *
      * @param string $database
+     *
      * @return string
      */
-    protected function getDatabaseLocation($database)
-    {
+    protected function getDatabaseLocation($database) {
         $this->ensureDatabase($database);
 
         return $this->getLocation('database', $database);
@@ -159,8 +158,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function deleteClass($class, $database = null)
-    {
+    public function deleteClass($class, $database = null) {
         $location = $this->getClassLocation($database ?: $this->database, $class);
 
         return $this->adapter->request('DELETE', $location);
@@ -169,8 +167,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function getClass($class, $database = null)
-    {
+    public function getClass($class, $database = null) {
         $location = $this->getClassLocation($database ?: $this->database, $class);
 
         return $this->adapter->request('GET', $location);
@@ -179,8 +176,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function postClass($class, $body = null, $database = null)
-    {
+    public function postClass($class, $body = null, $database = null) {
         $location = $this->getClassLocation($database ?: $this->database, $class);
 
         return $this->adapter->request('POST', $location, null, $body);
@@ -189,8 +185,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function cluster($cluster, $limit = null, $database = null)
-    {
+    public function cluster($cluster, $limit = null, $database = null) {
         $location = $this->getClusterLocation($database ?: $this->database, $cluster, $limit);
 
         return $this->adapter->request('GET', $location);
@@ -199,8 +194,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function connect($database)
-    {
+    public function connect($database) {
         $location = $this->getDatabaseLocation($database);
 
         return $this->adapter->request('GET', $location);
@@ -209,8 +203,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function disconnect()
-    {
+    public function disconnect() {
         $location = $this->getLocation('disconnect');
 
         return $this->adapter->request('GET', $location);
@@ -219,8 +212,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function getServer()
-    {
+    public function getServer() {
         $location = $this->getLocation('server');
 
         return $this->adapter->request('GET', $location);
@@ -229,8 +221,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function getDatabase($database = null)
-    {
+    public function getDatabase($database = null) {
         $location = $this->getDatabaseLocation($database ?: $this->database);
 
         return $this->adapter->request('GET', $location);
@@ -239,8 +230,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function createDatabase($database, $storage = 'memory', $type = 'document')
-    {
+    public function createDatabase($database, $storage = 'memory', $type = 'document') {
         $location = $this->getLocation('database', $database, array($storage, $type));
 
         return $this->adapter->request('POST', $location);
@@ -249,8 +239,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function listDatabases()
-    {
+    public function listDatabases() {
         $location = $this->getLocation('listDatabases');
 
         return $this->adapter->request('GET', $location);
@@ -259,8 +248,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function deleteDatabase($database)
-    {
+    public function deleteDatabase($database) {
         $location = $this->getLocation('database', $database);
 
         return $this->adapter->request('DELETE', $location);
@@ -269,8 +257,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function execute(Query $query, $fetchPlan = null)
-    {
+    public function execute(Query $query, $fetchPlan = null) {
         if ($query->getCommand() instanceof Select) {
             return $this->query($query->getRaw(), -1, $fetchPlan);
         }
@@ -281,8 +268,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null)
-    {
+    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null) {
         $database = $database ?: $this->database;
         $this->ensureDatabase($database);
 
@@ -294,8 +280,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null)
-    {
+    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null) {
         $location = $this->getQueryLocation($database ?: $this->database, $query, $limit, $fetchPlan, $language);
 
         return $this->adapter->request('GET', $location);
@@ -304,8 +289,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function getDocument($rid, $database = null, $fetchPlan = null)
-    {
+    public function getDocument($rid, $database = null, $fetchPlan = null) {
         $location = $this->getDocumentLocation($database ?: $this->database, $rid, $fetchPlan);
 
         return $this->adapter->request('GET', $location);
@@ -314,8 +298,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function postDocument($document, $database = null)
-    {
+    public function postDocument($document, $database = null) {
         $location = $this->getDocumentLocation($database ?: $this->database);
 
         return $this->adapter->request('POST', $location, null, $document);
@@ -324,8 +307,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function putDocument($rid, $document, $database = null)
-    {
+    public function putDocument($rid, $document, $database = null) {
         $location = $this->getDocumentLocation($database ?: $this->database, $rid);
 
         return $this->adapter->request('PUT', $location, null, $document);
@@ -334,8 +316,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function deleteDocument($rid, $version = null, $database = null)
-    {
+    public function deleteDocument($rid, $version = null, $database = null) {
         $headers = null;
 
         if ($version) {
@@ -352,8 +333,7 @@ class HttpBinding implements HttpBindingInterface
      *
      * @param string $database
      */
-    public function setDatabase($database)
-    {
+    public function setDatabase($database) {
         $this->ensureDatabase($database);
         $this->database = $database;
     }
@@ -363,8 +343,7 @@ class HttpBinding implements HttpBindingInterface
      *
      * @return string
      */
-    public function getDatabaseName()
-    {
+    public function getDatabaseName() {
         return $this->database;
     }
 
@@ -373,8 +352,7 @@ class HttpBinding implements HttpBindingInterface
      *
      * @throws OrientException
      */
-    protected function ensureDatabase($database)
-    {
+    protected function ensureDatabase($database) {
         if (strlen($database) === 0) {
             throw new OrientException('In order to perform the operation you must specify a database');
         }
@@ -383,9 +361,8 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function batch($batch, $database = null)
-    {
-        $location = $this->getLocation('batch', $database ? :$this->database);
+    public function batch($batch, $database = null) {
+        $location = $this->getLocation('batch', $database ?: $this->database);
 
         return $this->adapter->request('POST', $location, array(), $batch);
     }
@@ -393,24 +370,21 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function setAuthentication($username = null, $password = null)
-    {
+    public function setAuthentication($username = null, $password = null) {
         $this->adapter->setAuthentication($username, $password);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setAdapter(HttpClientAdapterInterface $adapter)
-    {
+    public function setAdapter(HttpClientAdapterInterface $adapter) {
         $this->adapter = $adapter;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getAdapter()
-    {
+    public function getAdapter() {
         return $this->adapter;
     }
 }

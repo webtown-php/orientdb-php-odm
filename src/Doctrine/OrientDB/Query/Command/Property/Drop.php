@@ -27,8 +27,7 @@ class Drop extends Property
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "DROP PROPERTY :Class.:Property";
     }
 }

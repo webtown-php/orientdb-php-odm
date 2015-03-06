@@ -19,21 +19,20 @@
 
 namespace test\Doctrine\OrientDB\Graph\Algorithm;
 
-use test\PHPUnit\TestCase;
+use Doctrine\OrientDB\Graph\Algorithm\Dijkstra;
 use Doctrine\OrientDB\Graph\Graph;
 use Doctrine\OrientDB\Graph\Vertex;
-use Doctrine\OrientDB\Graph\Algorithm\Dijkstra;
+use test\PHPUnit\TestCase;
 
 class DijkstraTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->graph = new Graph();
 
-        $this->rome       = new Vertex('rome');
-        $this->zurich     = new Vertex('zurich');
-        $this->amsterdam  = new Vertex('amsterdam');
-        $this->london     = new Vertex('london');
+        $this->rome      = new Vertex('rome');
+        $this->zurich    = new Vertex('zurich');
+        $this->amsterdam = new Vertex('amsterdam');
+        $this->london    = new Vertex('london');
 
         $this->graph->add($this->rome);
         $this->graph->add($this->zurich);
@@ -43,8 +42,7 @@ class DijkstraTest extends TestCase
         $this->algorithm = new Dijkstra($this->graph);
     }
 
-    public function testSPBetweenTwoNodesAreThemselves()
-    {
+    public function testSPBetweenTwoNodesAreThemselves() {
         $this->rome->connect($this->zurich, 2);
 
         $this->algorithm->setStartingVertex($this->rome);
@@ -60,8 +58,7 @@ class DijkstraTest extends TestCase
         $this->assertEquals(array($this->amsterdam, $this->london), $this->algorithm->solve());
     }
 
-    public function testSPBetweenThreeNodesWithoutAlternativePathsAreThemselves()
-    {
+    public function testSPBetweenThreeNodesWithoutAlternativePathsAreThemselves() {
         $this->rome->connect($this->zurich);
         $this->zurich->connect($this->amsterdam);
 
@@ -71,8 +68,7 @@ class DijkstraTest extends TestCase
         $this->assertEquals(array($this->rome, $this->zurich, $this->amsterdam), $this->algorithm->solve());
     }
 
-    public function testSPBetweenThreeNodesWithAlternativePathsAreGood()
-    {
+    public function testSPBetweenThreeNodesWithAlternativePathsAreGood() {
         $this->rome->connect($this->zurich, 2);
         $this->rome->connect($this->amsterdam, 3);
         $this->zurich->connect($this->amsterdam, 2);
@@ -83,8 +79,7 @@ class DijkstraTest extends TestCase
         $this->assertEquals(array($this->rome, $this->amsterdam), $this->algorithm->solve());
     }
 
-    public function testSPBetween4NodesWithAlternativePathsAreGood()
-    {
+    public function testSPBetween4NodesWithAlternativePathsAreGood() {
         $this->rome->connect($this->zurich, 2);
         $this->rome->connect($this->amsterdam, 3);
         $this->rome->connect($this->london, 9);
@@ -101,8 +96,7 @@ class DijkstraTest extends TestCase
     /**
      * @see http://it.wikipedia.org/wiki/File:Ricerca_operativa_percorso_minimo_09.gif
      */
-    public function testWikipediaExample()
-    {
+    public function testWikipediaExample() {
         $graph  = new Graph();
         $home   = new Vertex('home');
         $a      = new Vertex('a');
@@ -137,8 +131,7 @@ class DijkstraTest extends TestCase
         $this->assertEquals(array($home, $a, $c, $d, $e, $office), $algorithm->solve());
     }
 
-    public function testYouGetTheDistance()
-    {
+    public function testYouGetTheDistance() {
         $this->rome->connect($this->zurich, 4);
 
         $this->algorithm->setStartingVertex($this->rome);
@@ -151,16 +144,14 @@ class DijkstraTest extends TestCase
     /**
      * @expectedException \Doctrine\OrientDB\LogicException
      */
-    public function testYouNeedToSolveTheAlgorithmBeforeCalculatingTheDistance()
-    {
+    public function testYouNeedToSolveTheAlgorithmBeforeCalculatingTheDistance() {
         $this->rome->connect($this->zurich, 4);
         $this->algorithm->setStartingVertex($this->rome);
         $this->algorithm->setEndingVertex($this->zurich);
         $this->algorithm->getDistance();
     }
 
-    public function testYouRetrieveANiceStringToOutputThePath()
-    {
+    public function testYouRetrieveANiceStringToOutputThePath() {
         $this->rome->connect($this->zurich, 4);
         $this->algorithm->setStartingVertex($this->rome);
         $this->algorithm->setEndingVertex($this->zurich);
@@ -171,8 +162,7 @@ class DijkstraTest extends TestCase
     /**
      * @expectedException \Doctrine\OrientDB\LogicException
      */
-    public function testYouCantSolveTheAlgorithmWithoutaStart()
-    {
+    public function testYouCantSolveTheAlgorithmWithoutaStart() {
         $this->rome->connect($this->zurich, 4);
         $this->algorithm->setEndingVertex($this->zurich);
         $this->algorithm->solve();
@@ -181,8 +171,7 @@ class DijkstraTest extends TestCase
     /**
      * @expectedException \Doctrine\OrientDB\LogicException
      */
-    public function testYouCantSolveTheAlgorithmWithoutaEnd()
-    {
+    public function testYouCantSolveTheAlgorithmWithoutaEnd() {
         $this->rome->connect($this->zurich, 4);
         $this->algorithm->setStartingVertex($this->zurich);
         $this->algorithm->solve();

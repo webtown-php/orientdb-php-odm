@@ -65,10 +65,10 @@ class ProxyFactory extends AbstractProxyFactory
 
     public function createProxyDefinition($className) {
         /** @var ClassMetadata $classMetadata */
-        $classMetadata    = $this->metadataFactory->getMetadataFor($className);
+        $classMetadata     = $this->metadataFactory->getMetadataFor($className);
         $documentPersister = $this->uow->getDocumentPersister($className);
-        $reflectionFields = $classMetadata->getReflectionProperties();
-        $reflectionId     = $reflectionFields[$classMetadata->getRidPropertyName()];
+        $reflectionFields  = $classMetadata->getReflectionProperties();
+        $reflectionId      = $reflectionFields[$classMetadata->getRidPropertyName()];
 
         return new ProxyDefinition(
             ClassUtils::generateProxyClassName($className, $this->proxyNamespace),
@@ -109,7 +109,7 @@ class ProxyFactory extends AbstractProxyFactory
                 $proxy->__setInitialized(true);
                 $proxy->__wakeup();
 
-                $rid    = $reflectionId->getValue($proxy);
+                $rid = $reflectionId->getValue($proxy);
                 if ($documentPersister->load($rid, '*:0', $proxy) === null) {
                     throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
                 }
@@ -130,7 +130,7 @@ class ProxyFactory extends AbstractProxyFactory
             }
             $proxy->__setInitialized(true);
 
-            $rid    = $reflectionId->getValue($proxy);
+            $rid = $reflectionId->getValue($proxy);
             if ($documentPersister->load($rid, '*:0', $proxy) === null) {
                 throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
             }

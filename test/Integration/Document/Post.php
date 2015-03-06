@@ -19,11 +19,12 @@
  */
 
 namespace test\Integration\Document;
+
 use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
-* @Document(class="Post")
-*/
+ * @Document(class="Post")
+ */
 class Post
 {
     /**
@@ -46,26 +47,22 @@ class Post
      */
     public $title;
 
-    public function getRid()
-    {
+    public function getRid() {
         return $this->rid;
     }
 
-    public function setRid($rid)
-    {
+    public function setRid($rid) {
         $this->rid = $rid;
     }
 
     /**
      * @return PersistentCollection|Comment[]
      */
-    public function getComments()
-    {
+    public function getComments() {
         return $this->comments;
     }
 
-    public function setComments($city)
-    {
+    public function setComments($city) {
         $this->comments = $city;
     }
 }

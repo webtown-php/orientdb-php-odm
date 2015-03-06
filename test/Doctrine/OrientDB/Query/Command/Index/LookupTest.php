@@ -11,18 +11,16 @@
 
 namespace test\Doctrine\OrientDB\Query\Command\Index;
 
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Command\Index\Lookup;
+use test\PHPUnit\TestCase;
 
 class LookupTest extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->lookup = new Lookup('dictionary');
     }
 
-    public function testTheSchemaIsValid()
-    {
+    public function testTheSchemaIsValid() {
         $tokens = array(
             ':Index' => array(),
             ':Where' => array(),
@@ -31,15 +29,13 @@ class LookupTest extends TestCase
         $this->assertTokens($tokens, $this->lookup->getTokens());
     }
 
-    public function testConstructionOfAnObject()
-    {
+    public function testConstructionOfAnObject() {
         $query = 'SELECT FROM index:dictionary';
 
         $this->assertCommandGives($query, $this->lookup->getRaw());
     }
 
-    public function testSettingWhereCondition()
-    {
+    public function testSettingWhereCondition() {
         $query = 'SELECT FROM index:dictionary WHERE key = "luke"';
         $this->lookup->where('key = ?', 'luke');
 

@@ -11,23 +11,20 @@
 
 namespace test\Doctrine\OrientDB\Query;
 
-use Doctrine\OrientDB\Query\Query;
 use Doctrine\OrientDB\Query\Command as QueryCommand;
-use test\PHPUnit\TestCase;
 use Doctrine\OrientDB\Query\Formatter\Query as Formatter;
+use test\PHPUnit\TestCase;
 
 class StubCommand extends QueryCommand
 {
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return ":Target :Where";
     }
 }
 
 class StubExceptionedCommand extends QueryCommand
 {
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return ":NotFoundToken";
     }
 }
@@ -38,13 +35,11 @@ class NullCommand extends QueryCommand
 
 class Command extends TestCase
 {
-    public function setup()
-    {
+    public function setup() {
         $this->command = new StubCommand();
     }
 
-    public function testSchema()
-    {
+    public function testSchema() {
         $command = new NullCommand;
         $this->assertEmpty($command->getRaw());
     }
@@ -52,8 +47,7 @@ class Command extends TestCase
     /**
      * @expectedException Doctrine\OrientDB\Exception
      */
-    public function testAnExceptionIsRaisedIfYouDontExplicitHowToFormatAToken()
-    {
+    public function testAnExceptionIsRaisedIfYouDontExplicitHowToFormatAToken() {
         $this->command = new StubExceptionedCommand();
         $this->command->getRaw();
     }
@@ -61,44 +55,38 @@ class Command extends TestCase
     /**
      * @expectedException Doctrine\OrientDB\LogicException
      */
-    public function testAnExceptionIsRaisedIfYouMakeAWhereWithDifferentParamsAndValues()
-    {
+    public function testAnExceptionIsRaisedIfYouMakeAWhereWithDifferentParamsAndValues() {
         $this->command = new StubCommand();
         $this->command->where('c = ? AND b = ?', array(1));
         $this->command->getRaw();
     }
 
-    public function testYouCanInjectACustomQueryFormatter()
-    {
-        $this->command  = new StubExceptionedCommand();
-        $formatter      = new Formatter();
+    public function testYouCanInjectACustomQueryFormatter() {
+        $this->command = new StubExceptionedCommand();
+        $formatter     = new Formatter();
         $this->command->setFormatter($formatter);
     }
 
-    public function testAddingFromToken()
-    {
+    public function testAddingFromToken() {
         $from = array('Cities');
         $this->command->from($from);
 
         $this->assertCommandGives($from, $this->command->getTokenValue('Target'));
     }
 
-    public function testRetrieveTheRawCommand()
-    {
+    public function testRetrieveTheRawCommand() {
         $from = array('Cities');
         $this->command->from($from);
 
         $this->assertCommandGives("Cities", $this->command->getRaw());
     }
 
-    public function testTheCommandTokensAreValid()
-    {
+    public function testTheCommandTokensAreValid() {
         $command = new StubCommand();
         $this->assertTokens(array(':Target' => array(), ':Where' => array()), $command->getTokens());
     }
 
-    public function testYouCanResetAllTheWheresOfACommand()
-    {
+    public function testYouCanResetAllTheWheresOfACommand() {
         $from = array('Cities');
         $this->command->where("i loves ?", "U");
         $this->command->resetWhere();
@@ -106,23 +94,20 @@ class Command extends TestCase
         $this->assertCommandGives(array(), $this->command->getTokenValue('Where'));
     }
 
-    public function testAddAWhere()
-    {
+    public function testAddAWhere() {
         $this->command->where("i loves ?", "U");
         $this->command->where("mark loves ?", "me", true, "OR");
 
         $this->assertCommandGives("WHERE i loves \"U\" OR mark loves \"me\"", $this->command->getRaw());
     }
 
-    public function testYouCanSpecifyMultipleValuesInAWhere()
-    {
+    public function testYouCanSpecifyMultipleValuesInAWhere() {
         $this->command->where("i loves ? AND you love ?", array("U", 'me'));
 
         $this->assertCommandGives("WHERE i loves \"U\" AND you love \"me\"", $this->command->getRaw());
     }
 
-    public function testTheWhereWorksCorrectlyWithReUsedPrivateNamesLikeANDOrORWHERE()
-    {
+    public function testTheWhereWorksCorrectlyWithReUsedPrivateNamesLikeANDOrORWHERE() {
         $this->command->where("i loves ?", "ME, AND YOU");
         $statement = 'WHERE i loves "ME, AND YOU"';
 
@@ -137,8 +122,7 @@ class Command extends TestCase
     /**
      * @expectedException Doctrine\OrientDB\Query\TokenNotFoundException
      */
-    public function testCheckAnExceptionRaisedWhenRequestingInvalidToken()
-    {
+    public function testCheckAnExceptionRaisedWhenRequestingInvalidToken() {
         $command = new StubCommand();
         $command->getTokenValue('buffalo');
     }

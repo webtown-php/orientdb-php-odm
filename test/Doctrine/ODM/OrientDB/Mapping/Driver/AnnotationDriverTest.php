@@ -10,19 +10,17 @@ use Doctrine\ODM\OrientDB\Mapping\MappingException;
 class AnnotationDriverTest extends AbstractMappingDriverTest
 {
 
-    public function testLoadMetadataForNonEntityThrowsException()
-    {
+    public function testLoadMetadataForNonEntityThrowsException() {
         $cm = new ClassMetadata('stdClass');
         $cm->initializeReflection(new \Doctrine\Common\Persistence\Mapping\RuntimeReflectionService);
-        $reader = new \Doctrine\Common\Annotations\AnnotationReader(new \Doctrine\Common\Cache\ArrayCache());
+        $reader           = new \Doctrine\Common\Annotations\AnnotationReader(new \Doctrine\Common\Cache\ArrayCache());
         $annotationDriver = new AnnotationDriver($reader);
 
         $this->setExpectedException(MappingException::class);
         $annotationDriver->loadMetadataForClass('stdClass', $cm);
     }
 
-    public function testColumnWithMissingTypeDefaultsToString()
-    {
+    public function testColumnWithMissingTypeDefaultsToString() {
         $cm = new ClassMetadata(ColumnWithoutType::class);
         $cm->initializeReflection(new \Doctrine\Common\Persistence\Mapping\RuntimeReflectionService);
         $annotationDriver = $this->_loadDriver();

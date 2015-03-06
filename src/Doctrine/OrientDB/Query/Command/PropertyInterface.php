@@ -25,7 +25,8 @@ interface PropertyInterface
     /**
      * Sets the class of the property to manipulate.
      *
-     * @param   string  $class
+     * @param   string $class
+     *
      * @return  Property
      */
     public function on($class);

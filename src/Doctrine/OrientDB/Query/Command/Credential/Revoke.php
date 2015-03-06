@@ -26,8 +26,7 @@ class Revoke extends Credential
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "REVOKE :Permission ON :Resource FROM :Role";
     }
 }

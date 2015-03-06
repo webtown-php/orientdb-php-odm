@@ -30,8 +30,7 @@ class Drop extends Index
      * @param string $property
      * @param string $class
      */
-    public function __construct($property, $class = null)
-    {
+    public function __construct($property, $class = null) {
         parent::__construct();
 
         if ($class) {
@@ -44,8 +43,7 @@ class Drop extends Index
     /**
      * @inheritdoc
      */
-    protected function getSchema()
-    {
+    protected function getSchema() {
         return "DROP INDEX :IndexClass:Property";
     }
 }

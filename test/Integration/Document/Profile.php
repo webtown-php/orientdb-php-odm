@@ -19,11 +19,12 @@
  */
 
 namespace test\Integration\Document;
+
 use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
-* @Document(class="Profile")
-*/
+ * @Document(class="Profile")
+ */
 class Profile
 {
     /**

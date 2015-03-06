@@ -28,6 +28,7 @@ interface CommandInterface
      *
      * @param   string $condition
      * @param   string $value
+     *
      * @return  Command
      */
     public function andWhere($condition, $value = null);
@@ -39,6 +40,7 @@ interface CommandInterface
      *
      * @param   array   $target
      * @param   boolean $append
+     *
      * @return  Command
      */
     public function from(array $target, $append = true);
@@ -70,7 +72,8 @@ interface CommandInterface
      * However, both those tokens values are an array: this is done to
      * internally simplify things.
      *
-     * @param   string  $token
+     * @param   string $token
+     *
      * @return  array
      */
     public function getTokenValue($token);
@@ -81,6 +84,7 @@ interface CommandInterface
      *
      * @param   string $condition
      * @param   string $value
+     *
      * @return  Command
      */
     public function orWhere($condition, $value = null);

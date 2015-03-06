@@ -23,17 +23,16 @@ use Doctrine\OrientDB\Query\Formatter\Query;
 
 class RebuildIndex extends Query implements TokenInterface
 {
-    public static function format(array $values)
-    {
+    public static function format(array $values) {
 
         if (count($values) == 1) {
             $index = $values[0];
 
-            if ($index == '*'){
+            if ($index == '*') {
                 return $index;
             }
 
-            if (preg_match('/\w+.\w+/',$index)){
+            if (preg_match('/\w+.\w+/', $index)) {
                 return self::implodeRegular($values, '\.');
             }
         }
