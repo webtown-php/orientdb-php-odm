@@ -25,8 +25,6 @@ class SQLBatchPersister implements PersisterInterface
      */
     protected $binding;
 
-    protected $queryDocumentMap = [];
-
     public function __construct(DocumentManager $dm) {
         $this->dm              = $dm;
         $this->metadataFactory = $dm->getMetadataFactory();
