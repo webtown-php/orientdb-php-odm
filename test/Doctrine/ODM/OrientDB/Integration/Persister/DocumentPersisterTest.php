@@ -1,6 +1,6 @@
 <?php
 
-namespace test\Doctrine\ODM\OrientDB\Integration\Persisters;
+namespace test\Doctrine\ODM\OrientDB\Integration\Persister;
 
 
 use test\Integration\Document\Post;

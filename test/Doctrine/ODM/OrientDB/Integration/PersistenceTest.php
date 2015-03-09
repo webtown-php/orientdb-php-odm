@@ -8,7 +8,7 @@ use test\Integration\Document\Country;
 use test\PHPUnit\TestCase;
 
 /**
- * @group SKIP
+ * @group integration
  */
 class PersistenceTest extends TestCase
 {

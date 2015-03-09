@@ -13,7 +13,7 @@ use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentNotFoundException;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
-use Doctrine\ODM\OrientDB\Persisters\DocumentPersister;
+use Doctrine\ODM\OrientDB\Persister\DocumentPersister;
 
 /**
  * Class ProxyFactory

@@ -12,7 +12,8 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Event\LifecycleEventArgs;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\ODM\OrientDB\Persisters\PersistenceBuilder;
+use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
+use Doctrine\ODM\OrientDB\Persister\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\OrientDB\Query\Query;
@@ -53,14 +54,6 @@ class UnitOfWork implements PropertyChangedListener
      * @var DocumentManager
      */
     private $dm;
-
-    /**
-     * The calculator used to calculate the order in which changes to
-     * documents need to be written to the database.
-     *
-     * @var Internal\CommitOrderCalculator
-     */
-    private $commitOrderCalculator;
 
     /**
      * The EventManager used for dispatching events.
@@ -113,14 +106,29 @@ class UnitOfWork implements PropertyChangedListener
      */
     private $documentChangeSets = [];
 
+    /**
+     * @var array
+     */
     private $documentStates = [];
 
+    /**
+     * @var array
+     */
     private $scheduledForDirtyCheck = [];
 
+    /**
+     * @var array
+     */
     private $documentUpdates = [];
 
+    /**
+     * @var array
+     */
     private $documentInsertions = [];
 
+    /**
+     * @var array
+     */
     private $documentDeletions = [];
 
     /**
@@ -138,7 +146,7 @@ class UnitOfWork implements PropertyChangedListener
     private $collectionUpdates = [];
 
     /**
-     * List of collections visited during changeset calculation on a commit-phase of a UnitOfWork.
+     * List of collections visited during change set calculation on a commit-phase of a UnitOfWork.
      * At the end of the UnitOfWork all these collections will make new snapshots
      * of their data.
      *
@@ -161,13 +169,6 @@ class UnitOfWork implements PropertyChangedListener
     private $persisters = [];
 
     /**
-     * The persistence builder instance used in DocumentPersisters.
-     *
-     * @var PersistenceBuilder
-     */
-    private $persistenceBuilder;
-
-    /**
      * Array of parent associations between embedded documents
      *
      * @todo We might need to clean up this array in clear(), doDetach(), etc.
@@ -187,20 +188,6 @@ class UnitOfWork implements PropertyChangedListener
         $this->dm              = $manager;
         $this->evm             = $evm;
         $this->hydratorFactory = $hydratorFactory;
-    }
-
-    /**
-     * Factory for returning new PersistenceBuilder instances used for preparing data into
-     * queries for insert persistence.
-     *
-     * @return PersistenceBuilder $pb
-     */
-    public function getPersistenceBuilder() {
-        if (!$this->persistenceBuilder) {
-            $this->persistenceBuilder = new PersistenceBuilder($this->dm, $this);
-        }
-
-        return $this->persistenceBuilder;
     }
 
     /**
@@ -241,13 +228,12 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @param string $documentName
      *
-     * @return Persisters\DocumentPersister
+     * @return Persister\DocumentPersister
      */
     public function getDocumentPersister($documentName) {
         if (!isset($this->persisters[$documentName])) {
             $class                           = $this->dm->getClassMetadata($documentName);
-            $pb = $this->getPersistenceBuilder();
-            $this->persisters[$documentName] = new Persisters\DocumentPersister($pb, $this->dm, $this->evm, $this, $this->hydratorFactory, $class);
+            $this->persisters[$documentName] = new Persister\DocumentPersister($this->dm, $this->evm, $this, $this->hydratorFactory, $class);
         }
 
         return $this->persisters[$documentName];
@@ -256,12 +242,12 @@ class UnitOfWork implements PropertyChangedListener
     /**
      * Get the collection persister instance.
      *
-     * @return \Doctrine\ODM\OrientDB\Persisters\CollectionPersister
+     * @return \Doctrine\ODM\OrientDB\Persister\CollectionPersister
      */
     public function getCollectionPersister() {
         if (!isset($this->collectionPersister)) {
             $pb                        = $this->getPersistenceBuilder();
-            $this->collectionPersister = new Persisters\CollectionPersister($this->dm, $pb, $this);
+            $this->collectionPersister = new Persister\CollectionPersister($this->dm, $pb, $this);
         }
 
         return $this->collectionPersister;
@@ -270,10 +256,10 @@ class UnitOfWork implements PropertyChangedListener
     /**
      * Set the document persister instance to use for the given document name
      *
-     * @param string                       $documentName
-     * @param Persisters\DocumentPersister $persister
+     * @param string                      $documentName
+     * @param Persister\DocumentPersister $persister
      */
-    public function setDocumentPersister($documentName, Persisters\DocumentPersister $persister) {
+    public function setDocumentPersister($documentName, Persister\DocumentPersister $persister) {
         $this->persisters[$documentName] = $persister;
     }
 
@@ -327,39 +313,42 @@ class UnitOfWork implements PropertyChangedListener
             $this->evm->dispatchEvent(Events::onFlush, new Event\OnFlushEventArgs($this->dm));
         }
 
-        // Now we need a commit order to maintain referential integrity
-        $commitOrder = $this->getCommitOrder();
-
-        if ($this->documentInsertions) {
-            foreach ($commitOrder as $class) {
-                if ($class->isEmbeddedDocument) {
-                    continue;
-                }
-                $this->executeInserts($class);
-            }
-        }
-
-        if ($this->documentUpdates) {
-            foreach ($commitOrder as $class) {
-                $this->executeUpdates($class);
-            }
-        }
-
-        // Collection deletions (deletions of complete collections)
-        foreach ($this->collectionDeletions as $collectionToDelete) {
-            $this->getCollectionPersister()->delete($collectionToDelete);
-        }
-        // Collection updates (deleteRows, updateRows, insertRows)
-        foreach ($this->collectionUpdates as $collectionToUpdate) {
-            $this->getCollectionPersister()->update($collectionToUpdate);
-        }
-
-        // Document deletions come last and need to be in reverse commit order
-        if ($this->documentDeletions) {
-            for ($count = count($commitOrder), $i = $count - 1; $i >= 0; --$i) {
-                $this->executeDeletions($commitOrder[$i]);
-            }
-        }
+        $p = $this->createPersister();
+        $p->process($this);
+//
+//        // Now we need a commit order to maintain referential integrity
+//        $commitOrder = $this->getCommitOrder();
+//
+//        if ($this->documentInsertions) {
+//            foreach ($commitOrder as $class) {
+//                if ($class->isEmbeddedDocument) {
+//                    continue;
+//                }
+//                $this->executeInserts($class);
+//            }
+//        }
+//
+//        if ($this->documentUpdates) {
+//            foreach ($commitOrder as $class) {
+//                $this->executeUpdates($class);
+//            }
+//        }
+//
+//        // Collection deletions (deletions of complete collections)
+//        foreach ($this->collectionDeletions as $collectionToDelete) {
+//            $this->getCollectionPersister()->delete($collectionToDelete);
+//        }
+//        // Collection updates (deleteRows, updateRows, insertRows)
+//        foreach ($this->collectionUpdates as $collectionToUpdate) {
+//            $this->getCollectionPersister()->update($collectionToUpdate);
+//        }
+//
+//        // Document deletions come last and need to be in reverse commit order
+//        if ($this->documentDeletions) {
+//            for ($count = count($commitOrder), $i = $count - 1; $i >= 0; --$i) {
+//                $this->executeDeletions($commitOrder[$i]);
+//            }
+//        }
 
         // Take new snapshots from visited collections
         foreach ($this->visitedCollections as $coll) {
@@ -388,96 +377,24 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * Executes all document insertions for documents of the specified type.
-     *
-     * @param ClassMetadata $class
-     * @param array         $options Array of options to be used with batchInsert()
+     * @return array
      */
-    private function executeInserts(ClassMetadata $class, array $options = array()) {
-        $className = $class->name;
-        $persister = $this->getDocumentPersister($className);
-
-        $insertedDocuments = [];
-
-        foreach ($this->documentInsertions as $oid => $document) {
-            if (get_class($document) === $className) {
-                $persister->addInsert($document);
-                $insertedDocuments[] = $document;
-                unset($this->documentInsertions[$oid]);
-            }
-        }
-
-        $persister->executeInserts($options);
-
-        foreach ($insertedDocuments as $document) {
-            $id = $class->getIdentifierValue($document);
-
-            /* Inline call to UnitOfWork::registerManager(), but only update the
-             * identifier in the original document data.
-             */
-            $oid                                                  = spl_object_hash($document);
-            $this->documentIdentifiers[$oid]                      = $id;
-            $this->documentStates[$oid]                           = self::STATE_MANAGED;
-            $this->originalDocumentData[$oid][$class->identifier] = $id;
-            $this->addToIdentityMap($document);
-        }
-
-//        $hasPostPersistLifecycleCallbacks = ! empty($class->lifecycleCallbacks[Events::postPersist]);
-//        $hasPostPersistListeners = $this->evm->hasListeners(Events::postPersist);
-
-        foreach ($insertedDocuments as $document) {
-//            if ($hasPostPersistLifecycleCallbacks) {
-//                $class->invokeLifecycleCallbacks(Events::postPersist, $document);
-//            }
-//            if ($hasPostPersistListeners) {
-//                $this->evm->dispatchEvent(Events::postPersist, new LifecycleEventArgs($document, $this->dm));
-//            }
-            $this->cascadePostPersist($class, $document);
-        }
+    public function getDocumentInsertions() {
+        return $this->documentInsertions;
     }
 
     /**
-     * Cascades the postPersist events to embedded documents.
-     *
-     * @param ClassMetadata $class
-     * @param object        $document
+     * @return array
      */
-    private function cascadePostPersist(ClassMetadata $class, $document) {
-        $hasPostPersistListeners = $this->evm->hasListeners(Events::postPersist);
+    public function getDocumentUpdates() {
+        return $this->documentUpdates;
+    }
 
-        foreach ($class->fieldMappings as $mapping) {
-            if (empty($mapping['embedded'])) {
-                continue;
-            }
-
-            $value = $class->getFieldValue($document, $mapping['fieldName']);
-
-            if ($value === null) {
-                continue;
-            }
-
-            if ($mapping['association'] & ClassMetadata::TO_ONE) {
-                $value = [$value];
-            }
-
-            if (isset($mapping['targetClass'])) {
-                $embeddedClass = $this->dm->getClassMetadata($mapping['targetClass']);
-            }
-
-            foreach ($value as $embeddedDocument) {
-                if (!isset($mapping['targetClass'])) {
-                    $embeddedClass = $this->dm->getClassMetadata(get_class($embeddedDocument));
-                }
-
-//                if ( ! empty($embeddedClass->lifecycleCallbacks[Events::postPersist])) {
-//                    $embeddedClass->invokeLifecycleCallbacks(Events::postPersist, $embeddedDocument);
-//                }
-                if ($hasPostPersistListeners) {
-                    $this->evm->dispatchEvent(Events::postPersist, new LifecycleEventArgs($embeddedDocument, $this->dm));
-                }
-                $this->cascadePostPersist($embeddedClass, $embeddedDocument);
-            }
-        }
+    /**
+     * @return array
+     */
+    public function getDocumentDeletions() {
+        return $this->documentDeletions;
     }
 
     public function execute(Query $query, $fetchPlan = null) {
@@ -530,6 +447,21 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         return isset($this->identityMap[$class->name][$id]);
+    }
+
+    /**
+     * @param object $document
+     *
+     * @return string
+     */
+    public function getDocumentRid($document) {
+        $oid = spl_object_hash($document);
+
+        if (isset($this->documentIdentifiers[$oid])) {
+            return $this->documentIdentifiers[$oid];
+        }
+
+        return null;
     }
 
     /**
@@ -663,19 +595,6 @@ class UnitOfWork implements PropertyChangedListener
 
         $this->documentStates[$oid] = self::STATE_MANAGED;
         $this->scheduleForInsert($class, $document);
-    }
-
-    /**
-     * Gets the CommitOrderCalculator used by the UnitOfWork to order commits.
-     *
-     * @return Internal\CommitOrderCalculator
-     */
-    private function getCommitOrderCalculator() {
-        if ($this->commitOrderCalculator === null) {
-            $this->commitOrderCalculator = new Internal\CommitOrderCalculator();
-        }
-
-        return $this->commitOrderCalculator;
     }
 
     /**
@@ -1439,33 +1358,6 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * Schedules a document for upsert into the database and adds it to the
-     * identity map
-     *
-     * @param ClassMetadata $class
-     * @param object        $document The document to schedule for upsert.
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function scheduleForUpsert(ClassMetadata $class, $document) {
-        $oid = spl_object_hash($document);
-
-        if (isset($this->documentUpdates[$oid])) {
-            throw new \InvalidArgumentException("Dirty document can not be scheduled for upsert.");
-        }
-        if (isset($this->documentDeletions[$oid])) {
-            throw new \InvalidArgumentException("Removed document can not be scheduled for upsert.");
-        }
-        if (isset($this->documentUpserts[$oid])) {
-            throw new \InvalidArgumentException("Document can not be scheduled for upsert twice.");
-        }
-
-        $this->documentUpserts[$oid]     = $document;
-        $this->documentIdentifiers[$oid] = $class->getIdentifierValue($document);
-        $this->addToIdentityMap($document);
-    }
-
-    /**
      * Checks whether a document is scheduled for insertion.
      *
      * @param object $document
@@ -1474,17 +1366,6 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function isScheduledForInsert($document) {
         return isset($this->documentInsertions[spl_object_hash($document)]);
-    }
-
-    /**
-     * Checks whether a document is scheduled for upsert.
-     *
-     * @param object $document
-     *
-     * @return boolean
-     */
-    public function isScheduledForUpsert($document) {
-        return isset($this->documentUpserts[spl_object_hash($document)]);
     }
 
     /**
@@ -1503,7 +1384,7 @@ class UnitOfWork implements PropertyChangedListener
             throw new \InvalidArgumentException("document is removed.");
         }
 
-        if (!isset($this->documentUpdates[$oid]) && !isset($this->documentInsertions[$oid]) && !isset($this->documentUpserts[$oid])) {
+        if (!isset($this->documentUpdates[$oid]) && !isset($this->documentInsertions[$oid])) {
             $this->documentUpdates[$oid] = $document;
         }
     }
@@ -1769,82 +1650,11 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * Gets the commit order.
-     *
-     * @param array $documentChangeSet
-     *
-     * @return ClassMetadata[]
+     * @return PersisterInterface
      */
-    private function getCommitOrder(array $documentChangeSet = null) {
-        if ($documentChangeSet === null) {
-            $documentChangeSet = array_merge(
-                $this->documentInsertions,
-                $this->documentUpdates,
-                $this->documentDeletions
-            );
-        }
-
-        $calc = $this->getCommitOrderCalculator();
-
-        // See if there are any new classes in the changeset, that are not in the
-        // commit order graph yet (don't have a node).
-        // We have to inspect changeSet to be able to correctly build dependencies.
-        // It is not possible to use IdentityMap here because post inserted ids
-        // are not yet available.
-        $newNodes = [];
-
-        foreach ($documentChangeSet as $document) {
-            $className = get_class($document);
-
-            if ($calc->hasClass($className)) {
-                continue;
-            }
-
-            $class = $this->dm->getClassMetadata($className);
-            $calc->addClass($class);
-
-            $newNodes[] = $class;
-        }
-
-        // Calculate dependencies for new nodes
-        while ($class = array_pop($newNodes)) {
-            foreach ($class->associationMappings as $assoc) {
-                if (!($assoc['isOwningSide'] && isset($assoc['targetClass']))) {
-                    continue;
-                }
-
-                $targetClass = $this->dm->getClassMetadata($assoc['targetClass']);
-
-                if (!$calc->hasClass($targetClass->name)) {
-                    $calc->addClass($targetClass);
-
-                    $newNodes[] = $targetClass;
-                }
-
-                $calc->addDependency($targetClass, $class);
-
-                // If the target class has mapped subclasses, these share the same dependency.
-//                if ( ! $targetClass->subClasses) {
-//                    continue;
-//                }
-//
-//                foreach ($targetClass->subClasses as $subClassName) {
-//                    $targetSubClass = $this->dm->getClassMetadata($subClassName);
-//
-//                    if ( ! $calc->hasClass($subClassName)) {
-//                        $calc->addClass($targetSubClass);
-//
-//                        $newNodes[] = $targetSubClass;
-//                    }
-//
-//                    $calc->addDependency($targetSubClass, $class);
-//                }
-            }
-        }
-
-        return $calc->getCommitOrder();
+    private function createPersister() {
+        return new SQLBatchPersister($this->dm);
     }
-
 
     private static function objToStr($obj) {
         return method_exists($obj, '__toString') ? (string)$obj : get_class($obj) . '@' . spl_object_hash($obj);

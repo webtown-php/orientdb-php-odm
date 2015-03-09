@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Persisters;
+namespace Doctrine\ODM\OrientDB\Persister;
 
 
 use Doctrine\Common\EventManager;
@@ -9,18 +9,12 @@ use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Query\Query;
 
 class DocumentPersister
 {
-    /**
-     * The PersistenceBuilder instance.
-     *
-     * @var PersistenceBuilder
-     */
-    private $pb;
-
     /**
      * The DocumentManager instance.
      *
@@ -61,82 +55,13 @@ class DocumentPersister
      */
     private $class;
 
-    /**
-     * Array of queued inserts for the persister to insert.
-     *
-     * @var array
-     */
-    private $queuedInserts = [];
-
-    public function __construct(PersistenceBuilder $pb, DocumentManager $dm, EventManager $evm, UnitOfWork $uow, HydratorFactoryInterface $hydratorFactory, ClassMetadata $class) {
-        $this->pb = $pb;
+    public function __construct(DocumentManager $dm, EventManager $evm, UnitOfWork $uow, HydratorFactoryInterface $hydratorFactory, ClassMetadata $class) {
         $this->dm              = $dm;
         $this->binding         = $dm->getBinding();
         $this->evm             = $evm;
         $this->uow             = $uow;
         $this->hydratorFactory = $hydratorFactory;
         $this->class           = $class;
-    }
-
-    /**
-     * @return array
-     */
-    public function getInserts() {
-        return $this->queuedInserts;
-    }
-
-    /**
-     * @param object $document
-     *
-     * @return bool
-     */
-    public function isQueuedForInsert($document) {
-        return isset($this->queuedInserts[spl_object_hash($document)]);
-    }
-
-    /**
-     * Adds a document to the queued insertions.
-     * The document remains queued until {@link executeInserts} is invoked.
-     *
-     * @param object $document The document to queue for insertion.
-     */
-    public function addInsert($document) {
-        $this->queuedInserts[spl_object_hash($document)] = $document;
-    }
-
-    /**
-     * Executes all queued document insertions.
-     *
-     * Queued documents without an ID will inserted in a batch and queued
-     * documents with an ID will be upserted individually.
-     *
-     * If no inserts are queued, invoking this method is a NOOP.
-     *
-     * @param array $options Options for batchInsert() and update() driver methods
-     */
-    public function executeInserts(array $options = array())
-    {
-        if ( ! $this->queuedInserts) {
-            return;
-        }
-
-        $inserts = array();
-        foreach ($this->queuedInserts as $oid => $document) {
-            $data = $this->pb->prepareInsertData($document);
-
-            $inserts[$oid] = $data;
-        }
-
-        if ($inserts) {
-            try {
-                $this->collection->batchInsert($inserts, $options);
-            } catch (\MongoException $e) {
-                $this->queuedInserts = array();
-                throw $e;
-            }
-        }
-
-        $this->queuedInserts = array();
     }
 
     /**

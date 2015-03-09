@@ -10,6 +10,7 @@
 namespace test\PHPUnit;
 
 use Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ODM\OrientDB\Configuration;
 use Doctrine\ODM\OrientDB\DocumentManager;
@@ -26,7 +27,7 @@ use Prophecy\Prophet;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
-    const COLLECTION_CLASS = '\Doctrine\ODM\OrientDB\Collections\ArrayCollection';
+    const COLLECTION_CLASS = ArrayCollection::class;
 
     protected function getBindingParameters($options) {
         $parameters = array();

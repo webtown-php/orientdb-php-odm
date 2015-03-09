@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Persistence;
+namespace Doctrine\ODM\OrientDB\Persister;
 
 /**
  * Class QueryWriter
@@ -34,9 +34,9 @@ class QueryWriter
     /**
      * @TODO cover vertex/edge deletion
      */
-    public function addDeleteQuery($identifier, $class, $lock = 'DEFAULT') {
-        $query           = "DELETE FROM %s WHERE @rid = %s LOCK %s";
-        $this->queries[] = sprintf($query, $class, $identifier, $lock);
+    public function addDeleteQuery($identifier, $lock = 'DEFAULT') {
+        $query           = "DELETE FROM %s LOCK %s";
+        $this->queries[] = sprintf($query, $identifier, $lock);
     }
 
     protected function flattenFields(array $fields) {

@@ -239,7 +239,7 @@ class DocumentRepository implements ObjectRepository
     }
 
     /**
-     * @return Persisters\DocumentPersister
+     * @return Persister\DocumentPersister
      */
     protected function getDocumentPersister() {
         return $this->uow->getDocumentPersister($this->metadata->name);

@@ -26,7 +26,7 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
      * @before
      */
     public function before() {
-        $this->manager         = $this->createDocumentManager([], ['test/Doctrine/ODM/OrientDB/Document/Stub/Embedded']);
+        $this->manager         = $this->createDocumentManager([], ['test/Doctrine/ODM/OrientDB/Document/Stub/Linked']);
         $this->metadataFactory = $this->manager->getMetadataFactory();
     }
 
@@ -35,7 +35,6 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
      */
     public function computeChangeSet_generates_for_all_owning_associations() {
         $c = new Contact();
-
         $c->name = "Sydney";
 
         $em        = new EmailAddress();
