@@ -26,13 +26,13 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Caster\CastingMismatchException;
 use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\ODM\OrientDB\Types\Rid;
-use Doctrine\OrientDB\Binding\BindingInterface;
+use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Query;
 
@@ -44,7 +44,7 @@ class DocumentManager implements ObjectManager
     protected $configuration;
 
     /**
-     * @var BindingInterface
+     * @var HttpBindingInterface
      */
     protected $binding;
 
@@ -84,13 +84,13 @@ class DocumentManager implements ObjectManager
      * Instantiates a new DocumentMapper, injecting the $mapper that will be used to
      * hydrate record retrieved through the $binding.
      *
-     * @param BindingInterface $binding
-     * @param Configuration    $configuration
-     * @param EventManager     $eventManager
+     * @param HttpBindingInterface $binding
+     * @param Configuration        $configuration
+     * @param EventManager         $eventManager
      *
      * @throws ConfigurationException
      */
-    public function __construct(BindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null) {
+    public function __construct(HttpBindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null) {
         $this->binding       = $binding;
         $this->configuration = $configuration;
         $this->eventManager  = $eventManager ?: new EventManager();
@@ -125,7 +125,7 @@ class DocumentManager implements ObjectManager
     /**
      * @todo to implement/test
      *
-     * @param \stdClass $object
+     * @param object $object
      */
     public function detach($object) {
         throw new \Exception();
@@ -138,7 +138,8 @@ class DocumentManager implements ObjectManager
      * result (UPDATE, INSERT) or to retrieve multiple objects: to retrieve a
      * single record look at ->find*() methods.
      *
-     * @param  Query $query
+     * @param Query $query
+     * @param null  $fetchPlan
      *
      * @return array|Mixed
      */
@@ -359,11 +360,10 @@ class DocumentManager implements ObjectManager
         throw new \Exception();
     }
 
-
     /**
      * Returns the binding instance used to communicate OrientDB.
      *
-     * @return BindingInterface
+     * @return HttpBindingInterface
      */
     public function getBinding() {
         return $this->binding;

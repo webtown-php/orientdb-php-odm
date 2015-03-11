@@ -17,6 +17,7 @@ use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Binding\BindingResultInterface;
+use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Query\Query;
 use test\PHPUnit\TestCase;
 
@@ -35,7 +36,8 @@ class DocumentManagerTest extends TestCase
                ->method('getResult')
                ->will($this->returnValue($rawResult));
 
-        $binding = $this->getMock(BindingInterface::class);
+        /** @var HttpBindingInterface $binding */
+        $binding = $this->getMock(HttpBindingInterface::class);
         $binding->expects($this->any())
                 ->method('execute')
                 ->will($this->returnValue($result));

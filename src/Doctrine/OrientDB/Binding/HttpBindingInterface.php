@@ -243,7 +243,7 @@ interface HttpBindingInterface extends BindingInterface
     /**
      * Sets the underlying HTTP client adapter.
      *
-     * @param HttpClientAdapterInterface $client
+     * @param HttpClientAdapterInterface $adapter
      */
     public function setAdapter(HttpClientAdapterInterface $adapter);
 

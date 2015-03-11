@@ -16,6 +16,7 @@ use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\Persister\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
+use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Query\Query;
 
 /**
@@ -1653,9 +1654,10 @@ class UnitOfWork implements PropertyChangedListener
 
     /**
      * @return PersisterInterface
+     * @throws \Exception
      */
     private function createPersister() {
-        return new SQLBatchPersister($this->dm);
+        return new SQLBatchPersister($this->dm->getMetadataFactory(), $this->dm->getBinding());
     }
 
     private static function objToStr($obj) {

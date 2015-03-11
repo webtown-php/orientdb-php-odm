@@ -15,6 +15,7 @@ namespace test\Doctrine\ODM\OrientDB;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Mapping;
+use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use test\PHPUnit\TestCase;
 
 class RepositoryTest extends TestCase
@@ -38,7 +39,7 @@ class RepositoryTest extends TestCase
                ->will($this->returnValue($rawResult));
 
 
-        $binding = $this->getMock('Doctrine\OrientDB\Binding\BindingInterface');
+        $binding = $this->getMock(HttpBindingInterface::class);
         $binding->expects($this->any())
                 ->method('execute')
                 ->will($this->returnValue($result));
@@ -52,7 +53,7 @@ class RepositoryTest extends TestCase
         return $repository;
     }
 
-    protected function prepareManager($binding) {
+    protected function prepareManager(HttpBindingInterface $binding) {
         $config = $this->getConfiguration();
         $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Document/Stub']));
 

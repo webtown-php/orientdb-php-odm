@@ -4,6 +4,7 @@ namespace Doctrine\ODM\OrientDB\Persister;
 
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
@@ -11,24 +12,18 @@ use Doctrine\OrientDB\Binding\HttpBindingInterface;
 class SQLBatchPersister implements PersisterInterface
 {
     /**
-     * @var DocumentManager;
-     */
-    private $dm;
-
-    /**
      * @var \Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory
      */
     protected $metadataFactory;
 
     /**
-     * @var \Doctrine\OrientDB\Binding\BindingInterface
+     * @var HttpBindingInterface
      */
     protected $binding;
 
-    public function __construct(DocumentManager $dm) {
-        $this->dm              = $dm;
-        $this->metadataFactory = $dm->getMetadataFactory();
-        $this->binding         = $dm->getBinding();
+    public function __construct(ClassMetadataFactory $mdf, HttpBindingInterface $binding) {
+        $this->metadataFactory = $mdf;
+        $this->binding         = $binding;
     }
 
     /**
@@ -62,23 +57,17 @@ class SQLBatchPersister implements PersisterInterface
             // nothing to do
             return;
         }
-        if ($this->binding instanceof HttpBindingInterface) {
-            $batch   = array(
-                'transaction' => true,
-                'operations'  => [
-                    [
-                        'type'     => 'script',
-                        'language' => 'sql',
-                        'script'   => $queryWriter->getQueries()
-                    ]
+        $batch   = array(
+            'transaction' => true,
+            'operations'  => [
+                [
+                    'type'     => 'script',
+                    'language' => 'sql',
+                    'script'   => $queryWriter->getQueries()
                 ]
-            );
-            $results = $this->binding->batch(json_encode($batch))->getData()->result;
-
-
-        } else {
-            throw new \Exception('Only HttpBindingInterface is supported.');
-        }
+            ]
+        );
+        $results = $this->binding->batch(json_encode($batch))->getData()->result;
 
         // set the RID on the created documents
         foreach ($results as $position => $result) {
