@@ -360,10 +360,6 @@ class UnitOfWork implements PropertyChangedListener
             $this->evm->dispatchEvent(Events::postFlush, new Event\PostFlushEventArgs($this->dm));
         }
 
-//        $changeSet = new ChangeSet($this->documentUpdates, $this->documentInsertions, $this->documentDeletions);
-//        $persister = $this->createPersister();
-//        $persister->process($changeSet);
-
         // Clear up
         $this->documentInsertions =
         $this->documentUpdates =
@@ -450,6 +446,8 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
+     * Returns the RID of the specified managed document or null if it is not managed
+     *
      * @param object $document
      *
      * @return string
@@ -470,7 +468,7 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return object
      */
-    public function getOrCreateDocument($data, &$hints = []) {
+    public function getOrCreateDocument(\stdClass $data, array &$hints = []) {
         /** @var ClassMetadata $class */
         $class = $this->dm->getMetadataFactory()->getMetadataForOClass($data->{'@class'});
 
@@ -519,13 +517,17 @@ class UnitOfWork implements PropertyChangedListener
                 $this->scheduleForDirtyCheck($document);
                 //}
                 break;
+
             case self::STATE_NEW:
                 $this->persistNew($class, $document);
                 break;
+
             case self::STATE_DETACHED:
                 throw new \InvalidArgumentException(
                     "behavior of persist() for a detached document is undefined");
                 break;
+
+            /** @noinspection PhpMissingBreakStatementInspection */
             case self::STATE_REMOVED:
                 if (!$class->isEmbeddedDocument) {
                     // Document becomes managed again
@@ -1102,7 +1104,7 @@ class UnitOfWork implements PropertyChangedListener
                 // ignore inverse side of reference-many relationship
                 if (isset($class->fieldMappings[$propName]['reference']) &&
                     $class->fieldMappings[$propName]['association'] & ClassMetadata::TO_MANY &&
-                    $class->fieldMappings[$propName]['isInverseSide']
+                    !$class->fieldMappings[$propName]['isOwningSide']
                 ) {
                     continue;
                 }

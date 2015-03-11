@@ -29,4 +29,10 @@ class Phone
      * @var bool
      */
     public $primary;
+
+    /**
+     * @Link(targetClass="Contact", childProperty="phones")
+     * @var Contact
+     */
+    public $contact;
 }

@@ -23,13 +23,13 @@ class Contact
     public $name;
 
     /**
-     * @Link(targetClass="EmailAddress", cascade={"persist"})
+     * @Link(targetClass="EmailAddress", parentProperty="contact", cascade={"persist"})
      * @var EmailAddress
      */
     protected $email;
 
     /**
-     * @LinkList(targetClass="Phone")
+     * @LinkList(targetClass="Phone", parentProperty="contact", cascade={"persist"})
      * @var Phone[]|Collection
      */
     protected $phones;

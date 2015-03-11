@@ -16,13 +16,17 @@ class LinkPropertyBase extends PropertyBase
     public $cascade;
 
     /**
+     * Specified on the parent to identify the parent property on the child.
+     *
      * @var string
      */
-    public $inversedBy;
+    public $parentProperty;
 
     /**
+     * Specified on the child to identify the associated property on the parent
+     *
      * @var string
      */
-    public $mappedBy;
+    public $childProperty;
 
 }

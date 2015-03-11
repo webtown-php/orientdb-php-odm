@@ -124,7 +124,7 @@ class SQLBatchPersister implements PersisterInterface
 
                     // @Link
                 } elseif (isset($mapping['association']) && $mapping['association'] & ClassMetadata::LINK) {
-                    if ($mapping['isInverseSide']) {
+                    if (!$mapping['isOwningSide']) {
                         continue;
                     }
 

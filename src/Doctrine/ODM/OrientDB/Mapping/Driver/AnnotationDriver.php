@@ -179,6 +179,13 @@ class AnnotationDriver extends AbstractAnnotationDriver
         $mapping['cascade']     = $link->cascade;
         $mapping['targetClass'] = $link->targetClass;
 
+        if (!empty($link->parentProperty)) {
+            $mapping['parentProperty'] = $link->parentProperty;
+        }
+        if (!empty($link->childProperty)) {
+            $mapping['childProperty'] = $link->childProperty;
+        }
+
         return $mapping;
     }
 

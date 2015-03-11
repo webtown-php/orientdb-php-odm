@@ -446,16 +446,7 @@ class PersistentCollection implements BaseCollection
      * {@inheritdoc}
      */
     public function count() {
-        if ($this->mapping['isInverseSide'] && !$this->initialized) {
-            $documentPersister = $this->uow->getDocumentPersister(get_class($this->owner));
-            $count             = empty($this->mapping['repositoryMethod'])
-                ? $documentPersister->createReferenceManyInverseSideQuery($this)->count()
-                : $documentPersister->createReferenceManyWithRepositoryMethodCursor($this)->count();
-        } else {
-            $count = $this->coll->count();
-        }
-
-        return $count;
+        return $this->coll->count();
     }
 
     /**
@@ -680,7 +671,7 @@ class PersistentCollection implements BaseCollection
             return true;
         }
 
-        if (isset($this->mapping['reference']) && $this->mapping['isOwningSideisOwningSideisOwningSideisOwningSide'] && $this->mapping['orphanRemoval']) {
+        if (isset($this->mapping['reference']) && $this->mapping['isOwningSide'] && $this->mapping['orphanRemoval']) {
             return true;
         }
 

@@ -445,16 +445,10 @@ class ClassMetadata implements DoctrineMetadata
         $mapping['isCascadeMerge']   = in_array('merge', $cascades);
         $mapping['isCascadeDetach']  = in_array('detach', $cascades);
 
-        $mapping['isOwningSide']  = true;
-        $mapping['isInverseSide'] = false;
+        $mapping['isOwningSide'] = true;
         if (isset($mapping['reference'])) {
-            if (isset($mapping['inversedBy']) && $mapping['inversedBy']) {
-                $mapping['isOwningSide']  = true;
-                $mapping['isInverseSide'] = false;
-            }
-            if (isset($mapping['mappedBy']) && $mapping['mappedBy']) {
+            if (isset($mapping['childProperty']) && $mapping['childProperty']) {
                 $mapping['isOwningSide']  = false;
-                $mapping['isInverseSide'] = true;
             }
             if (!isset($mapping['orphanRemoval'])) {
                 $mapping['orphanRemoval'] = false;

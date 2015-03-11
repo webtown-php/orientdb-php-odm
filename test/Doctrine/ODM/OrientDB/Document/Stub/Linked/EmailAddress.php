@@ -25,7 +25,7 @@ class EmailAddress
     public $email;
 
     /**
-     * @Link(targetClass="Contact")
+     * @Link(targetClass="Contact", childProperty="email")
      * @var Contact
      */
     public $contact;
