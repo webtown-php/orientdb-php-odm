@@ -14,7 +14,7 @@ class Fixtures
 
     public function __construct($dbname, $dbuser, $dbpass) {
         $this->dbname      = $dbname;
-        $this->contentType = array('Content-Type' => 'application/json');
+        $this->contentType = ['Content-Type' => 'application/json'];
 
         $this->client = new Client('http://127.0.0.1:2480');
         $this->client->setDefaultOption('auth', [$dbuser, $dbpass]);
@@ -37,27 +37,81 @@ class Fixtures
 
     function create_classes() {
         $classes = [
-            'Address'  => '{"city": {"propertyType": "STRING"}}',
-            'Country'  => null,
-            'City'     => null,
-            'Phone'    => '{"phone": {"propertyType": "STRING"}}',
-            'Profile'  => '{ "name": {"propertyType": "STRING"} , "followers": {"propertyType": "LINKMAP","linkedClass": "Profile"}, "phones": {"propertyType":"EMBEDDEDLIST", "linkedClass":"Phone"} }',
-            'Company'  => null,
-            'Comment'  => null,
-            'Post'     => '{"comments": {"propertyType": "LINKLIST","linkedClass": "Comment"}}',
-            'MapPoint' => '{"x": {"propertyType": "FLOAT"}, "y":{"propertyType": "FLOAT"} }',
+            'Address'      => [
+                'city' => 'STRING',
+            ],
+            'Country'      => null,
+            'City'         => null,
+            'Phone'        => [
+                'phone' => 'STRING'
+            ],
+            'Profile'      => [
+                'name'      => 'STRING',
+                'followers' => [
+                    'type'  => 'LINKMAP',
+                    'class' => 'Profile',
+                ],
+                'phones'    => [
+                    'type'  => 'EMBEDDEDLIST',
+                    'class' => 'Phone',
+                ],
+            ],
+            'Company'      => null,
+            'Comment'      => null,
+            'Post'         => [
+                'comments' => [
+                    'type'  => 'LINKLIST',
+                    'class' => 'Comment',
+                ],
+            ],
+            'MapPoint'     => [
+                'x' => 'FLOAT',
+                'y' => 'FLOAT',
+            ],
+            'EmailAddress' => [
+                'type'  => 'STRING',
+                'email' => 'STRING',
+            ],
+            'Person'       => [
+                'name'   => 'STRING',
+                'email'  => [
+                    'type'  => 'EMBEDDED',
+                    'class' => 'EmailAddress',
+                ],
+                'emails' => [
+                    'type'  => 'EMBEDDEDLIST',
+                    'class' => 'EmailAddress',
+                ],
+            ],
         ];
 
         foreach ($classes as $class => $properties) {
             $query = "CREATE CLASS " . $class;
 
-            $result         = $this->client->post('/command/' . $this->dbname . '/sql/' . $query, $this->contentType)
-                                           ->send()->json();
+            $result = $this->client
+                ->post('/command/' . $this->dbname . '/sql', $this->contentType, $query)
+                ->send()
+                ->json();
+
             $this->{$class} = $result['result'][0]['value'];
 
             if ($properties) {
-                $this->client->post(sprintf("/property/%s/%s", $this->dbname, $class), $this->contentType, $properties)
-                             ->send();
+                foreach ($properties as $name => $md) {
+                    if (is_string($md)) {
+                        $sql = sprintf('CREATE PROPERTY %s.%s %s', $class, $name, $md);
+                    } else {
+                        $sql = sprintf('CREATE PROPERTY %s.%s %s', $class, $name, $md['type']);
+
+                        if (isset($md['class'])) {
+                            $sql .= ' ' . $md['class'];
+                        }
+                    }
+
+                    $this->client
+                        ->post(sprintf("/command/%s/sql", $this->dbname), $this->contentType, $sql)
+                        ->send();
+                }
+
             }
         }
 
