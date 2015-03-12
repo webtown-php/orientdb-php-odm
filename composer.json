@@ -45,7 +45,7 @@
     "require-dev": {
         "phpunit/phpunit": "4.1.*"
         ,"athletic/athletic": "2.x"
-        ,"phpspec/prophecy": "1.x"
+        ,"phpspec/prophecy": "dev-master"
     },
     "config": {
         "bin-dir": "bin"
