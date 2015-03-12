@@ -149,7 +149,7 @@ class PersistentCollection implements BaseCollection
             return;
         }
 
-        $newObjects = array();
+        $newObjects = [];
 
         if ($this->isDirty) {
             // Remember any NEW objects added through add()
@@ -243,7 +243,7 @@ class PersistentCollection implements BaseCollection
      * has elements.
      */
     public function clearSnapshot() {
-        $this->snapshot = array();
+        $this->snapshot = [];
         $this->isDirty  = $this->count() ? true : false;
     }
 
@@ -446,6 +446,8 @@ class PersistentCollection implements BaseCollection
      * {@inheritdoc}
      */
     public function count() {
+        $this->initialize();
+
         return $this->coll->count();
     }
 
@@ -567,7 +569,7 @@ class PersistentCollection implements BaseCollection
      *           with circular references. This solution seems simpler and works well.
      */
     public function __sleep() {
-        return array('coll', 'initialized');
+        return ['coll', 'initialized'];
     }
 
     /* ArrayAccess implementation */
@@ -649,7 +651,7 @@ class PersistentCollection implements BaseCollection
         $this->initialize();
 
         $this->owner    = null;
-        $this->snapshot = array();
+        $this->snapshot = [];
 
         $this->changed();
     }

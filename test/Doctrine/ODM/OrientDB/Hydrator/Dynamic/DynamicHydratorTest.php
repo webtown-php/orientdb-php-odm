@@ -145,7 +145,7 @@ JSON
         $hd = $dh->hydrate($c, $d);
 
         $expected = [
-            '@rid'     => '#1:1',
+            'rid'     => '#1:1',
             'name'     => 'Sydney',
             'height'   => 122,
             'birthday' => new \DateTime("2004-04-09T02:33:00Z"),
@@ -182,9 +182,9 @@ JSON
         );
 
         $hd = $dh->hydrate($c, $d);
-        $this->assertEquals(['@rid', 'name', 'email', 'phones'], array_keys($hd));
+        $this->assertEquals(['rid', 'name', 'email', 'phones'], array_keys($hd));
 
-        $this->assertEquals('#1:1', $hd['@rid']);
+        $this->assertEquals('#1:1', $hd['rid']);
         $this->assertEquals('Sydney', $hd['name']);
 
         $this->assertNotNull($hd['email']);
@@ -238,7 +238,7 @@ JSON
         );
 
         $hd = $dh->hydrate($c, $d);
-        $this->assertEquals(['@rid', 'name', 'phones'], array_keys($hd));
+        $this->assertEquals(['rid', 'name', 'phones'], array_keys($hd));
 
         /** @var Stub\Embedded\Phone[] $phones */
         $phones = $c->phones->toArray();
@@ -274,9 +274,9 @@ JSON
 
         $hd = $dh->hydrate($c, $d);
         $this->uow->registerManaged($c, "#1:1", $hd);
-        $this->assertEquals(['@rid', 'name', 'email', 'phones'], array_keys($hd));
+        $this->assertEquals(['rid', 'name', 'email', 'phones'], array_keys($hd));
 
-        $this->assertEquals('#1:1', $hd['@rid']);
+        $this->assertEquals('#1:1', $hd['rid']);
         $this->assertEquals('Sydney', $hd['name']);
 
         $this->assertNotNull($hd['email']);
@@ -319,9 +319,9 @@ JSON
         );
 
         $hd = $dh->hydrate($c, $d);
-        $this->assertEquals(['@rid', 'name', 'phones'], array_keys($hd));
+        $this->assertEquals(['rid', 'name', 'phones'], array_keys($hd));
 
-        $this->assertEquals('#1:1', $hd['@rid']);
+        $this->assertEquals('#1:1', $hd['rid']);
         $this->assertEquals('Sydney', $hd['name']);
 
         /** @var Stub\Linked\Phone[] $phones */

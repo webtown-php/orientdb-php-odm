@@ -117,6 +117,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
                     case $ann instanceof Link:
                         $mapping = $this->linkToArray($mapping, $ann);
+                        $mapping['nullable'] = $ann->nullable;
                         $metadata->mapLink($mapping);
                         continue;
 
@@ -137,6 +138,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
                     case $ann instanceof Embedded:
                         $mapping = $this->embeddedToArray($mapping, $ann);
+                        $mapping['nullable'] = $ann->nullable;
                         $metadata->mapEmbedded($mapping);
                         continue;
 
@@ -175,7 +177,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
         return $mapping;
     }
 
-    private function &linkToArray(&$mapping, LinkPropertyBase $link) {
+    private function &linkToArray(array &$mapping, LinkPropertyBase $link) {
         $mapping['cascade']     = $link->cascade;
         $mapping['targetClass'] = $link->targetClass;
 
@@ -189,7 +191,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
         return $mapping;
     }
 
-    private function &embeddedToArray(&$mapping, EmbeddedPropertyBase $embed) {
+    private function &embeddedToArray(array &$mapping, EmbeddedPropertyBase $embed) {
         $mapping['targetClass'] = $embed->targetClass;
 
         return $mapping;
@@ -203,7 +205,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
      *
      * @return AnnotationDriver
      */
-    public static function create($paths = array(), Reader $reader = null) {
+    public static function create($paths = [], Reader $reader = null) {
         if ($reader === null) {
             $reader = new AnnotationReader();
         }

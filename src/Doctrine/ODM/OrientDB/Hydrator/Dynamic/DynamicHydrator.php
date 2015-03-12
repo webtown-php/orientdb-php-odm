@@ -49,7 +49,7 @@ class DynamicHydrator implements HydratorInterface
 
         foreach ($this->metadata->fieldMappings as $fieldName => $mapping) {
             $name          = $mapping['name'];
-            $propertyValue = property_exists($data, $name) ? $data->$name : null;
+            $propertyValue = property_exists($data, $name) ? $data->{$name} : null;
 
             if (!isset($mapping['association'])) {
                 if ($propertyValue === null) {
@@ -59,7 +59,7 @@ class DynamicHydrator implements HydratorInterface
                 $type  = Type::getType($mapping['type']);
                 $value = $type->convertToPHPValue($propertyValue);
                 $this->metadata->setFieldValue($document, $fieldName, $value);
-                $hydratedData[$name] = $value;
+                $hydratedData[$fieldName] = $value;
                 continue;
             }
 
@@ -71,7 +71,7 @@ class DynamicHydrator implements HydratorInterface
                     $coll->setData($propertyValue);
                 }
                 $this->metadata->setFieldValue($document, $fieldName, $coll);
-                $hydratedData[$name] = $coll;
+                $hydratedData[$fieldName] = $coll;
                 continue;
             }
 
@@ -82,7 +82,7 @@ class DynamicHydrator implements HydratorInterface
             if ($mapping['association'] === ClassMetadata::LINK) {
                 $link = $this->dm->getReference($propertyValue);
                 $this->metadata->setFieldValue($document, $fieldName, $link);
-                $hydratedData[$name] = $link;
+                $hydratedData[$fieldName] = $link;
                 continue;
             }
 
@@ -98,7 +98,7 @@ class DynamicHydrator implements HydratorInterface
                 $this->uow->registerManaged($doc, null, $embeddedData);
                 $this->uow->setParentAssociation($doc, $mapping, $document, $name);
                 $this->metadata->setFieldValue($document, $fieldName, $doc);
-                $hydratedData[$name] = $doc;
+                $hydratedData[$fieldName] = $doc;
                 continue;
             }
         }

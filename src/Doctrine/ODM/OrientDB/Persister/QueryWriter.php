@@ -17,7 +17,7 @@ class QueryWriter
         return $this->queries;
     }
 
-    public function addInsertQuery($identifier, $class, array $fields, $cluster = null) {
+    public function addInsertQuery($identifier, $class, \stdClass $fields, $cluster = null) {
         $query           = "let %s = INSERT INTO %s%s SET %s";
         $cluster         = $cluster ? ' cluster ' . $cluster : '';
         $this->queries[] = sprintf($query, $identifier, $class, $cluster, $this->flattenFields($fields));
@@ -26,29 +26,51 @@ class QueryWriter
         return count($this->queries) - 1;
     }
 
-    public function addUpdateQuery($identifier, array $fields, $lock = 'DEFAULT') {
+    public function addUpdateQuery($identifier, \stdClass $fields, $lock = 'DEFAULT') {
         $query           = "UPDATE %s SET %s LOCK %s";
         $this->queries[] = sprintf($query, $identifier, $this->flattenFields($fields), $lock);
     }
 
     /**
      * @TODO cover vertex/edge deletion
+     *
+     * @param string $identifier
+     * @param string $lock
      */
     public function addDeleteQuery($identifier, $lock = 'DEFAULT') {
         $query           = "DELETE FROM %s LOCK %s";
         $this->queries[] = sprintf($query, $identifier, $lock);
     }
 
-    protected function flattenFields(array $fields) {
-        $string = '';
+    protected function flattenFields(\stdClass $fields) {
+        $parts = '';
         foreach ($fields as $name => $value) {
-            $string .= sprintf('%s=%s,', $name, $this->escape($value));
+            $parts [] = sprintf('%s=%s', $name, self::escape($value));
         }
 
-        return rtrim($string, ',');
+        return implode(',', $parts);
     }
 
-    protected function escape($value) {
-        return is_string($value) ? "'$value'" : $value;
+    /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public static function escape($value) {
+        switch (true) {
+            case is_string($value):
+                return "'$value'";
+
+            case is_null($value):
+                return 'null';
+
+            case is_object($value):
+            case is_array($value):
+                // embedded document, list, map or set
+                return json_encode($value);
+
+            default:
+                return $value;
+        }
     }
 }

@@ -8,4 +8,8 @@ namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
  */
 class Embedded extends EmbeddedPropertyBase
 {
+    /**
+     * @var bool
+     */
+    public $nullable = false;
 }

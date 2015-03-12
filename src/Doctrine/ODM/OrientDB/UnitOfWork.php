@@ -16,7 +16,6 @@ use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\Persister\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Query\Query;
 
 /**
@@ -788,7 +787,7 @@ class UnitOfWork implements PropertyChangedListener
                 if ($value === null) {
                     continue;
                 }
-                if ($mapping['type'] & ClassMetadata::TO_ONE) {
+                if ($mapping['association'] & ClassMetadata::TO_ONE) {
                     $value = [$value];
                 }
                 foreach ($value as $entry) {
@@ -864,11 +863,12 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return array
      */
-    public function getDocumentActualData($document) {
+    public function &getDocumentActualData($document) {
         $class      = $this->dm->getClassMetadata(get_class($document));
         $actualData = array();
         foreach ($class->fieldMappings as $fieldName => $mapping) {
             $value = $class->getFieldValue($document, $fieldName);
+
             if ((isset($mapping['association']) && $mapping['association'] & ClassMetadata::TO_MANY)
                 && $value !== null && !($value instanceof PersistentCollection)
             ) {
@@ -882,10 +882,10 @@ class UnitOfWork implements PropertyChangedListener
                 $coll->setOwner($document, $mapping);
                 $coll->setDirty(!$value->isEmpty());
                 $class->setFieldValue($document, $fieldName, $coll);
-                $actualData[$fieldName] = $coll;
-            } else {
-                $actualData[$fieldName] = $value;
+                $value = $coll;
             }
+
+            $actualData[$fieldName] = $value;
         }
 
         return $actualData;
@@ -967,9 +967,10 @@ class UnitOfWork implements PropertyChangedListener
 
             // If change tracking is explicit or happens through notification, then only compute
             // changes on documents of that type that are explicitly marked for synchronization.
-            $documentsToProcess = !$class->isChangeTrackingDeferredImplicit() ?
-                (isset($this->scheduledForDirtyCheck[$className]) ?
-                    $this->scheduledForDirtyCheck[$className] : array())
+            $documentsToProcess = !$class->isChangeTrackingDeferredImplicit()
+                ? (isset($this->scheduledForDirtyCheck[$className])
+                    ? $this->scheduledForDirtyCheck[$className]
+                    : [])
                 : $documents;
 
             foreach ($documentsToProcess as $document) {
@@ -1078,9 +1079,8 @@ class UnitOfWork implements PropertyChangedListener
                 }
 
                 // if relationship is a embed-one, schedule orphan removal to trigger cascade remove operations
-                if (isset($class->fieldMappings[$propName]['embedded']) &&
-                    $class->fieldMappings[$propName]['association'] === ClassMetadata::EMBED
-                ) {
+                $field = &$class->fieldMappings[$propName];
+                if (isset($field['embedded']) && $field['association'] === ClassMetadata::EMBED) {
                     if ($orgValue !== null) {
                         $this->scheduleOrphanRemoval($orgValue);
                     }
@@ -1090,24 +1090,20 @@ class UnitOfWork implements PropertyChangedListener
                 }
 
                 // if owning side of reference-one relationship
-                if (isset($class->fieldMappings[$propName]['reference']) &&
-                    $class->fieldMappings[$propName]['association'] === ClassMetadata::LINK
-                    && $class->fieldMappings[$propName]['isOwningSide']
-                ) {
-                    if ($orgValue !== null && $class->fieldMappings[$propName]['orphanRemoval']) {
-                        $this->scheduleOrphanRemoval($orgValue);
+                if (isset($field['reference'])) {
+                    if ($field['association'] === ClassMetadata::LINK && $field['isOwningSide']) {
+                        if ($orgValue !== null && $field['orphanRemoval']) {
+                            $this->scheduleOrphanRemoval($orgValue);
+                        }
+
+                        $changeSet[$propName] = [$orgValue, $actualValue];
+                        continue;
                     }
 
-                    $changeSet[$propName] = [$orgValue, $actualValue];
-                    continue;
-                }
-
-                // ignore inverse side of reference-many relationship
-                if (isset($class->fieldMappings[$propName]['reference']) &&
-                    $class->fieldMappings[$propName]['association'] & ClassMetadata::TO_MANY &&
-                    !$class->fieldMappings[$propName]['isOwningSide']
-                ) {
-                    continue;
+                    // ignore inverse side of reference-many relationship
+                    if ($field['association'] & ClassMetadata::TO_MANY && !$field['isOwningSide']) {
+                        continue;
+                    }
                 }
 
                 // Persistent collection was exchanged with the "originally"
@@ -1116,21 +1112,19 @@ class UnitOfWork implements PropertyChangedListener
                 if ($actualValue instanceof PersistentCollection) {
                     $owner = $actualValue->getOwner();
                     if ($owner === null) { // cloned
-                        $actualValue->setOwner($document, $class->fieldMappings[$propName]);
+                        $actualValue->setOwner($document, $field);
                     } elseif ($owner !== $document) { // no clone, we have to fix
                         if (!$actualValue->isInitialized()) {
                             $actualValue->initialize(); // we have to do this otherwise the cols share state
                         }
                         $newValue = clone $actualValue;
-                        $newValue->setOwner($document, $class->fieldMappings[$propName]);
+                        $newValue->setOwner($document, $field);
                         $class->setFieldValue($document, $propName, $newValue);
                     }
                 }
 
                 // if embed-many or reference-many relationship
-                if (isset($class->fieldMappings[$propName]['association']) &&
-                    $class->fieldMappings[$propName]['association'] & ClassMetadata::TO_MANY
-                ) {
+                if (isset($field['association']) && $field['association'] & ClassMetadata::TO_MANY) {
                     $changeSet[$propName] = [$orgValue, $actualValue];
                     if ($orgValue instanceof PersistentCollection) {
                         $this->collectionDeletions[] = $orgValue;
@@ -1139,7 +1133,7 @@ class UnitOfWork implements PropertyChangedListener
                 }
 
                 // skip equivalent date values
-                if (isset($class->fieldMappings[$propName]['type']) && $class->fieldMappings[$propName]['type'] === 'date') {
+                if (isset($field['type']) && $field['type'] === 'date') {
                     $dateType = Type::getType('date');
                     if ($dateType->equalsPHP($orgValue, $actualValue)) {
                         continue;
@@ -1168,10 +1162,19 @@ class UnitOfWork implements PropertyChangedListener
                     continue;
                 }
 
+                // embedded documents must set the state of their parent
+
                 $values = $value;
                 if ($mapping['association'] & ClassMetadata::TO_ONE) {
                     $values = [$values];
                 } elseif ($values instanceof PersistentCollection) {
+                    if ($values->isDirty()) {
+                        $this->documentChangeSets[$oid][$mapping['fieldName']] = [$value, $value];
+                        if (!$isNewDocument) {
+                            $this->documentUpdates[$oid] = $document;
+                        }
+                        continue;
+                    }
                     $values = $values->unwrap();
                 }
                 foreach ($values as $obj) {

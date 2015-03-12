@@ -2,7 +2,6 @@
 
 namespace Doctrine\ODM\OrientDB\Persister;
 
-use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Types\Type;
@@ -35,20 +34,35 @@ class SQLBatchPersister implements PersisterInterface
         $docs = [];
         foreach ($uow->getDocumentInsertions() as $oid => $doc) {
             /** @var ClassMetadata $md */
-            $md              = $this->metadataFactory->getMetadataFor(get_class($doc));
-            $data            = $this->prepareData($uow, $doc);
+            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            if ($md->isEmbeddedDocument) {
+                continue;
+            }
+
+            $data            = $this->prepareData($md, $uow, $doc);
             $position        = $queryWriter->addInsertQuery($oid, $md->getOrientClass(), $data);
             $docs[$position] = [$doc, $md];
         }
 
         foreach ($uow->getDocumentUpdates() as $oid => $doc) {
-            $rid = $uow->getDocumentRid($doc);
             /** @var ClassMetadata $md */
-            $data = $this->prepareData($uow, $doc);
+            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            if ($md->isEmbeddedDocument) {
+                continue;
+            }
+
+            $rid  = $uow->getDocumentRid($doc);
+            $data = $this->prepareData($md, $uow, $doc);
             $queryWriter->addUpdateQuery($rid, $data);
         }
 
         foreach ($uow->getDocumentDeletions() as $oid => $doc) {
+            /** @var ClassMetadata $md */
+            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            if ($md->isEmbeddedDocument) {
+                continue;
+            }
+
             $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
         }
 
@@ -85,20 +99,28 @@ class SQLBatchPersister implements PersisterInterface
     /**
      * Prepares the array that is ready to be inserted to mongodb for a given object document.
      *
-     * @param UnitOfWork $uow
-     * @param object     $document
+     * @param ClassMetadata $class
+     * @param UnitOfWork    $uow
+     * @param object        $document
      *
-     * @return array $insertData
+     * @return \stdClass $insertData
      */
-    public function prepareData(UnitOfWork $uow, $document) {
-        /** @var ClassMetadata $class */
-        $class = $this->metadataFactory->getMetadataFor(get_class($document));
-        $cs    = $uow->getDocumentChangeSet($document);
+    public function prepareData(ClassMetadata $class, UnitOfWork $uow, $document) {
+        $insertData = new \stdClass();
 
-        $insertData = [];
+        if ($class->isEmbeddedDocument) {
+            $insertData->{'@type'}  = 'd';
+            $insertData->{'@class'} = $class->getOrientClass();
+            $cs                     = $uow->getDocumentActualData($document);
+        } else {
+            $cs = $uow->getDocumentChangeSet($document);
+            array_Walk($cs, function (&$val) {
+                $val = $val[1];
+            });
+        }
+
         foreach ($class->fieldMappings as $mapping) {
-
-            $new = isset($cs[$mapping['fieldName']][1]) ? $cs[$mapping['fieldName']][1] : null;
+            $new = isset($cs[$mapping['fieldName']]) ? $cs[$mapping['fieldName']] : null;
 
             // Don't store null values unless nullable === true
             if ($new === null && $mapping['nullable'] === false) {
@@ -112,7 +134,7 @@ class SQLBatchPersister implements PersisterInterface
                     $value = Type::getType($mapping['type'])->convertToDatabaseValue($new);
 
                     // @Link
-                } elseif (isset($mapping['association']) && $mapping['association'] & ClassMetadata::LINK) {
+                } elseif ($mapping['association'] & ClassMetadata::LINK) {
                     if (!$mapping['isOwningSide']) {
                         continue;
                     }
@@ -122,10 +144,32 @@ class SQLBatchPersister implements PersisterInterface
 
                     $value = $rmd->getIdentifierValue($new);
 
+                } elseif ($mapping['association'] & ClassMetadata::EMBED) {
+                    /** @var ClassMetadata $rmd */
+                    $rmd = $this->metadataFactory->getMetadataFor(get_class($new));
+
+                    $value = $this->prepareData($rmd, $uow, $new);
+                } elseif ($mapping['association'] & ClassMetadata::EMBED_MANY) {
+                    $value = [];
+                    if ($mapping['association'] & ClassMetadata::EMBED_MAP) {
+                        foreach ($new as $k => $item) {
+                            /** @var ClassMetadata $rmd */
+                            $rmd = $this->metadataFactory->getMetadataFor(get_class($item));
+                            $value[$k] = $this->prepareData($rmd, $uow, $item);
+                        }
+                    } else {
+                        foreach ($new as $k => $item) {
+                            /** @var ClassMetadata $rmd */
+                            $rmd = $this->metadataFactory->getMetadataFor(get_class($item));
+                            $value[] = $this->prepareData($rmd, $uow, $item);
+                        }
+                    }
+
+
                 }
             }
 
-            $insertData[$mapping['name']] = $value;
+            $insertData->{$mapping['name']} = $value;
         }
 
         return $insertData;

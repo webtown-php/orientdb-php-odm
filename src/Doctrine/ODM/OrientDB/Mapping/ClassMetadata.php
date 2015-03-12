@@ -81,6 +81,11 @@ class ClassMetadata implements DoctrineMetadata
     const LINK_MANY = 0x0E;
 
     /**
+     * Bit mask for embedded collection associations
+     */
+    const EMBED_MANY = 0xE0;
+
+    /**
      * DEFERRED_IMPLICIT means that changes of entities are calculated at commit-time
      * by doing a property-by-property comparison with the original data. This will
      * be done for all entities that are in MANAGED state at commit-time.
@@ -448,7 +453,7 @@ class ClassMetadata implements DoctrineMetadata
         $mapping['isOwningSide'] = true;
         if (isset($mapping['reference'])) {
             if (isset($mapping['childProperty']) && $mapping['childProperty']) {
-                $mapping['isOwningSide']  = false;
+                $mapping['isOwningSide'] = false;
             }
             if (!isset($mapping['orphanRemoval'])) {
                 $mapping['orphanRemoval'] = false;

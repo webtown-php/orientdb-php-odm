@@ -10,4 +10,8 @@ use Doctrine\Common\Annotations\Annotation;
  */
 class Link extends LinkPropertyBase
 {
+    /**
+     * @var bool
+     */
+    public $nullable = false;
 }
