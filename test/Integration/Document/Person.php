@@ -1,6 +1,7 @@
 <?php
 
-namespace Integration\Document;
+namespace test\Integration\Document;
+use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
  * @Document(class="Person")
@@ -27,7 +28,13 @@ class Person
 
     /**
      * @EmbeddedList(targetClass="EmailAddress")
-     * @var EmailAddress[]
+     * @var EmailAddress[]|PersistentCollection
      */
     public $emails;
+
+    /**
+     * @EmbeddedMap(targetClass="Phone")
+     * @var Phone[]|PersistentCollection
+     */
+    public $phones;
 }

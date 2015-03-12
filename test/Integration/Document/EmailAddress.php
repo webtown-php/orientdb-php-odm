@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\Document;
+namespace test\Integration\Document;
 
 /**
  * @EmbeddedDocument(class="EmailAddress")

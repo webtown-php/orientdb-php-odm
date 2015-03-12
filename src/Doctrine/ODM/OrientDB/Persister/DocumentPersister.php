@@ -108,20 +108,14 @@ class DocumentPersister
         switch ($mapping['association']) {
             case ClassMetadata::EMBED_LIST:
             case ClassMetadata::EMBED_SET:
-                $this->loadEmbedArrayCollection($collection);
-                break;
-
             case ClassMetadata::EMBED_MAP:
-                throw new \Exception('not implemented');
+                $this->loadEmbedArrayCollection($collection);
                 break;
 
             case ClassMetadata::LINK_LIST:
             case ClassMetadata::LINK_SET:
-                $this->loadLinkArrayCollection($collection);
-                break;
-
             case ClassMetadata::LINK_MAP:
-                throw new \Exception('not implemented');
+                $this->loadLinkArrayCollection($collection);
                 break;
         }
     }

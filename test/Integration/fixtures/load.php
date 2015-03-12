@@ -82,6 +82,10 @@ class Fixtures
                     'type'  => 'EMBEDDEDLIST',
                     'class' => 'EmailAddress',
                 ],
+                'phones' => [
+                    'type'  => 'EMBEDDEDMAP',
+                    'class' => 'Phone',
+                ]
             ],
         ];
 

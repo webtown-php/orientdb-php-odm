@@ -9,6 +9,7 @@
 namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\Common\Collections\Collection as BaseCollection;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 
 /**
  * A PersistentCollection represents a collection of elements that have persistent state.
@@ -137,6 +138,9 @@ class PersistentCollection implements BaseCollection
      * @param mixed $data
      */
     public function setData($data) {
+        if ($data instanceof \stdClass) {
+            $data = (array)$data;
+        }
         $this->data = $data;
     }
 
@@ -162,8 +166,9 @@ class PersistentCollection implements BaseCollection
 
         // Reattach any NEW objects added through add()
         if ($newObjects) {
+            $useKey = (bool)($this->mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
             foreach ($newObjects as $key => $obj) {
-                if ($this->mapping['strategy'] === 'set') {
+                if ($useKey) {
                     $this->coll->set($key, $obj);
                 } else {
                     $this->coll->add($obj);
