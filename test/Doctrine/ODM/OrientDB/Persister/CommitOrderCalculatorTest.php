@@ -45,10 +45,10 @@ class CommitOrderCalculatorTest extends TestCase
         $calc->addClass($class4);
         $calc->addClass($class5);
 
-        $calc->addParent($class1, $class2);
-        $calc->addParent($class2, $class3);
-        $calc->addParent($class3, $class4);
-        $calc->addParent($class5, $class1);
+        $calc->addDependency($class1, $class2);
+        $calc->addDependency($class2, $class3);
+        $calc->addDependency($class3, $class4);
+        $calc->addDependency($class5, $class1);
 
         $sorted = $calc->getCommitOrder();
 

@@ -3,9 +3,9 @@
 namespace test\Integration\Document;
 
 /**
- * @EmbeddedDocument(class="EmailAddress")
+ * @Document(class="EmailAddressLink")
  */
-class EmailAddress
+class EmailAddressLink
 {
     /**
      * @RID

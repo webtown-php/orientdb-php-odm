@@ -21,9 +21,9 @@ class CommitOrderCalculator
     private $classes = []; // The nodes to sort
 
     /**
-     * @var ClassMetadata[]
+     * @var ClassMetadata[][]
      */
-    private $parentClasses = [];
+    private $depencencies = [];
 
     /**
      * @var ClassMetadata[]
@@ -38,7 +38,7 @@ class CommitOrderCalculator
      * @return \string[]
      */
     public static function getCommitOrderFromMetadata(ClassMetadataFactory $mdf) {
-        $cd  = $mdf->getCacheDriver();
+        $cd = $mdf->getCacheDriver();
         if ($cd->contains(self::CACHE_KEY)) {
             return $cd->fetch(self::CACHE_KEY);
         }
@@ -50,14 +50,16 @@ class CommitOrderCalculator
             $co->classes[$class->name] = $class;
 
             foreach ($class->associationMappings as $assoc) {
-                if ($assoc['isOwningSide']) {
+                if (!isset($assoc['reference'])) {
                     continue;
                 }
 
-                /** @var ClassMetadata $parentClass */
-                $parentClass = $mdf->getMetadataFor($assoc['targetClass']);
+                /** @var ClassMetadata $dependency */
+                $dependency = $mdf->getMetadataFor($assoc['targetClass']);
 
-                $co->addParent($parentClass, $class);
+                if (!$co->hasDependency($dependency, $class)) {
+                    $co->addDependency($dependency, $class);
+                }
 
                 // If the target class has mapped subclasses, these share the same dependency.
 //                if ( ! $targetClass->subClasses) {
@@ -111,7 +113,7 @@ class CommitOrderCalculator
             }
         }
 
-        $sorted = array_map(function(ClassMetadata $md) {
+        $sorted = array_map(function (ClassMetadata $md) {
             return $md->name;
         }, array_reverse($this->sorted));
 
@@ -123,8 +125,8 @@ class CommitOrderCalculator
     private function visitNode($node) {
         $this->nodeStates[$node->name] = self::IN_PROGRESS;
 
-        if (isset($this->parentClasses[$node->name])) {
-            foreach ($this->parentClasses[$node->name] as $relatedNode) {
+        if (isset($this->depencencies[$node->name])) {
+            foreach ($this->depencencies[$node->name] as $relatedNode) {
                 if ($this->nodeStates[$relatedNode->name] == self::NOT_VISITED) {
                     $this->visitNode($relatedNode);
                 }
@@ -145,10 +147,22 @@ class CommitOrderCalculator
     /**
      * Indicates $parent is a dependency for $child
      *
-     * @param ClassMetadata $parent
-     * @param ClassMetadata $child
+     * @param ClassMetadata $dependency
+     * @param ClassMetadata $dependent
      */
-    public function addParent(ClassMetadata $parent, ClassMetadata $child) {
-        $this->parentClasses[$parent->name][] = $child;
+    public function addDependency(ClassMetadata $dependency, ClassMetadata $dependent) {
+        $this->depencencies[$dependency->name][] = $dependent;
+    }
+
+    /**
+     * @param ClassMetadata $dependency
+     * @param ClassMetadata $dependent
+     *
+     * @return bool
+     */
+    public function hasDependency(ClassMetadata $dependency, ClassMetadata $dependent) {
+        return isset($this->depencencies[$dependency->name])
+            ? array_search($dependent, $this->depencencies[$dependency->name]) !== false
+            : false;
     }
 }

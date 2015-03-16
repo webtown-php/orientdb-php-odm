@@ -4,7 +4,6 @@ namespace test\Doctrine\ODM\OrientDB\Persister;
 
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
-use Doctrine\ODM\OrientDB\Persister\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Binding\BindingResultInterface;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
@@ -66,7 +65,7 @@ JSON
         $b->batch(Arg::any())
           ->willReturn($ri->reveal());
 
-        $p = new SQLBatchPersister($this->metadataFactory, $b->reveal());
+        $p = new \Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchPersister($this->metadataFactory, $b->reveal());
         $p->process($uow->reveal());
     }
 }

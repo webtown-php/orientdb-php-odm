@@ -116,7 +116,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         continue;
 
                     case $ann instanceof Link:
-                        $mapping = $this->linkToArray($mapping, $ann);
+                        $mapping             = $this->linkToArray($mapping, $ann);
                         $mapping['nullable'] = $ann->nullable;
                         $metadata->mapLink($mapping);
                         continue;
@@ -137,7 +137,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         continue;
 
                     case $ann instanceof Embedded:
-                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $mapping             = $this->embeddedToArray($mapping, $ann);
                         $mapping['nullable'] = $ann->nullable;
                         $metadata->mapEmbedded($mapping);
                         continue;
@@ -178,8 +178,9 @@ class AnnotationDriver extends AbstractAnnotationDriver
     }
 
     private function &linkToArray(array &$mapping, LinkPropertyBase $link) {
-        $mapping['cascade']     = $link->cascade;
-        $mapping['targetClass'] = $link->targetClass;
+        $mapping['cascade']       = $link->cascade;
+        $mapping['targetClass']   = $link->targetClass;
+        $mapping['orphanRemoval'] = $link->orphanRemoval;
 
         if (!empty($link->parentProperty)) {
             $mapping['parentProperty'] = $link->parentProperty;

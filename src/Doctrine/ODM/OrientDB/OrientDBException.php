@@ -31,4 +31,8 @@ class OrientDBException extends \Exception
     public static function unknownDocumentNamespace($documentNamespaceAlias) {
         return new self("unknown Document namespace alias '$documentNamespaceAlias'.");
     }
+
+    protected static function objToStr($obj) {
+        return method_exists($obj, '__toString') ? (string)$obj : get_class($obj) . '@' . spl_object_hash($obj);
+    }
 }

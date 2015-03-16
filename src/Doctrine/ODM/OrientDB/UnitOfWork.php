@@ -13,7 +13,7 @@ use Doctrine\ODM\OrientDB\Event\LifecycleEventArgs;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
-use Doctrine\ODM\OrientDB\Persister\SQLBatchPersister;
+use Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\OrientDB\Query\Query;
@@ -393,6 +393,20 @@ class UnitOfWork implements PropertyChangedListener
         return $this->documentDeletions;
     }
 
+    /**
+     * @return PersistentCollection[]
+     */
+    public function getCollectionUpdates() {
+        return $this->collectionUpdates;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCollectionDeletions() {
+        return $this->collectionDeletions;
+    }
+
     public function execute(Query $query, $fetchPlan = null) {
         $binding = $this->dm->getBinding();
         $results = $binding->execute($query, $fetchPlan)->getResult();
@@ -741,7 +755,7 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function cascadeRemove($document, array &$visited) {
         $class = $this->dm->getClassMetadata(get_class($document));
-        foreach ($class->fieldMappings as $mapping) {
+        foreach ($class->associationMappings as $mapping) {
             if (!$mapping['isCascadeRemove']) {
                 continue;
             }
@@ -781,7 +795,7 @@ class UnitOfWork implements PropertyChangedListener
     private function cascadePreRemove(ClassMetadata $class, $document) {
         $hasPreRemoveListeners = $this->evm->hasListeners(Events::preRemove);
 
-        foreach ($class->fieldMappings as $mapping) {
+        foreach ($class->associationMappings as $mapping) {
             if (isset($mapping['embedded'])) {
                 $value = $class->getFieldValue($document, $mapping['fieldName']);
                 if ($value === null) {
@@ -813,7 +827,7 @@ class UnitOfWork implements PropertyChangedListener
     private function cascadePostRemove(ClassMetadata $class, $document) {
         $hasPostRemoveListeners = $this->evm->hasListeners(Events::postRemove);
 
-        foreach ($class->fieldMappings as $mapping) {
+        foreach ($class->associationMappings as $mapping) {
             if (isset($mapping['embedded'])) {
                 $value = $class->getFieldValue($document, $mapping['fieldName']);
                 if ($value === null) {
@@ -1195,18 +1209,22 @@ class UnitOfWork implements PropertyChangedListener
      * Computes the changes of an embedded document.
      *
      * @param object $parentDocument
-     * @param array  $mapping
+     * @param array  $assoc
      * @param mixed  $value The value of the association.
      *
      * @throws \InvalidArgumentException
      */
-    private function computeAssociationChanges($parentDocument, $mapping, $value) {
-        $isNewParentDocument   = isset($this->documentInsertions[spl_object_hash($parentDocument)]);
-        $class                 = $this->dm->getClassMetadata(get_class($parentDocument));
-        $topOrExistingDocument = (!$isNewParentDocument || !$class->isEmbeddedDocument);
+    private function computeAssociationChanges($parentDocument, $assoc, $value) {
+        if ($value instanceof Proxy && !$value->__isInitialized__) {
+            return;
+        }
 
-        if ($value instanceof PersistentCollection && $value->isDirty() && $mapping['isOwningSide'] && $mapping['association'] & ClassMetadata::LINK_MANY) {
-            if ($topOrExistingDocument) {
+        $isNewParentDocument   = isset($this->documentInsertions[spl_object_hash($parentDocument)]);
+        $parentClass           = $this->dm->getClassMetadata(get_class($parentDocument));
+        $topOrExistingDocument = (!$isNewParentDocument || !$parentClass->isEmbeddedDocument);
+
+        if ($value instanceof PersistentCollection && $value->isDirty()) {
+            if ($topOrExistingDocument && $assoc['isOwningSide']) {
                 if (!in_array($value, $this->collectionUpdates, true)) {
                     $this->collectionUpdates[] = $value;
                 }
@@ -1214,53 +1232,54 @@ class UnitOfWork implements PropertyChangedListener
             $this->visitedCollections[] = $value;
         }
 
-        if (!$mapping['isCascadePersist']) {
-            return; // "Persistence by reachability" only if persist cascade specified
-        }
+        $value = $assoc['association'] & ClassMetadata::TO_ONE
+            ? [$value]
+            : $value->unwrap();
 
-        if ($mapping['association'] & ClassMetadata::TO_ONE) {
-            if ($value instanceof Proxy && !$value->__isInitialized__) {
-                return; // Ignore uninitialized proxy objects
-            }
-            $value = [$value];
-        } elseif ($value instanceof PersistentCollection) {
-            $value = $value->unwrap();
-        }
+        $associationClass = $this->dm->getClassMetadata($assoc['targetClass']);
+        $useKey           = ($assoc['association'] & ClassMetadata::ASSOCIATION_USE_KEY) !== 0;
+        $toMany           = ($assoc['association'] & ClassMetadata::TO_MANY) !== 0;
+        $embedded         = isset($assoc['embedded']);
+
         $count = 0;
         foreach ($value as $key => $entry) {
-            $targetClass = $this->dm->getClassMetadata(get_class($entry));
-            $state       = $this->getDocumentState($entry, self::STATE_NEW);
+            if (!($entry instanceof $associationClass->name)) {
+                throw OrientDBInvalidArgumentException::invalidAssociation($associationClass, $assoc, $entry);
+            }
+
+            $class = $this->dm->getClassMetadata(get_class($entry));
+            $state = $this->getDocumentState($entry, self::STATE_NEW);
 
             // Handle "set" strategy for multi-level hierarchy
-            $pathKey = $mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY
-                ? $key
-                : $count;
-            $path    = $mapping['association'] & ClassMetadata::TO_MANY
-                ? $mapping['name'] . '.' . $pathKey
-                : $mapping['name'];
+            $pathKey = $useKey ? $key : $count;
+            $path    = $toMany ? $assoc['name'] . '.' . $pathKey : $assoc['name'];
 
             $count++;
-            if ($state == self::STATE_NEW) {
-                if (!$mapping['isCascadePersist']) {
-                    throw new \InvalidArgumentException("A new document was found through a relationship that was not"
-                        . " configured to cascade persist operations: " . self::objToStr($entry) . "."
-                        . " Explicitly persist the new document or configure cascading persist operations"
-                        . " on the relationship.");
-                }
-                $this->persistNew($targetClass, $entry);
-                $this->setParentAssociation($entry, $mapping, $parentDocument, $path);
-                $this->computeChangeSet($targetClass, $entry);
-            } elseif ($state == self::STATE_MANAGED && $targetClass->isEmbeddedDocument) {
-                $this->setParentAssociation($entry, $mapping, $parentDocument, $path);
-                $this->computeChangeSet($targetClass, $entry);
-            } elseif ($state == self::STATE_REMOVED) {
-                throw new \InvalidArgumentException("Removed document detected during flush: "
-                    . self::objToStr($entry) . ". Remove deleted documents from associations.");
-            } elseif ($state == self::STATE_DETACHED) {
-                // Can actually not happen right now as we assume STATE_NEW,
-                // so the exception will be raised from the DBAL layer (constraint violation).
-                throw new \InvalidArgumentException("A detached document was found through a "
-                    . "relationship during cascading a persist operation.");
+            switch (true) {
+                case $state === self::STATE_NEW:
+                    if (!$assoc['isCascadePersist']) {
+                        throw OrientDBInvalidArgumentException::newDocumentFoundThroughRelationship($assoc, $entry);
+                    }
+                    $this->persistNew($class, $entry);
+                    if ($embedded) {
+                        $this->setParentAssociation($entry, $assoc, $parentDocument, $path);
+                    }
+                    $this->computeChangeSet($class, $entry);
+                    continue;
+
+                case $state === self::STATE_MANAGED && $embedded:
+                    $this->setParentAssociation($entry, $assoc, $parentDocument, $path);
+                    $this->computeChangeSet($class, $entry);
+                    continue;
+
+                case $state === self::STATE_REMOVED:
+                    throw new \InvalidArgumentException("Removed document detected during flush: "
+                        . self::objToStr($entry) . ". Remove deleted documents from associations.");
+
+                case $state === self::STATE_DETACHED:
+                    // Can actually not happen right now as we assume STATE_NEW,
+                    // so the exception will be raised from the DBAL layer (constraint violation).
+                    throw OrientDBInvalidArgumentException::detachedDocumentFoundThroughRelationship($assoc, $entry);
             }
         }
     }

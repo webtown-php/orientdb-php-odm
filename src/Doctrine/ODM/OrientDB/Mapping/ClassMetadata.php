@@ -432,6 +432,10 @@ class ClassMetadata implements DoctrineMetadata
             $mapping['targetClass'] = $namespace . '\\' . $mapping['targetClass'];
         }
 
+        // If targetClass is unqualified, assume it is in the same namespace as
+        // the sourceClass.
+        $mapping['sourceClass'] = $this->name;
+
         $cascades = isset($mapping['cascade']) ? array_map('strtolower', (array)$mapping['cascade']) : [];
 
         if (in_array('all', $cascades) || isset($mapping['embedded'])) {

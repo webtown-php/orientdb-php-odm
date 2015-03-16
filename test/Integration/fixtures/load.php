@@ -45,6 +45,9 @@ class Fixtures
             'Phone'        => [
                 'phone' => 'STRING'
             ],
+            'PhoneLink'        => [
+                'phone' => 'STRING'
+            ],
             'Profile'      => [
                 'name'      => 'STRING',
                 'followers' => [
@@ -72,6 +75,10 @@ class Fixtures
                 'type'  => 'STRING',
                 'email' => 'STRING',
             ],
+            'EmailAddressLink' => [
+                'type'  => 'STRING',
+                'email' => 'STRING',
+            ],
             'Person'       => [
                 'name'   => 'STRING',
                 'email'  => [
@@ -85,6 +92,21 @@ class Fixtures
                 'phones' => [
                     'type'  => 'EMBEDDEDMAP',
                     'class' => 'Phone',
+                ]
+            ],
+            'PersonLink'       => [
+                'name'   => 'STRING',
+                'email'  => [
+                    'type'  => 'LINK',
+                    'class' => 'EmailAddressLink',
+                ],
+                'emails' => [
+                    'type'  => 'LINKLIST',
+                    'class' => 'EmailAddressLink',
+                ],
+                'phones' => [
+                    'type'  => 'LINKMAP',
+                    'class' => 'PhoneLink',
                 ]
             ],
         ];

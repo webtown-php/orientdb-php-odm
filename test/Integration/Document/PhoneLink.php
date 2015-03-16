@@ -3,9 +3,9 @@
 namespace test\Integration\Document;
 
 /**
- * @EmbeddedDocument(class="Phone")
+ * @Document(class="PhoneLink")
  */
-class Phone
+class PhoneLink
 {
     /**
      * @RID

@@ -99,9 +99,7 @@ class DocumentManager implements ObjectManager
         $this->metadataFactory    = new $metadataFactoryClassName();
         $this->metadataFactory->setDocumentManager($this);
         $this->metadataFactory->setConfiguration($this->configuration);
-        if ($cacheDriver = $this->configuration->getMetadataCacheImpl()) {
-            $this->metadataFactory->setCacheDriver($cacheDriver);
-        }
+        $this->metadataFactory->setCacheDriver($this->configuration->getMetadataCacheImpl());
 
         if (!$hf = $this->configuration->getHydratorFactoryImpl()) {
             $hf = new DynamicHydratorFactory();

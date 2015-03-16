@@ -16,6 +16,11 @@ class LinkPropertyBase extends PropertyBase
     public $cascade;
 
     /**
+     * @var bool
+     */
+    public $orphanRemoval = false;
+
+    /**
      * Specified on the parent to identify the parent property on the child.
      *
      * @var string

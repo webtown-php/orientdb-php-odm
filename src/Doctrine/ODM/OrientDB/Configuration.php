@@ -11,6 +11,7 @@ use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
+use Doctrine\ODM\OrientDB\Cache\NullCache;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\Driver\AnnotationDriver;
@@ -33,6 +34,7 @@ class Configuration
             'proxy_namespace'           => 'Doctrine\ODM\OrientDB\Proxy',
             'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS,
             'hydratorFactoryImpl'       => null,
+            'metadataCacheImpl'         => new NullCache(),
         ];
 
         $this->_attributes = array_merge($defaults, $options);
@@ -186,9 +188,7 @@ class Configuration
      * @return \Doctrine\Common\Cache\Cache
      */
     public function getMetadataCacheImpl() {
-        return isset($this->_attributes['metadataCacheImpl'])
-            ? $this->_attributes['metadataCacheImpl']
-            : null;
+        return $this->_attributes['metadataCacheImpl'];
     }
 
     /**

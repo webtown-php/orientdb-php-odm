@@ -97,7 +97,6 @@ class DocumentRepository implements ObjectRepository
      * @param string $rid The identifier.
      *
      * @return object The object.
-     * @throws Caster\CastingMismatchException
      * @throws Exception
      * @throws OClassNotFoundException
      * @throws \Exception

@@ -30,7 +30,7 @@ class ProxyFactoryTest extends TestCase
         $proxy = $manager->getReference($rid);
         $this->assertEquals($rid, $proxy->getRid());
         $this->assertFalse($proxy->__isInitialized());
-        $this->assertEquals('Rome1', $proxy->name);
+        $this->assertEquals('Rome', $proxy->name);
         $this->assertTrue($proxy->__isInitialized());
     }
 
@@ -40,7 +40,7 @@ class ProxyFactoryTest extends TestCase
         $proxy   = $manager->findByRid($rid);
         $this->assertTrue($proxy->__isInitialized());
         $this->assertEquals($rid, $proxy->getRid());
-        $this->assertEquals('Rome1', $proxy->name);
+        $this->assertEquals('Rome', $proxy->name);
     }
 
     public function testCloner() {
@@ -53,6 +53,6 @@ class ProxyFactoryTest extends TestCase
         $this->assertTrue($clone->__isInitialized());
 
         $this->assertEquals($rid, $clone->getRid());
-        $this->assertEquals('Rome1', $clone->name);
+        $this->assertEquals('Rome', $clone->name);
     }
 }

@@ -32,29 +32,26 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * @param  string $OClass
      *
      * @return ClassMetadata
-     * @throws \Doctrine\ODM\OrientDB\OClassNotFoundException
+     * @throws MappingException
+     * @throws OClassNotFoundException
      */
     public function getMetadataForOClass($OClass) {
         $cache = $this->getCacheDriver();
-        if ($cache) {
-            if (!($cached = $cache->fetch('oclassmap' . $this->cacheSalt))) {
-                $cached = [];
-                /** @var ClassMetadata $md */
-                foreach ($this->getAllMetadata() as $md) {
-                    $cached[$md->getOrientClass()] = $md->getName();
-                }
-                $cache->save('oclassmap' . $this->cacheSalt, $cached);
-            }
-            if (isset($cached[$OClass])) {
-                return $this->getMetadataFor($cached[$OClass]);
-            }
-        } else {
+        if (!($cached = $cache->fetch('oclassmap' . $this->cacheSalt))) {
+            $cached = [];
             /** @var ClassMetadata $md */
             foreach ($this->getAllMetadata() as $md) {
-                if ($OClass === $md->getOrientClass()) {
-                    return $md;
+                $orientClass = $md->getOrientClass();
+                if (isset($cached[$orientClass])) {
+                    $existing = $cached[$orientClass];
+                    throw MappingException::duplicateOrientClassMapping($orientClass, $existing, $md->name);
                 }
+                $cached[$orientClass] = $md->getName();
             }
+            $cache->save('oclassmap' . $this->cacheSalt, $cached);
+        }
+        if (isset($cached[$OClass])) {
+            return $this->getMetadataFor($cached[$OClass]);
         }
 
         throw new OClassNotFoundException($OClass);

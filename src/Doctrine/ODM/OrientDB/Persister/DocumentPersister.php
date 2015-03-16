@@ -152,7 +152,7 @@ class DocumentPersister
         }
         $mapping = $collection->getMapping();
         $useKey  = (bool)($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
-        if (is_scalar($rows[0])) {
+        if (is_scalar(reset($rows))) {
             $query = new Query(array_values($rows));
             if ($useKey) {
                 $keys = array_flip($rows);

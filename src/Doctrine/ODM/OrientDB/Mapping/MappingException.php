@@ -26,6 +26,12 @@ class MappingException extends \Exception
         return new self(sprintf('the %s class has no mapping for %s property.', $class, $property));
     }
 
+    public static function duplicateOrientClassMapping($orientClass, $existing, $new) {
+        return new self(
+            sprintf('attempting to map OrientDB class %s to %s, which is already mapped to %s',
+                $orientClass, $new, $existing));
+    }
+
     /**
      * Exception for reflection exceptions - adds the document name,
      * because there might be long classnames that will be shortened
