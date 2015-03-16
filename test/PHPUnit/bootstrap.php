@@ -29,8 +29,11 @@ deleteTree(__DIR__ . '/../../test/proxies/Doctrine/OrientDB/Proxy/test/Integrati
 $loader = new UniversalClassLoader();
 
 $loader->registerNamespaces(array(
-    'Doctrine\OrientDB\Proxy' => __DIR__ . '/../../test/proxies/',
-    'test'                    => __DIR__ . '/../../',
+    'Doctrine\OrientDB\Proxy'     => __DIR__ . '/../../test/proxies/',
+    'Doctrine\ODM\OrientDB\Tests' => __DIR__ . '/../../test',
+    'Doctrine\OrientDB\Tests'     => __DIR__ . '/../../test',
+    'PHPUnit'                     => __DIR__ . '/../../test',
+    'Integration'                 => __DIR__ . '/../../test',
 ));
 
 $loader->register();

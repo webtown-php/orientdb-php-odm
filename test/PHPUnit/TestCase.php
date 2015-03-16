@@ -7,7 +7,7 @@
  * @author Daniele Alessandri <suppakilla@gmail.com>
  */
 
-namespace test\PHPUnit;
+namespace PHPUnit;
 
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -22,7 +22,6 @@ use Doctrine\OrientDB\Binding\HttpBinding;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use Prophecy\Exception\Prediction\PredictionException;
-use Prophecy\PhpUnit\ProphecyTestCase;
 use Prophecy\Prophet;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase

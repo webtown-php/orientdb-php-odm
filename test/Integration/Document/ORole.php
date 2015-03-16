@@ -18,7 +18,7 @@
  * @author      David Funaro <ing.davidino@gmail.com>
  */
 
-namespace test\Integration\Document;
+namespace Integration\Document;
 
 /**
  * @Document(class="ORole")

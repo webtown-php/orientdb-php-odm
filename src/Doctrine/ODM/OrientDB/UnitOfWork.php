@@ -877,7 +877,7 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return array
      */
-    public function &getDocumentActualData($document) {
+    public function getDocumentActualData($document) {
         $class      = $this->dm->getClassMetadata(get_class($document));
         $actualData = array();
         foreach ($class->fieldMappings as $fieldName => $mapping) {

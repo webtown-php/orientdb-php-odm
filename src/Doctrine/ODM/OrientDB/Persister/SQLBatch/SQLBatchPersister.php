@@ -68,7 +68,7 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         foreach ($uow->getCollectionUpdates() as $coll) {
-            $assoc     = $coll->getMapping();
+            $assoc = $coll->getMapping();
             if (isset($assoc['embedded'])) {
                 continue;
             }
@@ -128,7 +128,7 @@ class SQLBatchPersister implements PersisterInterface
                 ]
             ]
         ];
-        $results = $this->binding->batch(json_encode($batch))->getData()->result;
+        $this->binding->batch(json_encode($batch));
     }
 
     private function executeInserts(UnitOfWork $uow) {
@@ -175,17 +175,26 @@ class SQLBatchPersister implements PersisterInterface
             ]
         ];
         $results = $this->binding->batch(json_encode($batch))->getData()->result;
-        if (count($results) === 1) {
-            $rids = (array)$results[0];
-            /** @var ClassMetadata $md */
-            foreach ($docs as $k => list ($id, $doc, $md)) {
-                if (isset($rids['d' . $k])) {
-                    $rid = $rids['d' . $k];
-                    $md->setFieldValue($doc, $md->getRidPropertyName(), $rid);
-                    $data = $uow->getDocumentActualData($doc);
-                    $uow->registerManaged($doc, $rid, $data);
-                }
+        if (!is_array($results) || count($results) !== 1) {
+            throw new SQLBatchException('unexpected response from server when inserting new documents');
+        }
+
+        $rids = (array)$results[0];
+        foreach ($rids as $var => $rid) {
+            $k = substr($var, 1);
+            if (isset($docs[$k])) {
+                /** @var ClassMetadata $md */
+                list ($_, $doc, $md) = $docs[$k];
+                unset($docs[$k]);
+                $md->setFieldValue($doc, $md->getRidPropertyName(), $rid);
+                $data = $uow->getDocumentActualData($doc);
+                $uow->registerManaged($doc, $rid, $data);
             }
+        }
+
+        if (!empty($docs)) {
+            // we didn't receive info for all inserted documents
+            throw new SQLBatchException('missing RIDs for one or more inserted documents');
         }
 
         $this->references = [];
