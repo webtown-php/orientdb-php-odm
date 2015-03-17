@@ -37,7 +37,7 @@ class SQLBatchPersisterWithSimpleDocumentTest extends TestCase
     /**
      * @test
      * @expectedException \Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchException
-     * @expectedExceptionMessage unexpected response from server when inserting new documents
+     * @expectedExceptionMessage unexpected response from server when executing batch request
      */
     public function exception_for_insert_when_server_returns_invalid_response() {
         $c   = new Contact();

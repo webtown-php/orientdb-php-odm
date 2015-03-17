@@ -177,9 +177,6 @@ class AnnotationDriver extends AbstractAnnotationDriver
         if ($isDocument && empty($metadata->identifier)) {
             throw MappingException::missingRid($metadata->getName());
         }
-        if ($isDocument && empty($metadata->version)) {
-            throw MappingException::missingVersion($metadata->getName());
-        }
     }
 
     public function &propertyToArray($fieldName, Property $prop) {

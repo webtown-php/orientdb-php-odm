@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Persister\SQLBatch;
 
 use Doctrine\Common\Util\ClassUtils;
+use Doctrine\ODM\OrientDB\LockException;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\OrientDBException;
@@ -55,6 +56,7 @@ class SQLBatchPersister implements PersisterInterface
     private function executeUpdateDeletes(UnitOfWork $uow) {
         $queryWriter = new QueryWriter();
 
+        $docs = [];
         foreach ($uow->getDocumentUpdates() as $oid => $doc) {
             /** @var ClassMetadata $md */
             $md = $this->metadataFactory->getMetadataFor(get_class($doc));
@@ -62,9 +64,15 @@ class SQLBatchPersister implements PersisterInterface
                 continue;
             }
 
-            $rid  = $uow->getDocumentRid($doc);
-            $data = $this->prepareData($md, $uow, $doc);
-            $queryWriter->addUpdateQuery($rid, $data);
+            $id      = $this->createDocVarReference($doc);
+            $rid     = $uow->getDocumentRid($doc);
+            $data    = $this->prepareData($md, $uow, $doc);
+            $version = null;
+            if ($md->version) {
+                $version = $md->getFieldValue($doc, $md->version);
+            }
+            $queryWriter->addUpdateQuery($rid, $data, $id->toValue(), $version);
+            $docs[] = [$id, $doc, $md];
         }
 
         foreach ($uow->getCollectionUpdates() as $coll) {
@@ -118,17 +126,28 @@ class SQLBatchPersister implements PersisterInterface
             return;
         }
 
-        $batch = [
-            'transaction' => true,
-            'operations'  => [
-                [
-                    'type'     => 'script',
-                    'language' => 'sql',
-                    'script'   => $queries
-                ]
-            ]
-        ];
-        $this->binding->batch(json_encode($batch));
+        if (!empty($docs)) {
+            $parts = [];
+            foreach ($docs as $k => list ($v)) {
+                $parts [] = sprintf('d%s : %s', $k, $v);
+            }
+            $queries [] = sprintf('return { %s }', implode(', ', $parts));
+        }
+
+        $updates = $this->executeQueries($queries);
+        foreach ($updates as $k => $val) {
+            if (isset($docs[$k]) && $val instanceof \stdClass) {
+                /** @var ClassMetadata $md */
+                list ($_, $doc, $md) = $docs[$k];
+                unset($docs[$k]);
+                $md->setFieldValue($doc, $md->version, $val->value);
+            }
+        }
+
+        if (!empty($docs)) {
+            // we didn't receive info for all inserted documents
+            throw LockException::lockFailed(array_map(function($arg) { return $arg[1]; }, $docs));
+        }
     }
 
     private function executeInserts(UnitOfWork $uow) {
@@ -149,7 +168,7 @@ class SQLBatchPersister implements PersisterInterface
             $data = $this->prepareData($md, $uow, $doc);
 
             $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
-            $docs [] = [$id, $doc, $md];
+            $docs[] = [$id, $doc, $md];
         }
 
         $queries = $queryWriter->getQueries();
@@ -163,25 +182,8 @@ class SQLBatchPersister implements PersisterInterface
             $parts [] = sprintf('d%s : %s', $k, $v);
         }
         $queries [] = sprintf('return { %s }', implode(', ', $parts));
-
-        $batch   = [
-            'transaction' => true,
-            'operations'  => [
-                [
-                    'type'     => 'script',
-                    'language' => 'sql',
-                    'script'   => $queries
-                ]
-            ]
-        ];
-        $results = $this->binding->batch(json_encode($batch))->getData()->result;
-        if (!is_array($results) || count($results) !== 1) {
-            throw new SQLBatchException('unexpected response from server when inserting new documents');
-        }
-
-        $rids = (array)$results[0];
-        foreach ($rids as $var => $rid) {
-            $k = substr($var, 1);
+        $rids       = $this->executeQueries($queries);
+        foreach ($rids as $k => $rid) {
             if (isset($docs[$k])) {
                 /** @var ClassMetadata $md */
                 list ($_, $doc, $md) = $docs[$k];
@@ -198,6 +200,38 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         $this->references = [];
+    }
+
+    /**
+     * @param array $queries
+     *
+     * @return array
+     * @throws SQLBatchException
+     */
+    private function executeQueries(array $queries) {
+        $batch   = [
+            'transaction' => true,
+            'operations'  => [
+                [
+                    'type'     => 'script',
+                    'language' => 'sql',
+                    'script'   => $queries
+                ]
+            ]
+        ];
+        $results = $this->binding->batch(json_encode($batch))->getData()->result;
+        if (!is_array($results) || count($results) !== 1) {
+            throw new SQLBatchException('unexpected response from server when executing batch request');
+        }
+
+        $res = [];
+        foreach (get_object_vars($results[0]) as $k => $v) {
+            if ($k[0] === 'd') {
+                $res[substr($k, 1)] = $v;
+            }
+        }
+
+        return $res;
     }
 
     /**

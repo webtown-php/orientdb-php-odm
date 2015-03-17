@@ -30,18 +30,31 @@ class QueryWriter
         $this->queries [] = 'commit retry ' . $retries;
     }
 
-    public function addInsertQuery($identifier, $class, \stdClass $fields, $cluster = null) {
+    public function addInsertQuery($var, $class, \stdClass $fields, $cluster = null) {
         $query           = "let %s = INSERT INTO %s%s SET %s RETURN @rid";
         $cluster         = $cluster ? ' cluster ' . $cluster : '';
-        $this->queries[] = sprintf($query, $identifier, $class, $cluster, $this->flattenFields($fields));
+        $this->queries[] = sprintf($query, $var, $class, $cluster, $this->flattenFields($fields));
 
         // returned so we can map the rid to the document
         return $this->inserts++;
     }
 
-    public function addUpdateQuery($identifier, \stdClass $fields, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s SET %s LOCK %s";
-        $this->queries[] = sprintf($query, $identifier, $this->flattenFields($fields), $lock);
+    /**
+     * @param string    $rid
+     * @param \stdClass $fields
+     * @param int|null  $version
+     * @param string    $lock
+     */
+    public function addUpdateQuery($rid, \stdClass $fields, $var = null, $version = null, $lock = 'DEFAULT') {
+        $query = "%sUPDATE %s SET %s %s %s LOCK %s";
+        if ($version !== null) {
+            $let    = "let $var = ";
+            $where  = "WHERE @version = $version";
+            $return = "RETURN AFTER @version";
+        } else {
+            $let = $where = $return = "";
+        }
+        $this->queries[] = sprintf($query, $let, $rid, $this->flattenFields($fields), $return, $where, $lock);
     }
 
     public function addCollectionAddQuery($identifier, $fieldName, $value, $lock = 'DEFAULT') {

@@ -117,9 +117,6 @@ class XmlDriver extends FileDriver
         if ($isDocument && empty($metadata->identifier)) {
             throw MappingException::missingRid($metadata->getName());
         }
-        if ($isDocument && empty($metadata->version)) {
-            throw MappingException::missingVersion($metadata->getName());
-        }
     }
 
     private function addEmbedMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {

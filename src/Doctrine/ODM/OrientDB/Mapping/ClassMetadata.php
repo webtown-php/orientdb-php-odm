@@ -260,6 +260,11 @@ class ClassMetadata implements DoctrineMetadata
         return $this->identifier;
     }
 
+    /**
+     * Set the @version field for this class
+     *
+     * @param string $propertyName
+     */
     public function setVersion($propertyName) {
         $this->version = $propertyName;
     }

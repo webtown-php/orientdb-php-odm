@@ -69,7 +69,24 @@ class PersistenceTest extends TestCase
 
     /**
      * @test
-     * @depends update_single_document
+     * @depends persist_single_document
+     *
+     * @param $rid
+     *
+     * @expectedException \Doctrine\ODM\OrientDB\LockException
+     */
+    public function LockException_for_update_if_version_mismatch($rid) {
+        $d          = $this->manager->findByRid($rid);
+        $d->name    = 'FailedUpdateTest';
+        $d->version = 100;
+
+        unset($d);
+        $this->manager->flush();
+    }
+
+    /**
+     * @test
+     * @depends persist_single_document
      *
      * @param $rid
      */
@@ -94,8 +111,8 @@ class PersistenceTest extends TestCase
         $d       = new Person();
         $d->name = "Sydney";
 
-        $e = new EmailAddress();
-        $e->type = 'work';
+        $e        = new EmailAddress();
+        $e->type  = 'work';
         $e->email = 'syd@gmail.com';
 
         $d->email = $e;
@@ -121,8 +138,8 @@ class PersistenceTest extends TestCase
      */
     public function update_top_level_and_embedded_document($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
-        $d->name = 'Cameron';
+        $d               = $this->manager->findByRid($rid);
+        $d->name         = 'Cameron';
         $d->email->email = 'cam@gmail.com';
 
         unset($d);
@@ -143,7 +160,7 @@ class PersistenceTest extends TestCase
      */
     public function update_embedded_document_to_null($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
+        $d        = $this->manager->findByRid($rid);
         $d->email = null;
 
         unset($d);
@@ -183,12 +200,12 @@ class PersistenceTest extends TestCase
         $d       = new Person();
         $d->name = "Sydney";
 
-        $e1 = new EmailAddress();
-        $e1->type = 'work';
+        $e1        = new EmailAddress();
+        $e1->type  = 'work';
         $e1->email = 'syd-work@gmail.com';
 
-        $e2 = new EmailAddress();
-        $e2->type = 'home';
+        $e2        = new EmailAddress();
+        $e2->type  = 'home';
         $e2->email = 'syd-home@gmail.com';
 
         $d->emails = [$e1, $e2];
@@ -212,7 +229,7 @@ class PersistenceTest extends TestCase
      */
     public function update_with_embedded_list_document($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
+        $d                   = $this->manager->findByRid($rid);
         $d->emails[0]->email = 'cam@gmail.com';
 
         unset($d);
@@ -234,7 +251,7 @@ class PersistenceTest extends TestCase
      */
     public function remove_item_from_embedded_list_document($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
+        $d = $this->manager->findByRid($rid);
         unset($d->emails[0]);
 
         unset($d);
@@ -277,10 +294,10 @@ class PersistenceTest extends TestCase
         $d       = new Person();
         $d->name = "Sydney";
 
-        $e1 = new Phone();
+        $e1        = new Phone();
         $e1->phone = '4804441999';
 
-        $e2 = new Phone();
+        $e2        = new Phone();
         $e2->phone = '5554443333';
 
         $d->phones = [
@@ -310,7 +327,7 @@ class PersistenceTest extends TestCase
      */
     public function update_existing_item_in_embedded_map_document($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
+        $d                        = $this->manager->findByRid($rid);
         $d->phones['home']->phone = '4804442000';
 
         unset($d);
@@ -330,9 +347,9 @@ class PersistenceTest extends TestCase
      */
     public function update_add_new_key_to_existing_embedded_map_document($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
-        $p = new Phone();
-        $p->phone = '4801112222';
+        $d                   = $this->manager->findByRid($rid);
+        $p                   = new Phone();
+        $p->phone            = '4801112222';
         $d->phones['mobile'] = $p;
 
         unset($d);
@@ -355,7 +372,7 @@ class PersistenceTest extends TestCase
      */
     public function update_remove_existing_key_from_existing_embedded_map_document($rid) {
         /** @var Person $d */
-        $d       = $this->manager->findByRid($rid);
+        $d = $this->manager->findByRid($rid);
         unset($d->phones['mobile']);
         unset($d);
         $this->manager->flush();
