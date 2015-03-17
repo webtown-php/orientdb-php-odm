@@ -76,7 +76,7 @@ JSON;
     }
 
     public function testManagerActsAsAProxyForExecutingQueries() {
-        $query   = new Query(array('ContactAddress'));
+        $query   = new Query(['ContactAddress']);
         $manager = $this->createTestManager();
         $results = $manager->execute($query);
 

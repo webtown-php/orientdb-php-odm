@@ -21,14 +21,14 @@ class LinkPropertyBase extends PropertyBase
     public $orphanRemoval = false;
 
     /**
-     * Specified on the parent to identify the parent property on the child.
+     * Specified on the parent class in order to identify the parent property on the child.
      *
      * @var string
      */
     public $parentProperty;
 
     /**
-     * Specified on the child to identify the associated property on the parent
+     * Specified on the child class in order to identify the associated property on the parent
      *
      * @var string
      */

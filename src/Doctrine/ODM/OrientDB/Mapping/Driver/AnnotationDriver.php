@@ -21,6 +21,7 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkList;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkMap;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkPropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkSet;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\MappedSuperclass;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
@@ -30,7 +31,8 @@ class AnnotationDriver extends AbstractAnnotationDriver
 {
     protected $entityAnnotationClasses = [
         Document::class         => 1,
-        EmbeddedDocument::class => 2,
+        MappedSuperclass::class => 2,
+        EmbeddedDocument::class => 3,
     ];
 
     /**
@@ -75,42 +77,54 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
         // find the winning document annotation
         ksort($documentAnnots);
-        $docAnnotation = reset($documentAnnots);
+        $documentAnnot = reset($documentAnnots);
 
-        $metadata->setOrientClass($docAnnotation->class);
-        if ($docAnnotation instanceof EmbeddedDocument) {
+        if ($documentAnnot instanceof MappedSuperclass) {
+            $metadata->isMappedSuperclass = true;
+        } elseif ($documentAnnot instanceof EmbeddedDocument) {
             $metadata->isEmbeddedDocument = true;
         }
 
-        foreach ($metadata->getReflectionClass()->getProperties() as $refProperty) {
-            $pas = $this->reader->getPropertyAnnotations($refProperty);
+        if (isset($documentAnnot->class)) {
+            $metadata->setOrientClass($documentAnnot->class);
+            $metadata->isAbstract = $documentAnnot->abstract;
+        }
+
+        foreach ($metadata->reflClass->getProperties() as $property) {
+            if (($metadata->isMappedSuperclass && !$property->isPrivate())
+                ||
+                $metadata->isInheritedField($property->name)
+            ) {
+                continue;
+            }
+
+            $pas = $this->reader->getPropertyAnnotations($property);
             foreach ($pas as $ann) {
                 $mapping = [
-                    'fieldName' => $refProperty->getName(),
+                    'fieldName' => $property->getName(),
                     'nullable'  => false,
                 ];
 
                 if ($ann instanceof PropertyBase) {
                     if (!$ann->name) {
-                        $ann->name = $refProperty->getName();
+                        $ann->name = $property->getName();
                     }
                     $mapping['name'] = $ann->name;
                 }
 
                 switch (true) {
                     case $ann instanceof Property:
-                        $mapping = $this->propertyToArray($refProperty->getName(), $ann);
+                        $mapping = $this->propertyToArray($property->getName(), $ann);
                         $metadata->mapField($mapping);
                         continue;
 
                     case $ann instanceof RID:
-                        $metadata->setIdentifier($refProperty->getName());
+                        $metadata->setIdentifier($property->getName());
                         $mapping = [
-                            'fieldName' => $refProperty->getName(),
+                            'fieldName' => $property->getName(),
                             'name'      => '@rid',
                             'type'      => 'string',
-                            'nullable'  => false,
-                            'cast'      => 'string'
+                            'nullable'  => false
                         ];
                         $metadata->mapField($mapping);
                         continue;
@@ -171,7 +185,6 @@ class AnnotationDriver extends AbstractAnnotationDriver
             'name'      => $prop->name,
             'type'      => $prop->type,
             'nullable'  => $prop->nullable,
-            'cast'      => $prop->getCast(),
         ];
 
         return $mapping;

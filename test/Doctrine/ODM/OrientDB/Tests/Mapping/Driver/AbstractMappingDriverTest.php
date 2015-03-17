@@ -77,6 +77,8 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @depends testLoadMapping
      *
      * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
      */
     public function testAssociationMappings($class) {
         $this->assertEquals(5, count($class->associationMappings));
@@ -85,6 +87,51 @@ abstract class AbstractMappingDriverTest extends TestCase
         $this->assertTrue(isset($class->associationMappings['groups']));
         $this->assertTrue(isset($class->associationMappings['embeddedPhonenumber']));
         $this->assertTrue(isset($class->associationMappings['otherPhonenumbers']));
+
+        return $class;
+    }
+
+    /**
+     * @depends testAssociationMappings
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function testOwningOneToOneAssociation($class)
+    {
+        $this->assertTrue(isset($class->associationMappings['address']));
+        $this->assertTrue($class->associationMappings['address']['isOwningSide']);
+        $this->assertEquals('user', $class->associationMappings['address']['parentProperty']);
+        // Check cascading
+        $this->assertTrue($class->associationMappings['address']['isCascadeRemove']);
+        $this->assertFalse($class->associationMappings['address']['isCascadePersist']);
+        $this->assertFalse($class->associationMappings['address']['isCascadeRefresh']);
+        $this->assertFalse($class->associationMappings['address']['isCascadeDetach']);
+        $this->assertFalse($class->associationMappings['address']['isCascadeMerge']);
+
+        return $class;
+    }
+
+    /**
+     * @depends testOwningOneToOneAssociation
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function testOwningOneToManyAssociation($class)
+    {
+        $this->assertTrue(isset($class->associationMappings['phonenumbers']));
+        $this->assertTrue($class->associationMappings['phonenumbers']['isOwningSide'], 'isOwningSide');
+        $this->assertTrue($class->associationMappings['phonenumbers']['isCascadePersist']);
+        $this->assertTrue($class->associationMappings['phonenumbers']['isCascadeRemove']);
+        $this->assertFalse($class->associationMappings['phonenumbers']['isCascadeRefresh']);
+        $this->assertFalse($class->associationMappings['phonenumbers']['isCascadeDetach']);
+        $this->assertFalse($class->associationMappings['phonenumbers']['isCascadeMerge']);
+        $this->assertTrue($class->associationMappings['phonenumbers']['orphanRemoval']);
+
+        return $class;
     }
 
     /**
@@ -118,27 +165,32 @@ class User
     public $name;
 
     /**
-     * @Property(type="string")
+     * @Property(type="string", nullable=true)
      */
     public $email;
 
     /**
-     * @Property(type="int")
+     * @Property(type="integer")
      */
     public $mysqlProfileId;
 
     /**
-     * @Link(targetClass="Address", cascade="remove")
+     * @Property(type="date")
+     */
+    public $createdAt;
+
+    /**
+     * @Link(targetClass="Address", cascade={"remove"}, parentProperty="user")
      */
     public $address;
 
     /**
-     * @LinkSet(targetClass="Phonenumber", cascade={"persist"})
+     * @LinkSet(targetClass="Phonenumber", parentProperty="user", cascade={"persist"}, orphanRemoval=true)
      */
     public $phonenumbers;
 
     /**
-     * @LinkList(targetClass="Group", cascade={"all"})
+     * @LinkList(targetClass="Group", cascade={"all"}, parentProperty="user")
      */
     public $groups;
 
@@ -151,11 +203,6 @@ class User
      * @EmbeddedList(targetClass="Phonenumber")
      */
     public $otherPhonenumbers;
-
-    /**
-     * @Property(type="date")
-     */
-    public $createdAt;
 
     /**
      * @PrePersist

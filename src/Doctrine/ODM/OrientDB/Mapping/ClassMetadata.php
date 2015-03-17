@@ -132,11 +132,25 @@ class ClassMetadata implements DoctrineMetadata
     public $rootDocumentName;
 
     /**
+     * READ-ONLY: Whether this class describes the mapping of a mapped superclass.
+     *
+     * @var boolean
+     */
+    public $isMappedSuperclass = false;
+
+    /**
      * READ-ONLY: Whether this class describes the mapping of a embedded document.
      *
      * @var boolean
      */
     public $isEmbeddedDocument = false;
+
+    /**
+     * READ-ONLY: Whether this class describes the mapping of an abstract document.
+     *
+     * @var boolean
+     */
+    public $isAbstract = false;
 
     /**
      * READ-ONLY: The policy used for change-tracking on entities of this class.
@@ -161,12 +175,12 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * @var \ReflectionClass
      */
-    protected $reflClass;
+    public $reflClass;
 
     /**
      * @var \ReflectionProperty[]
      */
-    protected $reflFields;
+    public $reflFields;
 
     /**
      * READONLY
@@ -359,21 +373,7 @@ class ClassMetadata implements DoctrineMetadata
      * @return \ReflectionProperty[]
      */
     public function getReflectionProperties() {
-        if (!$this->reflFields) {
-            $this->discoverReflectionFields();
-        }
-
         return $this->reflFields;
-    }
-
-    protected function discoverReflectionFields() {
-        $this->reflFields = array();
-        foreach ($this->getReflectionClass()->getProperties() as $property) {
-            if (in_array($property->name, $this->getIdentifierFieldNames())) {
-                $property->setAccessible(true);
-            }
-            $this->reflFields[$property->getName()] = $property;
-        }
     }
 
     /**
@@ -416,6 +416,17 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
+     * Checks whether a mapped field is inherited from an entity superclass.
+     *
+     * @param string $fieldName
+     *
+     * @return bool TRUE if the field is inherited, FALSE otherwise.
+     */
+    public function isInheritedField($fieldName) {
+        return isset($this->fieldMappings[$fieldName]['inherited']);
+    }
+
+    /**
      * Adds a mapping for a field
      *
      * @param array $mapping The mapping.
@@ -424,8 +435,15 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapField(array $mapping) {
-        $fieldMame = $mapping['fieldName'];
-        $this->assertFieldNotMapped($fieldMame);
+        $fieldName = $mapping['fieldName'];
+        if (!isset($fieldName)) {
+            throw MappingException::missingFieldName($this->name);
+        }
+        $this->assertFieldNotMapped($fieldName);
+
+        if (!isset($mapping['name'])) {
+            $mapping['name'] = $fieldName;
+        }
 
         $namespace = $this->reflClass->getNamespaceName();
         if (isset($mapping['targetClass']) && strpos($mapping['targetClass'], '\\') === false && strlen($namespace)) {
@@ -462,11 +480,15 @@ class ClassMetadata implements DoctrineMetadata
             if (!isset($mapping['orphanRemoval'])) {
                 $mapping['orphanRemoval'] = false;
             }
+
+            if ($mapping['isOwningSide'] && $mapping['orphanRemoval']) {
+                $mapping['isCascadeRemove'] = true;
+            }
         }
 
-        $this->fieldMappings[$mapping['fieldName']] = $mapping;
+        $this->fieldMappings[$fieldName] = $mapping;
         if (isset($mapping['association'])) {
-            $this->associationMappings[$fieldMame] = $mapping;
+            $this->associationMappings[$fieldName] = $mapping;
         }
 
         return $this;
@@ -608,6 +630,17 @@ class ClassMetadata implements DoctrineMetadata
         return $this;
     }
 
+    /**
+     * INTERNAL:
+     * Adds a field mapping without completing/validating it.
+     * This is mainly used to add inherited field mappings to derived classes.
+     *
+     * @param array $fieldMapping
+     */
+    public function addInheritedFieldMapping(array $fieldMapping) {
+        $this->fieldMappings[$fieldMapping['fieldName']] = $fieldMapping;
+    }
+
     public function setOrientClass($orientClass) {
         $this->orientClass = $orientClass;
     }
@@ -646,7 +679,11 @@ class ClassMetadata implements DoctrineMetadata
      * @param \Doctrine\Common\Persistence\Mapping\ReflectionService $reflService
      */
     public function wakeupReflection($reflService) {
-
+        foreach ($this->fieldMappings as $field => $mapping) {
+            $this->reflFields[$field] = isset($mapping['declared'])
+                ? $reflService->getAccessibleProperty($mapping['declared'], $field)
+                : $reflService->getAccessibleProperty($this->name, $field);
+        }
     }
 
     /**

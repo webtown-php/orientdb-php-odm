@@ -113,42 +113,42 @@ class Address
 
 
     /**
-     * @Property(type="embedded_set", cast="link")
+     * @Property(type="embedded_set")
      */
     protected $embeddedset;
 
     /**
-     * @Property(type="embedded_list", cast="link")
+     * @Property(type="embedded_list")
      */
     protected $embeddedlist;
 
     /**
-     * @Property(type="embedded_list", cast="boolean")
+     * @Property(type="embedded_list")
      */
     protected $embeddedbooleans;
 
     /**
-     * @Property(type="embedded_list", cast="string")
+     * @Property(type="embedded_list")
      */
     protected $embeddedstrings;
 
     /**
-     * @Property(type="embedded_list", cast="integer")
+     * @Property(type="embedded_list")
      */
     protected $embeddedintegers;
 
     /**
-     * @Property(type="embedded_set", cast="boolean")
+     * @Property(type="embedded_set")
      */
     protected $embeddedsetbooleans;
 
     /**
-     * @Property(type="embedded_set", cast="string")
+     * @Property(type="embedded_set")
      */
     protected $embeddedsetstrings;
 
     /**
-     * @Property(type="embedded_set", cast="integer")
+     * @Property(type="embedded_set")
      */
     protected $embeddedsetintegers;
 
@@ -188,7 +188,7 @@ class Address
     protected $linkmap;
 
     /**
-     * @Property(type="embedded_map", cast="link")
+     * @Property(type="embedded_map")
      */
     protected $embedded_map;
 

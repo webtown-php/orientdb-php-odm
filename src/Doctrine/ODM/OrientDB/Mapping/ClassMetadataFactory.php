@@ -159,6 +159,23 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * @throws MappingException
      */
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents) {
+
+        /** @var $class ClassMetadata */
+        /** @var $parent ClassMetadata */
+        if ($parent) {
+            $this->addInheritedFields($class, $parent);
+//            $this->addInheritedIndexes($class, $parent);
+            $class->setIdentifier($parent->identifier);
+//            $class->setVersioned($parent->isVersioned);
+//            $class->setVersionField($parent->versionField);
+//            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);
+//            $class->setAlsoLoadMethods($parent->alsoLoadMethods);
+            $class->setChangeTrackingPolicy($parent->changeTrackingPolicy);
+            if ($parent->isMappedSuperclass) {
+                $class->setCustomRepositoryClass($parent->customRepositoryClassName);
+            }
+        }
+
         try {
             $this->driver->loadMetadataForClass($class->getName(), $class);
         } catch (\ReflectionException $ex) {
@@ -170,6 +187,29 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             $this->evm->dispatchEvent(Events::loadClassMetadata, $eventArgs);
         }
     }
+
+    /**
+     * Adds inherited fields to the subclass mapping.
+     *
+     * @param ClassMetadata $subClass
+     * @param ClassMetadata $parentClass
+     */
+    private function addInheritedFields(ClassMetadata $subClass, ClassMetadata $parentClass)
+    {
+        foreach ($parentClass->fieldMappings as $fieldName => $mapping) {
+            if ( ! isset($mapping['inherited']) && ! $parentClass->isMappedSuperclass) {
+                $mapping['inherited'] = $parentClass->name;
+            }
+            if ( ! isset($mapping['declared'])) {
+                $mapping['declared'] = $parentClass->name;
+            }
+            $subClass->addInheritedFieldMapping($mapping);
+        }
+        foreach ($parentClass->reflFields as $name => $field) {
+            $subClass->reflFields[$name] = $field;
+        }
+    }
+
 
     /**
      * Creates a new ClassMetadata instance for the given class name.

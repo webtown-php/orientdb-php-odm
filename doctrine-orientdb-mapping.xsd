@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
+           xmlns:odm="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
+           elementFormDefault="qualified">
+
+    <xs:annotation>
+        <xs:documentation><![CDATA[
+       This is the XML Schema for the object/document
+       mapping file used by the Doctrine OrientDB ODM.
+     ]]></xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="doctrine-orientdb-mapping">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="document" type="odm:document" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>Defines metadata for mapping a document to a PHP object</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="embedded-document" type="odm:document" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="embedded-document">
+        <xs:attribute name="name" type="xs:NMTOKEN"/>
+    </xs:complexType>
+
+    <xs:complexType name="document">
+        <xs:sequence>
+            <xs:element name="rid" type="odm:rid" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Specifies the record ID property for this document</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="field" type="odm:field" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="embed-one" type="odm:embedded" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="embed-many" type="odm:embedded-many" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="link-one" type="odm:link" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="link-many" type="odm:link-many" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="repository-class" type="xs:string"/>
+        <xs:attribute name="change-tracking-policy" type="odm:change-tracking-policy"/>
+        <xs:attribute name="class" type="xs:NMTOKEN" use="required">
+            <xs:annotation>
+                <xs:documentation>Specifies the OrientDB class name for this document</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="abstract" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">specifies whether the type is abstract</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="extends" type="xs:NMTOKEN" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="rid">
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="field">
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="name" type="xs:NMTOKEN"/>
+        <xs:attribute name="type" type="xs:NMTOKEN" default="string"/>
+        <xs:attribute name="nullable" type="xs:boolean" use="optional" default="false"/>
+    </xs:complexType>
+
+    <xs:complexType name="embedded">
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="nullable" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="name" type="xs:NMTOKEN"/>
+    </xs:complexType>
+
+    <xs:complexType name="embedded-many">
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="collection" type="odm:collection-type" default="list" use="required"/>
+        <xs:attribute name="name" type="xs:NMTOKEN"/>
+    </xs:complexType>
+
+    <xs:complexType name="link">
+        <xs:sequence>
+            <xs:element name="cascade" type="odm:cascade-type" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="parent-property" type="xs:NMTOKEN"/>
+        <xs:attribute name="child-property" type="xs:NMTOKEN"/>
+        <xs:attribute name="orphan-removal" type="xs:boolean"/>
+        <xs:attribute name="name" type="xs:NMTOKEN"/>
+    </xs:complexType>
+
+    <xs:complexType name="link-many">
+        <xs:sequence>
+            <xs:element name="cascade" type="odm:cascade-type" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="parent-property" type="xs:NMTOKEN"/>
+        <xs:attribute name="child-property" type="xs:NMTOKEN"/>
+        <xs:attribute name="orphan-removal" type="xs:boolean"/>
+        <xs:attribute name="collection" type="odm:collection-type" default="list" use="required"/>
+        <xs:attribute name="name" type="xs:NMTOKEN"/>
+    </xs:complexType>
+
+    <xs:simpleType name="collection-type">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="list"/>
+            <xs:enumeration value="set"/>
+            <xs:enumeration value="map"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="emptyType"/>
+
+    <xs:complexType name="cascade-type">
+        <xs:sequence>
+            <xs:element name="all" type="odm:emptyType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="persist" type="odm:emptyType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="merge" type="odm:emptyType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="remove" type="odm:emptyType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="refresh" type="odm:emptyType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="change-tracking-policy">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="DEFERRED_IMPLICIT"/>
+            <xs:enumeration value="DEFERRED_EXPLICIT"/>
+            <xs:enumeration value="NOTIFY"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="lifecycle-callback-type">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="prePersist"/>
+            <xs:enumeration value="postPersist"/>
+            <xs:enumeration value="preUpdate"/>
+            <xs:enumeration value="postUpdate"/>
+            <xs:enumeration value="preRemove"/>
+            <xs:enumeration value="postRemove"/>
+            <xs:enumeration value="preLoad"/>
+            <xs:enumeration value="postLoad"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="lifecycle-callback">
+        <xs:attribute name="type" type="odm:lifecycle-callback-type" use="required"/>
+        <xs:attribute name="method" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="lifecycle-callbacks">
+        <xs:sequence>
+            <xs:element name="lifecycle-callback" type="odm:lifecycle-callback" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

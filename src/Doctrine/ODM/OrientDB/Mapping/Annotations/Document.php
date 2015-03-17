@@ -23,7 +23,7 @@ namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
  * @Annotation
  * @Target("CLASS")
  */
-class Document
+class Document extends AbstractDocument
 {
     /**
      * @Required

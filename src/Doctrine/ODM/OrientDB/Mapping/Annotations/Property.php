@@ -33,16 +33,7 @@ class Property extends PropertyBase
     public $type;
 
     /**
-     * @var string
-     */
-    public $cast;
-
-    /**
      * @var bool
      */
     public $nullable = false;
-
-    public function getCast() {
-        return $this->cast;
-    }
 }

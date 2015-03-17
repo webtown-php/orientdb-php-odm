@@ -18,6 +18,10 @@ class MappingException extends \Exception
         return new self(sprintf('the identifier mapping for %s could not be found.', $class));
     }
 
+    public static function missingOClass($class) {
+        return new self(sprintf('missing OrientDB class for %s', $class));
+    }
+
     public static function noClusterForRid(Rid $rid) {
         return new self(sprintf('there is no cluster for %s.', $rid->getValue()));
     }
@@ -30,6 +34,26 @@ class MappingException extends \Exception
         return new self(
             sprintf('attempting to map OrientDB class %s to %s, which is already mapped to %s',
                 $orientClass, $new, $existing));
+    }
+
+    /**
+     * @param string $document
+     *
+     * @return MappingException
+     */
+    public static function missingFieldName($document)
+    {
+        return new self("The field or association mapping misses the 'fieldName' attribute in document '$document'.");
+    }
+
+    /**
+     * @param $document
+     * @param $type
+     *
+     * @return MappingException
+     */
+    public static function invalidCollectionType($document, $type) {
+        return new self("The document '$document' specified an invalid collection type '$type'");
     }
 
     /**
