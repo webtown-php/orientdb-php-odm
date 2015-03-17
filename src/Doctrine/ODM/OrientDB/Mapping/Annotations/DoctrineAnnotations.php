@@ -22,7 +22,3 @@ require_once __DIR__ . '/Embedded.php';
 require_once __DIR__ . '/EmbeddedList.php';
 require_once __DIR__ . '/EmbeddedMap.php';
 require_once __DIR__ . '/EmbeddedSet.php';
-
-require_once __DIR__ . '/TypedList.php';
-require_once __DIR__ . '/TypedMap.php';
-require_once __DIR__ . '/TypedSet.php';

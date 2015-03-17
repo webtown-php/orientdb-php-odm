@@ -109,6 +109,20 @@ class Fixtures
                     'class' => 'PhoneLink',
                 ]
             ],
+            'TypedCollections' => [
+                'stringList' => [
+                    'type'  => 'EMBEDDEDLIST',
+                    'class' => 'string',
+                ],
+                'intSet' => [
+                    'type'  => 'EMBEDDEDSET',
+                    'class' => 'integer',
+                ],
+                'stringMap' => [
+                    'type'  => 'EMBEDDEDMAP',
+                    'class' => 'string',
+                ],
+            ]
         ];
 
         foreach ($classes as $class => $properties) {

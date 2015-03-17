@@ -550,7 +550,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLink(array $mapping) {
-        $mapping['type']        = 'link';
         $mapping['association'] = self::LINK;
         $mapping['reference']   = true;
         $this->mapField($mapping);
@@ -567,7 +566,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkList(array $mapping) {
-        $mapping['type']        = 'link_list';
         $mapping['association'] = self::LINK_LIST;
         $mapping['reference']   = true;
         $this->mapField($mapping);
@@ -584,7 +582,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkSet(array $mapping) {
-        $mapping['type']        = 'link_set';
         $mapping['association'] = self::LINK_SET;
         $mapping['reference']   = true;
         $this->mapField($mapping);
@@ -601,7 +598,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkMap(array $mapping) {
-        $mapping['type']        = 'link_map';
         $mapping['association'] = self::LINK_MAP;
         $mapping['reference']   = true;
         $this->mapField($mapping);
@@ -618,7 +614,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbedded(array $mapping) {
-        $mapping['type']        = 'embedded';
         $mapping['association'] = self::EMBED;
         $mapping['embedded']    = true;
         $this->mapField($mapping);
@@ -635,7 +630,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbeddedList(array $mapping) {
-        $mapping['type']        = 'embedded_list';
         $mapping['association'] = self::EMBED_LIST;
         $mapping['embedded']    = true;
         $this->mapField($mapping);
@@ -652,7 +646,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbeddedSet(array $mapping) {
-        $mapping['type']        = 'embedded_set';
         $mapping['association'] = self::EMBED_SET;
         $mapping['embedded']    = true;
         $this->mapField($mapping);
@@ -669,7 +662,6 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbeddedMap(array $mapping) {
-        $mapping['type']        = 'embedded_map';
         $mapping['association'] = self::EMBED_MAP;
         $mapping['embedded']    = true;
         $this->mapField($mapping);
