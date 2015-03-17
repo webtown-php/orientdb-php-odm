@@ -47,17 +47,6 @@ class XmlDriver extends FileDriver
 
         switch ($xmlRoot->getName()) {
             case 'document':
-                if (isset($xmlRoot->{'rid'})) {
-                    $ridField = $xmlRoot->{'rid'};
-                    $mapping  = [
-                        'fieldName' => (string)$ridField['fieldName'],
-                        'name'      => '@rid',
-                        'type'      => 'string',
-                        'nullable'  => false
-                    ];
-                    $metadata->mapField($mapping);
-                    $metadata->setIdentifier($mapping['fieldName']);
-                }
                 break;
 
             case 'embedded-document':
@@ -75,11 +64,20 @@ class XmlDriver extends FileDriver
         if (!$metadata->isMappedSuperclass && !isset($xmlRoot['class'])) {
             throw MappingException::missingOClass($className);
         }
-
         $metadata->setOrientClass((string)$xmlRoot['class']);
 
         if (isset($xmlRoot['abstract'])) {
             $metadata->isAbstract = ((string)$xmlRoot['abstract'] === 'true');
+        }
+
+        if (isset($xmlRoot->{'rid'})) {
+            $field = $xmlRoot->{'rid'};
+            $metadata->mapRid((string)$field['fieldName']);
+        }
+
+        if (isset($xmlRoot->{'version'})) {
+            $field = $xmlRoot->{'version'};
+            $metadata->mapVersion((string)$field['fieldName']);
         }
 
         // Evaluate <change-tracking-policy...>
@@ -112,6 +110,15 @@ class XmlDriver extends FileDriver
                 $type = isset($node['collection']) ? (string)$node['collection'] : 'list';
                 $this->addLinkMapping($metadata, $node, $type);
             }
+        }
+
+        $isDocument = !($metadata->isEmbeddedDocument || $metadata->isMappedSuperclass || $metadata->isAbstract);
+
+        if ($isDocument && empty($metadata->identifier)) {
+            throw MappingException::missingRid($metadata->getName());
+        }
+        if ($isDocument && empty($metadata->version)) {
+            throw MappingException::missingVersion($metadata->getName());
         }
     }
 

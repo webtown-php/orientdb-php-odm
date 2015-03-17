@@ -33,6 +33,11 @@ class Post
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @LinkList(targetClass="Comment")
      */
     public $comments;

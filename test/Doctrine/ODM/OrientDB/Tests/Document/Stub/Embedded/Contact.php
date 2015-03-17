@@ -16,6 +16,11 @@ class Contact
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * Display name
      *
      * @Property(type="string", nullable=false)

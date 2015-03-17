@@ -14,6 +14,11 @@ class PhoneLink
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(type="string")
      * @var string
      */

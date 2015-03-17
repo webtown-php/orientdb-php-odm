@@ -14,6 +14,11 @@ class EmailAddress
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(type="string", nullable=false)
      * @var string
      */

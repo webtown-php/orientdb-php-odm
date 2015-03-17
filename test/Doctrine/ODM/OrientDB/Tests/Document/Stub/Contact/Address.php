@@ -11,6 +11,11 @@ class Address
      * @RID
      */
     protected $rid;
+
+    /**
+     * @Version
+     */
+    public $version;
     /**
      * @Property(name="nojson", type="nojson")
      */

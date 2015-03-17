@@ -315,40 +315,6 @@ class UnitOfWork implements PropertyChangedListener
 
         $p = $this->createPersister();
         $p->process($this);
-//
-//        // Now we need a commit order to maintain referential integrity
-//        $commitOrder = $this->getCommitOrder();
-//
-//        if ($this->documentInsertions) {
-//            foreach ($commitOrder as $class) {
-//                if ($class->isEmbeddedDocument) {
-//                    continue;
-//                }
-//                $this->executeInserts($class);
-//            }
-//        }
-//
-//        if ($this->documentUpdates) {
-//            foreach ($commitOrder as $class) {
-//                $this->executeUpdates($class);
-//            }
-//        }
-//
-//        // Collection deletions (deletions of complete collections)
-//        foreach ($this->collectionDeletions as $collectionToDelete) {
-//            $this->getCollectionPersister()->delete($collectionToDelete);
-//        }
-//        // Collection updates (deleteRows, updateRows, insertRows)
-//        foreach ($this->collectionUpdates as $collectionToUpdate) {
-//            $this->getCollectionPersister()->update($collectionToUpdate);
-//        }
-//
-//        // Document deletions come last and need to be in reverse commit order
-//        if ($this->documentDeletions) {
-//            for ($count = count($commitOrder), $i = $count - 1; $i >= 0; --$i) {
-//                $this->executeDeletions($commitOrder[$i]);
-//            }
-//        }
 
         // Take new snapshots from visited collections
         foreach ($this->visitedCollections as $coll) {
@@ -881,6 +847,9 @@ class UnitOfWork implements PropertyChangedListener
         $class      = $this->dm->getClassMetadata(get_class($document));
         $actualData = array();
         foreach ($class->fieldMappings as $fieldName => $mapping) {
+            if (isset($mapping['notSaved'])) {
+                continue;
+            }
             $value = $class->getFieldValue($document, $fieldName);
 
             if ((isset($mapping['association']) && $mapping['association'] & ClassMetadata::TO_MANY)

@@ -11,6 +11,7 @@ require_once __DIR__ . '/ChangeTrackingPolicy.php';
 
 require_once __DIR__ . '/Property.php';
 require_once __DIR__ . '/RID.php';
+require_once __DIR__ . '/Version.php';
 
 require_once __DIR__ . '/Link.php';
 require_once __DIR__ . '/LinkList.php';

@@ -168,9 +168,14 @@ class ClassMetadata implements DoctrineMetadata
     public $customRepositoryClassName;
 
     /**
-     * @var string identifier property name
+     * @var string property name of identifier
      */
     public $identifier;
+
+    /**
+     * @var string property name of version
+     */
+    public $version;
 
     /**
      * @var \ReflectionClass
@@ -253,6 +258,19 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function getRidPropertyName() {
         return $this->identifier;
+    }
+
+    public function setVersion($propertyName) {
+        $this->version = $propertyName;
+    }
+
+    /**
+     * Returns the @version property name
+     *
+     * @return string
+     */
+    public function getVersion() {
+        return $this->version;
     }
 
     /**
@@ -492,6 +510,30 @@ class ClassMetadata implements DoctrineMetadata
         }
 
         return $this;
+    }
+
+    public function mapRid($fieldName) {
+        $mapping = [
+            'fieldName' => $fieldName,
+            'name'      => '@rid',
+            'type'      => 'string',
+            'nullable'  => false,
+            'notSaved'  => true,
+        ];
+        $this->mapField($mapping);
+        $this->identifier = $fieldName;
+    }
+
+    public function mapVersion($fieldName) {
+        $mapping = [
+            'fieldName' => $fieldName,
+            'name'      => '@version',
+            'type'      => 'integer',
+            'nullable'  => false,
+            'notSaved'  => true,
+        ];
+        $this->mapField($mapping);
+        $this->version = $fieldName;
     }
 
     /**

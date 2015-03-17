@@ -166,6 +166,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             $this->addInheritedFields($class, $parent);
 //            $this->addInheritedIndexes($class, $parent);
             $class->setIdentifier($parent->identifier);
+            $class->setVersion($parent->version);
 //            $class->setVersioned($parent->isVersioned);
 //            $class->setVersionField($parent->versionField);
 //            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);

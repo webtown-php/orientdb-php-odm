@@ -13,6 +13,11 @@ class EmptyAddress
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(type="string", nullable=true)
      */
     public $string;

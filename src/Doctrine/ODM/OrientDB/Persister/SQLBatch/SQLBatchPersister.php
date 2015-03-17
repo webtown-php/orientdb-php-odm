@@ -118,7 +118,7 @@ class SQLBatchPersister implements PersisterInterface
             return;
         }
 
-        $batch   = [
+        $batch = [
             'transaction' => true,
             'operations'  => [
                 [

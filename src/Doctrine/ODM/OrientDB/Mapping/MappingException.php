@@ -15,7 +15,11 @@ use Doctrine\ODM\OrientDB\Types\Rid;
 class MappingException extends \Exception
 {
     public static function missingRid($class) {
-        return new self(sprintf('the identifier mapping for %s could not be found.', $class));
+        return new self(sprintf('the identifier field mapping for %s could not be found.', $class));
+    }
+
+    public static function missingVersion($class) {
+        return new self(sprintf('the version field mapping for %s could not be found.', $class));
     }
 
     public static function missingOClass($class) {

@@ -65,8 +65,9 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @return ClassMetadata
      */
     public function testFieldMappings($class) {
-        $this->assertEquals(10, count($class->fieldMappings));
+        $this->assertEquals(11, count($class->fieldMappings));
         $this->assertTrue(isset($class->fieldMappings['id']));
+        $this->assertTrue(isset($class->fieldMappings['version']));
         $this->assertTrue(isset($class->fieldMappings['name']));
         $this->assertTrue(isset($class->fieldMappings['email']));
 
@@ -156,8 +157,15 @@ class User
 {
     /**
      * @RID
+     * @var string
      **/
     public $id;
+
+    /**
+     * @Version
+     * @var int
+     */
+    public $version;
 
     /**
      * @Property(name="username", type="string")

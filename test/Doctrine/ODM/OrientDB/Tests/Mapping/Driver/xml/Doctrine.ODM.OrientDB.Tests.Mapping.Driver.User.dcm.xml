@@ -6,6 +6,7 @@
 
     <document name="Doctrine\ODM\OrientDB\Tests\Mapping\Driver\User" class="OUser" change-tracking-policy="NOTIFY">
         <rid fieldName="id"/>
+        <version fieldName="version"/>
         <field fieldName="name" name="username" type="string"/>
         <field fieldName="email" type="string"/>
         <field fieldName="mysqlProfileId" type="integer"/>
@@ -15,13 +16,19 @@
         <embed-many fieldName="otherPhonenumbers" target-class="Phonenumber" collection="list"/>
 
         <link-one fieldName="address" target-class="Address" parent-property="user">
-            <cascade><remove/></cascade>
+            <cascade>
+                <remove/>
+            </cascade>
         </link-one>
         <link-many fieldName="phonenumbers" target-class="Phonenumber" collection="set" orphan-removal="true">
-            <cascade><persist/></cascade>
+            <cascade>
+                <persist/>
+            </cascade>
         </link-many>
         <link-many fieldName="groups" target-class="Group" collection="list" parent-property="user">
-            <cascade><all/></cascade>
+            <cascade>
+                <all/>
+            </cascade>
         </link-many>
 
     </document>

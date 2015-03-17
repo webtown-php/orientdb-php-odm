@@ -33,6 +33,11 @@ class Profile
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(type="long")
      */
     public $hash;

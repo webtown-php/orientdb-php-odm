@@ -48,5 +48,8 @@ class ColumnWithoutType
 {
     /** @RID */
     public $id;
+
+    /** @Version */
+    public $version;
 }
 

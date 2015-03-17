@@ -25,6 +25,7 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\MappedSuperclass;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
 class AnnotationDriver extends AbstractAnnotationDriver
@@ -119,14 +120,11 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         continue;
 
                     case $ann instanceof RID:
-                        $metadata->setIdentifier($property->getName());
-                        $mapping = [
-                            'fieldName' => $property->getName(),
-                            'name'      => '@rid',
-                            'type'      => 'string',
-                            'nullable'  => false
-                        ];
-                        $metadata->mapField($mapping);
+                        $metadata->mapRid($property->getName());
+                        continue;
+
+                    case $ann instanceof Version:
+                        $metadata->mapVersion($property->getName());
                         continue;
 
                     case $ann instanceof Link:
@@ -174,8 +172,13 @@ class AnnotationDriver extends AbstractAnnotationDriver
             }
         }
 
-        if (!$metadata->isEmbeddedDocument && !$metadata->getRidPropertyName()) {
+        $isDocument = !($metadata->isEmbeddedDocument || $metadata->isMappedSuperclass || $metadata->isAbstract);
+
+        if ($isDocument && empty($metadata->identifier)) {
             throw MappingException::missingRid($metadata->getName());
+        }
+        if ($isDocument && empty($metadata->version)) {
+            throw MappingException::missingVersion($metadata->getName());
         }
     }
 

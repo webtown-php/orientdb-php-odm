@@ -31,6 +31,11 @@ class ORole
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(type="byte")
      */
     public $mode;

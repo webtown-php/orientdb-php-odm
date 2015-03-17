@@ -31,6 +31,11 @@ class Country
     protected $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(name="name", type="string")
      */
     public $name;

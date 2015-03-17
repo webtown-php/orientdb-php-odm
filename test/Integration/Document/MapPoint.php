@@ -31,6 +31,11 @@ class MapPoint
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Property(type="double")
      */
     public $y;

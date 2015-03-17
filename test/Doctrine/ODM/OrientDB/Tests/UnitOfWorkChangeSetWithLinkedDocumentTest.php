@@ -50,7 +50,7 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
 
         $uow->computeChangeSets();
         $cs = $uow->getDocumentChangeSet($c);
-        $this->assertEquals(['rid', 'name', 'email', 'phones'], array_keys($cs));
+        $this->assertEquals(['name', 'email', 'phones'], array_keys($cs));
 
         $cs = $uow->getDocumentChangeSet($em);
     }
@@ -106,7 +106,7 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
         $this->assertEquals([null, $e], $cs['email']);
 
         $cs = $uow->getDocumentChangeSet($c->getEmail());
-        $this->assertEquals(['rid', 'type', 'email', 'contact'], array_keys($cs));
+        $this->assertEquals(['type', 'email', 'contact'], array_keys($cs));
     }
 
     /**

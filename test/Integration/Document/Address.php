@@ -31,9 +31,16 @@ class Address
     public $rid;
 
     /**
+     * @Version
+     */
+    public $version;
+
+    /**
      * @Link(targetClass="City")
      */
     protected $city;
+
+    protected $about;
 
     /**
      * @return City

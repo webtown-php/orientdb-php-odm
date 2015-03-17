@@ -49,7 +49,7 @@ class UnitOfWorkChangeSetWithEmbeddedDocumentTest extends TestCase
         $md = $this->manager->getClassMetadata(Contact::class);
         $uow->computeChangeSet($md, $c);
         $cs = $uow->getDocumentChangeSet($c);
-        $this->assertEquals(['rid', 'name', 'email', 'phones'], array_keys($cs));
+        $this->assertEquals(['name', 'email', 'phones'], array_keys($cs));
     }
 
     /**
@@ -150,7 +150,7 @@ class UnitOfWorkChangeSetWithEmbeddedDocumentTest extends TestCase
         $md = $this->manager->getClassMetadata(Contact::class);
         $uow->computeChangeSet($md, $c);
         $cs = $uow->getDocumentChangeSet($c);
-        $this->assertEquals(['rid', 'name', 'email', 'phones'], array_keys($cs));
+        $this->assertEquals(['name', 'email', 'phones'], array_keys($cs));
 
     }
 }

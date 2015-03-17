@@ -31,9 +31,14 @@
 
     <xs:complexType name="document">
         <xs:sequence>
-            <xs:element name="rid" type="odm:rid" minOccurs="0" maxOccurs="1">
+            <xs:element name="rid" type="odm:meta-type" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Specifies the record ID property for this document</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="version" type="odm:meta-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Specifies the @version property for this document</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="field" type="odm:field" minOccurs="0" maxOccurs="unbounded"/>
@@ -59,7 +64,7 @@
         <xs:attribute name="extends" type="xs:NMTOKEN" use="optional"/>
     </xs:complexType>
 
-    <xs:complexType name="rid">
+    <xs:complexType name="meta-type">
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
     </xs:complexType>
 
