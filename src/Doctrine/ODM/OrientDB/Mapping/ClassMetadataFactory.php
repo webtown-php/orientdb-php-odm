@@ -13,16 +13,24 @@ use Doctrine\ODM\OrientDB\OClassNotFoundException;
 
 class ClassMetadataFactory extends AbstractClassMetadataFactory
 {
-    /** @var DocumentManager The DocumentManager instance */
+    /**
+     * @var DocumentManager The DocumentManager instance
+     */
     private $dm;
 
-    /** @var Configuration The Configuration instance */
+    /**
+     * @var Configuration The Configuration instance
+     */
     private $config;
 
-    /** @var \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver The used metadata driver. */
+    /**
+     * @var \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver The used metadata driver.
+     */
     private $driver;
 
-    /** @var \Doctrine\Common\EventManager The event manager instance */
+    /**
+     * @var \Doctrine\Common\EventManager The event manager instance
+     */
     private $evm;
 
     /**
@@ -76,10 +84,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Lazy initialization of this stuff, especially the metadata driver,
-     * since these are not needed at all when a metadata cache is active.
-     *
-     * @return void
+     * @inheritdoc
      */
     protected function initialize() {
         $this->driver      = $this->config->getMetadataDriverImpl();
@@ -88,33 +93,21 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Gets the fully qualified class-name from the namespace alias.
-     *
-     * @param string $namespaceAlias
-     * @param string $simpleClassName
-     *
-     * @return string
+     * @inheritdoc
      */
     protected function getFqcnFromAlias($namespaceAlias, $simpleClassName) {
         return $this->config->getDocumentNamespace($namespaceAlias) . '\\' . $simpleClassName;
     }
 
     /**
-     * Returns the mapping driver implementation.
-     *
-     * @return \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver
+     * @inheritdoc
      */
     protected function getDriver() {
         return $this->driver;
     }
 
     /**
-     * Wakes up reflection after ClassMetadata gets unserialized from cache.
-     *
-     * @param ClassMetadataInfo $class
-     * @param ReflectionService $reflService
-     *
-     * @return void
+     * @inheritdoc
      */
     protected function wakeupReflection(ClassMetadataInfo $class, ReflectionService $reflService) {
         /** @var ClassMetadata $class */
@@ -122,12 +115,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Initializes Reflection after ClassMetadata was constructed.
-     *
-     * @param ClassMetadataInfo $class
-     * @param ReflectionService $reflService
-     *
-     * @return void
+     * @inheritdoc
      */
     protected function initializeReflection(ClassMetadataInfo $class, ReflectionService $reflService) {
         /** @var ClassMetadata $class */
@@ -135,28 +123,15 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Checks whether the class metadata is an entity.
-     *
-     * This method should return false for mapped superclasses or embedded classes.
-     *
-     * @param ClassMetadataInfo $class
-     *
-     * @return boolean
+     * @inheritdoc
      */
     protected function isEntity(ClassMetadataInfo $class) {
-        return true;
+        /** @var ClassMetadata $class */
+        return ($class->isMappedSuperclass || $class->isAbstract || $class->isEmbeddedDocument) === false;
     }
 
     /**
-     * Actually loads the metadata from the underlying metadata.
-     *
-     * @param ClassMetadata      $class
-     * @param ClassMetadata|null $parent
-     * @param bool               $rootEntityFound
-     * @param array              $nonSuperclassParents All parent class names
-     *                                                 that are not marked as mapped superclasses.
-     *
-     * @throws MappingException
+     * @inheritdoc
      */
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents) {
 
@@ -167,8 +142,6 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 //            $this->addInheritedIndexes($class, $parent);
             $class->setIdentifier($parent->identifier);
             $class->setVersion($parent->version);
-//            $class->setVersioned($parent->isVersioned);
-//            $class->setVersionField($parent->versionField);
 //            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);
 //            $class->setAlsoLoadMethods($parent->alsoLoadMethods);
             $class->setChangeTrackingPolicy($parent->changeTrackingPolicy);
@@ -195,13 +168,12 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * @param ClassMetadata $subClass
      * @param ClassMetadata $parentClass
      */
-    private function addInheritedFields(ClassMetadata $subClass, ClassMetadata $parentClass)
-    {
+    private function addInheritedFields(ClassMetadata $subClass, ClassMetadata $parentClass) {
         foreach ($parentClass->fieldMappings as $fieldName => $mapping) {
-            if ( ! isset($mapping['inherited']) && ! $parentClass->isMappedSuperclass) {
+            if (!isset($mapping['inherited']) && !$parentClass->isMappedSuperclass) {
                 $mapping['inherited'] = $parentClass->name;
             }
-            if ( ! isset($mapping['declared'])) {
+            if (!isset($mapping['declared'])) {
                 $mapping['declared'] = $parentClass->name;
             }
             $subClass->addInheritedFieldMapping($mapping);
@@ -211,13 +183,8 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         }
     }
 
-
     /**
-     * Creates a new ClassMetadata instance for the given class name.
-     *
-     * @param string $className
-     *
-     * @return ClassMetadata
+     * @inheritdoc
      */
     protected function newClassMetadataInstance($className) {
         return new ClassMetadata($className);
