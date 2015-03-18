@@ -171,12 +171,6 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 }
             }
         }
-
-        $isDocument = !($metadata->isEmbeddedDocument || $metadata->isMappedSuperclass || $metadata->isAbstract);
-
-        if ($isDocument && empty($metadata->identifier)) {
-            throw MappingException::missingRid($metadata->getName());
-        }
     }
 
     public function &propertyToArray($fieldName, Property $prop) {

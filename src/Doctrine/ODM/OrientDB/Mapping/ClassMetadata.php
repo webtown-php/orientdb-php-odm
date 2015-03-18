@@ -42,48 +42,52 @@ class ClassMetadata implements DoctrineMetadata
      * Identifies a link map association
      */
     const LINK_MAP = 0x08;
+    /**
+     * Identifies a link bag association
+     */
+    const LINK_BAG = 0x10;
 
     /**
      * Identifies a embedded association
      */
-    const EMBED = 0x10;
+    const EMBED = 0x100;
     /**
      * Identifies a embedded list association
      */
-    const EMBED_LIST = 0x20;
+    const EMBED_LIST = 0x200;
     /**
      * Identifies a embedded set association
      */
-    const EMBED_SET = 0x40;
+    const EMBED_SET = 0x400;
     /**
      * Identifies a embedded map association
      */
-    const EMBED_MAP = 0x80;
+    const EMBED_MAP = 0x800;
 
     /**
      * Identifies associations that must use key
      */
-    const ASSOCIATION_USE_KEY = 0xAA;
+    const ASSOCIATION_USE_KEY = 0xA0A;
 
     /**
      * Combined bit mask for single-valued associations.
      */
-    const TO_ONE = 0x11;
+    const TO_ONE = 0x101;
 
     /**
      * Combined bit mask for collection-valued associations.
      */
-    const TO_MANY = 0xEE;
+    const TO_MANY = 0xE1E;
 
     /**
      * Bit mask for linked collection associations
      */
-    const LINK_MANY = 0x0E;
+    const LINK_MANY = 0x01E;
 
     /**
      * Bit mask for embedded collection associations
      */
-    const EMBED_MANY = 0xE0;
+    const EMBED_MANY = 0xE00;
 
     /**
      * DEFERRED_IMPLICIT means that changes of entities are calculated at commit-time

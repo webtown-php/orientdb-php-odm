@@ -160,6 +160,30 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             $eventArgs = new LoadClassMetadataEventArgs($class, $this->dm);
             $this->evm->dispatchEvent(Events::loadClassMetadata, $eventArgs);
         }
+
+        $this->validateRuntimeMetadata($class, $parent);
+    }
+
+    /**
+     * Validate runtime metadata is correctly defined.
+     *
+     * @param ClassMetadata      $class
+     * @param ClassMetadata|null $parent
+     *
+     * @return void
+     *
+     * @throws MappingException
+     */
+    protected function validateRuntimeMetadata($class, $parent) {
+        $className = $class->getName();
+
+        if ($this->isEntity($class) && empty($class->identifier)) {
+            throw MappingException::missingRidProperty($className);
+        }
+
+        if (!$class->isMappedSuperclass && !isset($class->orientClass)) {
+            throw MappingException::missingOClass($className);
+        }
     }
 
     /**

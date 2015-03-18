@@ -61,10 +61,9 @@ class XmlDriver extends FileDriver
                 throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
         }
 
-        if (!$metadata->isMappedSuperclass && !isset($xmlRoot['class'])) {
-            throw MappingException::missingOClass($className);
+        if (isset($xmlRoot['class'])) {
+            $metadata->setOrientClass((string)$xmlRoot['class']);
         }
-        $metadata->setOrientClass((string)$xmlRoot['class']);
 
         if (isset($xmlRoot['abstract'])) {
             $metadata->isAbstract = ((string)$xmlRoot['abstract'] === 'true');
@@ -110,12 +109,6 @@ class XmlDriver extends FileDriver
                 $type = isset($node['collection']) ? (string)$node['collection'] : 'list';
                 $this->addLinkMapping($metadata, $node, $type);
             }
-        }
-
-        $isDocument = !($metadata->isEmbeddedDocument || $metadata->isMappedSuperclass || $metadata->isAbstract);
-
-        if ($isDocument && empty($metadata->identifier)) {
-            throw MappingException::missingRid($metadata->getName());
         }
     }
 
