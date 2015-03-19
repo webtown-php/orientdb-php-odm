@@ -12,7 +12,7 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\AbstractDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\ChangeTrackingPolicy;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Edge;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\EdgeBag;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
@@ -27,6 +27,8 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkSet;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\MappedSuperclass;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedTo;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToVia;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Vertex;
@@ -151,50 +153,51 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         continue;
 
                     case $ann instanceof Link:
-                        $this->mergeLinkToArray($mapping, $ann);
+                        $this->mergeLink($ann, $mapping);
                         $mapping['nullable'] = $ann->nullable;
                         $metadata->mapLink($mapping);
                         continue;
 
                     case $ann instanceof LinkList:
-                        $this->mergeLinkToArray($mapping, $ann);
+                        $this->mergeLink($ann, $mapping);
                         $metadata->mapLinkList($mapping);
                         continue;
 
                     case $ann instanceof LinkSet:
-                        $this->mergeLinkToArray($mapping, $ann);
+                        $this->mergeLink($ann, $mapping);
                         $metadata->mapLinkSet($mapping);
                         continue;
 
                     case $ann instanceof LinkMap:
-                        $this->mergeLinkToArray($mapping, $ann);
+                        $this->mergeLink($ann, $mapping);
                         $metadata->mapLinkMap($mapping);
                         continue;
 
                     case $ann instanceof Embedded:
-                        $this->mergeEmbeddedToArray($mapping, $ann);
+                        $this->mergeEmbedded($ann, $mapping);
                         $mapping['nullable'] = $ann->nullable;
                         $metadata->mapEmbedded($mapping);
                         continue;
 
                     case $ann instanceof EmbeddedList:
-                        $this->mergeEmbeddedToArray($mapping, $ann);
+                        $this->mergeEmbedded($ann, $mapping);
                         $metadata->mapEmbeddedList($mapping);
                         continue;
 
                     case $ann instanceof EmbeddedSet:
-                        $this->mergeEmbeddedToArray($mapping, $ann);
+                        $this->mergeEmbedded($ann, $mapping);
                         $metadata->mapEmbeddedSet($mapping);
                         continue;
 
                     case $ann instanceof EmbeddedMap:
-                        $this->mergeEmbeddedToArray($mapping, $ann);
+                        $this->mergeEmbedded($ann, $mapping);
                         $metadata->mapEmbeddedMap($mapping);
                         continue;
 
-                    case $ann instanceof EdgeBag:
-                        $this->mergeEdgeBagToArray($mapping, $ann);
-                        $metadata->mapEdgeLinkBag($mapping);
+                    case $ann instanceof RelatedToBase:
+                        $this->mergeRelatedToBase($ann, $mapping);
+                        $mapping['via'] = ($ann instanceof RelatedToVia);
+                        $metadata->mapRelatedToLinkBag($mapping);
                         continue;
                 }
             }
@@ -212,7 +215,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
         return $mapping;
     }
 
-    private function mergeLinkToArray(array &$mapping, LinkPropertyBase $link) {
+    private function mergeLink(LinkPropertyBase $link, array &$mapping) {
         $mapping['cascade']       = $link->cascade;
         $mapping['targetDoc']     = $link->targetDoc;
         $mapping['orphanRemoval'] = $link->orphanRemoval;
@@ -225,11 +228,11 @@ class AnnotationDriver extends AbstractAnnotationDriver
         }
     }
 
-    private function mergeEmbeddedToArray(array &$mapping, EmbeddedPropertyBase $embed) {
+    private function mergeEmbedded(EmbeddedPropertyBase $embed, array &$mapping) {
         $mapping['targetDoc'] = $embed->targetDoc;
     }
 
-    private function mergeEdgeBagToArray(array &$mapping, EdgeBag $edge) {
+    private function mergeRelatedToBase(RelatedToBase $edge, array &$mapping) {
         $mapping['targetDoc'] = $edge->targetDoc;
         $mapping['oclass']    = $edge->oclass;
         $mapping['direction'] = $edge->direction;

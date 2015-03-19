@@ -26,4 +26,6 @@ require_once __DIR__ . '/EmbeddedList.php';
 require_once __DIR__ . '/EmbeddedMap.php';
 require_once __DIR__ . '/EmbeddedSet.php';
 
-require_once __DIR__ . '/EdgeBag.php';
+require_once __DIR__ . '/RelatedToBase.php';
+require_once __DIR__ . '/RelatedTo.php';
+require_once __DIR__ . '/RelatedToVia.php';

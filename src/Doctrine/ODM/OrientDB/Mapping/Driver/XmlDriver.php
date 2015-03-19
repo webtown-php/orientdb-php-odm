@@ -110,6 +110,16 @@ class XmlDriver extends FileDriver
                 $this->addLinkMapping($metadata, $node, $type);
             }
         }
+        if (isset($xmlRoot->{'related-to'})) {
+            foreach ($xmlRoot->{'related-to'} as $node) {
+                $this->addRelatedToMapping($metadata, $node);
+            }
+        }
+        if (isset($xmlRoot->{'related-to-via'})) {
+            foreach ($xmlRoot->{'related-to-via'} as $node) {
+                $this->addRelatedToMapping($metadata, $node, true);
+            }
+        }
     }
 
     private function addEmbedMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
@@ -175,6 +185,24 @@ class XmlDriver extends FileDriver
             default:
                 throw MappingException::invalidCollectionType($class->name, $type);
         }
+    }
+
+    private function addRelatedToMapping(ClassMetadata $class, \SimpleXMLElement $embed, $via = false) {
+        $attributes = $embed->attributes();
+        $mapping    = [
+            'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
+            'via'       => $via,
+        ];
+        if (isset($attributes['fieldName'])) {
+            $mapping['fieldName'] = (string)$attributes['fieldName'];
+        }
+        if (isset($attributes['oclass'])) {
+            $mapping['oclass'] = (string)$attributes['oclass'];
+        }
+        if (isset($attributes['direction'])) {
+            $mapping['direction'] = (string)$attributes['direction'];
+        }
+        $class->mapRelatedToLinkBag($mapping);
     }
 
     /**

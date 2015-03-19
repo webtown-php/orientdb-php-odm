@@ -9,26 +9,31 @@ use Doctrine\ODM\OrientDB\PersistentCollection;
 class PersonV extends Vertex
 {
     /**
-     * @EdgeBag(targetDoc="LikedE", oclass="LikedE", direction="in")
-     * @var PersistentCollection|LikedE[]
+     * @Property(type="string")
+     * @var string
+     */
+    public $name;
+    /**
+     * @RelatedTo(oclass="LikedE", direction="in")
+     * @var PersistentCollection
      */
     public $liked;
 
     /**
-     * @EdgeBag(targetDoc="LikedE", oclass="LikedE", direction="out")
+     * @RelatedTo(oclass="LikedE", direction="out")
      * @var PersistentCollection|LikedE[]
      */
     public $likes;
 
     /**
-     * @EdgeBag(targetDoc="FollowedE", oclass="FollowedE", direction="in")
-     * @var PersistentCollection|FollowedE[]
+     * @RelatedTo(targetDoc="PersonV", oclass="FollowedE", direction="in")
+     * @var PersistentCollection|PersonV[]
      */
     public $followers;
 
     /**
-     * @EdgeBag(targetDoc="FollowedE", oclass="FollowedE", direction="out")
-     * @var PersistentCollection|FollowedE[]
+     * @RelatedTo(targetDoc="PersonV", oclass="FollowedE", direction="out")
+     * @var PersistentCollection|PersonV[]
      */
     public $followed;
 }

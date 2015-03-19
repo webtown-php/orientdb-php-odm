@@ -36,6 +36,10 @@ class MappingException extends \Exception
                 $oclass, $new, $existing));
     }
 
+    public static function relatedToRequiresDirection($class, $fieldName) {
+        return new self(sprintf('direction is required for %s::%s', $class, $fieldName));
+    }
+
     /**
      * @param string $document
      *

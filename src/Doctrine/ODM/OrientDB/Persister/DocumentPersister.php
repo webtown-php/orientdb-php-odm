@@ -114,8 +114,14 @@ class DocumentPersister
             case ClassMetadata::LINK_LIST:
             case ClassMetadata::LINK_SET:
             case ClassMetadata::LINK_MAP:
-            case ClassMetadata::LINK_BAG:
                 $this->loadLinkArrayCollection($collection);
+                break;
+            case ClassMetadata::LINK_BAG:
+                if ($mapping['via']) {
+                    $this->loadLinkArrayCollection($collection);
+                } else {
+                    $this->loadDirectArrayCollection($collection);
+                }
                 break;
         }
     }
@@ -171,6 +177,35 @@ class DocumentPersister
             } else {
                 $collection->add($document);
             }
+        }
+    }
+
+    private function loadDirectArrayCollection(PersistentCollection $collection) {
+        $rows = $collection->getData();
+        if (count($rows) === 0) {
+            return;
+        }
+        $mapping = $collection->getMapping();
+        $prop    = $mapping['direction'] === 'in' ? 'out' : 'in';
+
+        $rids    = [];
+        $results = [];
+        foreach ($rows as $row) {
+            if (is_string($row->{$prop})) {
+                $rids[] = $row->{$prop};
+            } else {
+                $results[] = $rows->{$prop};
+            }
+        }
+
+        if ($rids) {
+            $query   = new Query(array_values($rids));
+            $results = array_merge($results, $this->binding->execute($query)->getResult());
+        }
+
+        foreach ($results as $key => $data) {
+            $document = $this->uow->getOrCreateDocument($data);
+            $collection->add($document);
         }
     }
 

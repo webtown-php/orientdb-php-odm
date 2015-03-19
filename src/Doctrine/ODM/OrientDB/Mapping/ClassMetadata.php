@@ -520,61 +520,8 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapField(array $mapping) {
-        $fieldName = $mapping['fieldName'];
-        if (!isset($fieldName)) {
-            throw MappingException::missingFieldName($this->name);
-        }
-        $this->assertFieldNotMapped($fieldName);
-
-        if (!isset($mapping['name'])) {
-            $mapping['name'] = $fieldName;
-        }
-
-        $namespace = $this->reflClass->getNamespaceName();
-        if (isset($mapping['targetDoc']) && strpos($mapping['targetDoc'], '\\') === false && strlen($namespace)) {
-            $mapping['targetDoc'] = $namespace . '\\' . $mapping['targetDoc'];
-        }
-
-        // If targetDoc is unqualified, assume it is in the same namespace as
-        // the sourceDoc.
-        $mapping['sourceDoc'] = $this->name;
-
-        $cascades = isset($mapping['cascade']) ? array_map('strtolower', (array)$mapping['cascade']) : [];
-
-        if (in_array('all', $cascades) || isset($mapping['embedded'])) {
-            $cascades = ['remove', 'persist', 'refresh', 'merge', 'detach'];
-        }
-
-        if (isset($mapping['embedded'])) {
-            unset($mapping['cascade']);
-        } elseif (isset($mapping['cascade'])) {
-            $mapping['cascade'] = $cascades;
-        }
-
-        $mapping['isCascadeRemove']  = in_array('remove', $cascades);
-        $mapping['isCascadePersist'] = in_array('persist', $cascades);
-        $mapping['isCascadeRefresh'] = in_array('refresh', $cascades);
-        $mapping['isCascadeMerge']   = in_array('merge', $cascades);
-        $mapping['isCascadeDetach']  = in_array('detach', $cascades);
-
-        $mapping['isOwningSide'] = true;
-        if (isset($mapping['reference'])) {
-            if (isset($mapping['childProperty']) && $mapping['childProperty']) {
-                $mapping['isOwningSide'] = false;
-            }
-            if (!isset($mapping['orphanRemoval'])) {
-                $mapping['orphanRemoval'] = false;
-            }
-
-            if ($mapping['isOwningSide'] && $mapping['orphanRemoval']) {
-                $mapping['isCascadeRemove'] = true;
-            }
-        }
-
-        $this->fieldMappings[$fieldName] = $mapping;
-        if (isset($mapping['association'])) {
-            $this->associationMappings[$fieldName] = $mapping;
-        }
+        $this->_validateFieldMapping($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -587,7 +534,7 @@ class ClassMetadata implements DoctrineMetadata
             'nullable'  => false,
             'notSaved'  => true,
         ];
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
         $this->identifier = $fieldName;
     }
 
@@ -599,7 +546,7 @@ class ClassMetadata implements DoctrineMetadata
             'nullable'  => false,
             'notSaved'  => true,
         ];
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
         $this->version = $fieldName;
     }
 
@@ -612,9 +559,10 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLink(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::LINK;
         $mapping['reference']   = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -628,9 +576,11 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkList(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::LINK_LIST;
         $mapping['reference']   = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
+
 
         return $this;
     }
@@ -644,9 +594,11 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkSet(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::LINK_SET;
         $mapping['reference']   = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
+
 
         return $this;
     }
@@ -660,9 +612,11 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapLinkMap(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::LINK_MAP;
         $mapping['reference']   = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
+
 
         return $this;
     }
@@ -675,15 +629,21 @@ class ClassMetadata implements DoctrineMetadata
      * @return $this
      * @throws MappingException
      */
-    public function mapEdgeLinkBag(array $mapping) {
+    public function mapRelatedToLinkBag(array $mapping) {
+        $this->_validateFieldMapping($mapping);
+
         $mapping['association'] = self::LINK_BAG;
         $mapping['reference']   = true;
         $suffix                 = $mapping['oclass'] !== self::EDGE_BASE_CLASS
             ? $mapping['oclass']
             : '';
 
+        if (!isset($mapping['direction'])) {
+            throw MappingException::relatedToRequiresDirection($this->name, $mapping['fieldName']);
+        }
+
         $mapping['name'] = sprintf('%s%s', $mapping['direction'] === 'in' ? self::CONNECTION_IN_PREFIX : self::CONNECTION_OUT_PREFIX, $suffix);
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -697,9 +657,10 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbedded(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::EMBED;
         $mapping['embedded']    = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -713,9 +674,10 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbeddedList(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::EMBED_LIST;
         $mapping['embedded']    = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -729,9 +691,10 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbeddedSet(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::EMBED_SET;
         $mapping['embedded']    = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -745,9 +708,10 @@ class ClassMetadata implements DoctrineMetadata
      * @throws MappingException if the fieldName has already been mapped
      */
     public function mapEmbeddedMap(array $mapping) {
+        $this->_validateFieldMapping($mapping);
         $mapping['association'] = self::EMBED_MAP;
         $mapping['embedded']    = true;
-        $this->mapField($mapping);
+        $this->_mapField($mapping);
 
         return $this;
     }
@@ -823,19 +787,6 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
-     * @param string $fieldName
-     *
-     * @throws MappingException
-     */
-    private function assertFieldNotMapped($fieldName) {
-        if (isset($this->fieldMappings[$fieldName]) ||
-            isset($this->associationMappings[$fieldName])
-        ) {
-            throw MappingException::duplicateFieldMapping($this->name, $fieldName);
-        }
-    }
-
-    /**
      * Registers a custom repository class for the document class.
      *
      * @param string $repositoryClassName The class name of the custom repository.
@@ -872,5 +823,79 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function newInstance() {
         return $this->instantiator->instantiate($this->name);
+    }
+
+    /**
+     * @param array $mapping
+     *
+     * @throws MappingException
+     */
+    private function _validateFieldMapping(array &$mapping) {
+        if (!isset($mapping['fieldName'])) {
+            throw MappingException::missingFieldName($this->name);
+        }
+
+        if (isset($this->fieldMappings[$mapping['fieldName']])) {
+            throw MappingException::duplicateFieldMapping($this->name, $mapping['fieldName']);
+        }
+    }
+
+    /**
+     * @param array $mapping
+     *
+     * @throws MappingException
+     */
+    private function _mapField(array &$mapping) {
+        $fieldName = $mapping['fieldName'];
+
+        if (!isset($mapping['name'])) {
+            $mapping['name'] = $fieldName;
+        }
+
+        $namespace = $this->reflClass->getNamespaceName();
+        if (isset($mapping['targetDoc']) && strpos($mapping['targetDoc'], '\\') === false && strlen($namespace)) {
+            $mapping['targetDoc'] = $namespace . '\\' . $mapping['targetDoc'];
+        }
+
+        // If targetDoc is unqualified, assume it is in the same namespace as
+        // the sourceDoc.
+        $mapping['sourceDoc'] = $this->name;
+
+        $cascades = isset($mapping['cascade']) ? array_map('strtolower', (array)$mapping['cascade']) : [];
+
+        if (in_array('all', $cascades) || isset($mapping['embedded'])) {
+            $cascades = ['remove', 'persist', 'refresh', 'merge', 'detach'];
+        }
+
+        if (isset($mapping['embedded'])) {
+            unset($mapping['cascade']);
+        } elseif (isset($mapping['cascade'])) {
+            $mapping['cascade'] = $cascades;
+        }
+
+        $mapping['isCascadeRemove']  = in_array('remove', $cascades);
+        $mapping['isCascadePersist'] = in_array('persist', $cascades);
+        $mapping['isCascadeRefresh'] = in_array('refresh', $cascades);
+        $mapping['isCascadeMerge']   = in_array('merge', $cascades);
+        $mapping['isCascadeDetach']  = in_array('detach', $cascades);
+
+        $mapping['isOwningSide'] = true;
+        if (isset($mapping['reference'])) {
+            if (isset($mapping['childProperty']) && $mapping['childProperty']) {
+                $mapping['isOwningSide'] = false;
+            }
+            if (!isset($mapping['orphanRemoval'])) {
+                $mapping['orphanRemoval'] = false;
+            }
+
+            if ($mapping['isOwningSide'] && $mapping['orphanRemoval']) {
+                $mapping['isCascadeRemove'] = true;
+            }
+        }
+
+        $this->fieldMappings[$fieldName] = $mapping;
+        if (isset($mapping['association'])) {
+            $this->associationMappings[$fieldName] = $mapping;
+        }
     }
 }

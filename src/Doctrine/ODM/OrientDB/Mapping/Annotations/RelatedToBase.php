@@ -2,16 +2,11 @@
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
 
-/**
- * @Annotation
- * @Target("PROPERTY")
- */
-class EdgeBag
+abstract class RelatedToBase
 {
     /**
-     * The name of the mapped edge class
+     * The name of the mapped edge document; leave null to load any type
      *
-     * @Required
      * @var string
      */
     public $targetDoc;

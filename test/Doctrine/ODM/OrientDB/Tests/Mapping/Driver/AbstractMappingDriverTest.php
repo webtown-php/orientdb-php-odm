@@ -65,7 +65,7 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @return ClassMetadata
      */
     public function testFieldMappings($class) {
-        $this->assertEquals(11, count($class->fieldMappings));
+        $this->assertEquals(15, count($class->fieldMappings));
         $this->assertTrue(isset($class->fieldMappings['id']));
         $this->assertTrue(isset($class->fieldMappings['version']));
         $this->assertTrue(isset($class->fieldMappings['name']));
@@ -82,7 +82,7 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @return ClassMetadata
      */
     public function testAssociationMappings($class) {
-        $this->assertEquals(5, count($class->associationMappings));
+        $this->assertEquals(9, count($class->associationMappings));
         $this->assertTrue(isset($class->associationMappings['address']));
         $this->assertTrue(isset($class->associationMappings['phonenumbers']));
         $this->assertTrue(isset($class->associationMappings['groups']));
@@ -94,13 +94,67 @@ abstract class AbstractMappingDriverTest extends TestCase
 
     /**
      * @depends testAssociationMappings
+     * @test
      *
      * @param ClassMetadata $class
      *
      * @return ClassMetadata
      */
-    public function testOwningOneToOneAssociation($class)
-    {
+    public function relates_to_mappings($class) {
+        $this->assertTrue(isset($class->associationMappings['follows']));
+        $this->assertTrue(isset($class->associationMappings['followers']));
+        $this->assertTrue(isset($class->associationMappings['managers']));
+        $this->assertTrue(isset($class->associationMappings['employees']));
+
+        return $class;
+    }
+
+    /**
+     * @depends relates_to_mappings
+     * @test
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function relates_to_direct_mappings($class) {
+        $m = $class->associationMappings['follows'];
+        $this->assertFalse($m['via']);
+        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
+        $m = $class->associationMappings['followers'];
+        $this->assertFalse($m['via']);
+        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
+
+        return $class;
+    }
+
+    /**
+     * @depends relates_to_mappings
+     * @test
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function relates_to_via_mappings($class) {
+        $m = $class->associationMappings['managers'];
+        $this->assertTrue($m['via']);
+        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
+        $m = $class->associationMappings['employees'];
+        $this->assertTrue($m['via']);
+        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
+
+        return $class;
+    }
+
+    /**
+     * @depends testAssociationMappings
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function testOwningOneToOneAssociation($class) {
         $this->assertTrue(isset($class->associationMappings['address']));
         $this->assertTrue($class->associationMappings['address']['isOwningSide']);
         $this->assertEquals('user', $class->associationMappings['address']['parentProperty']);
@@ -121,8 +175,7 @@ abstract class AbstractMappingDriverTest extends TestCase
      *
      * @return ClassMetadata
      */
-    public function testOwningOneToManyAssociation($class)
-    {
+    public function testOwningOneToManyAssociation($class) {
         $this->assertTrue(isset($class->associationMappings['phonenumbers']));
         $this->assertTrue($class->associationMappings['phonenumbers']['isOwningSide'], 'isOwningSide');
         $this->assertTrue($class->associationMappings['phonenumbers']['isCascadePersist']);
@@ -211,6 +264,30 @@ class User
      * @EmbeddedList(targetDoc="Phonenumber")
      */
     public $otherPhonenumbers;
+
+    /**
+     * @RelatedTo(oclass="followed", direction="out")
+     * @var User[]
+     */
+    public $follows;
+
+    /**
+     * @RelatedTo(oclass="followed", direction="in")
+     * @var User[]
+     */
+    public $followers;
+
+    /**
+     * @RelatedToVia(targetDoc="ReportsTo", oclass="reports_to", direction="in")
+     * @var array
+     */
+    public $managers;
+
+    /**
+     * @RelatedToVia(targetDoc="ReportsTo", oclass="reports_to", direction="out")
+     * @var array
+     */
+    public $employees;
 
     /**
      * @PrePersist

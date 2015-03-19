@@ -42,6 +42,8 @@
                 </xs:annotation>
             </xs:element>
             <xs:element name="field" type="odm:field" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="related-to" type="odm:related-to-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="related-to-via" type="odm:related-to-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="embed-one" type="odm:embedded" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="embed-many" type="odm:embedded-many" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="link-one" type="odm:link" minOccurs="0" maxOccurs="unbounded"/>
@@ -94,7 +96,7 @@
             <xs:element name="cascade" type="odm:cascade-type" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
-        <xs:attribute name="target-doc" type="xs:string" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string"/>
         <xs:attribute name="parent-property" type="xs:NMTOKEN"/>
         <xs:attribute name="child-property" type="xs:NMTOKEN"/>
         <xs:attribute name="orphan-removal" type="xs:boolean"/>
@@ -106,7 +108,7 @@
             <xs:element name="cascade" type="odm:cascade-type" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
-        <xs:attribute name="target-doc" type="xs:string" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string"/>
         <xs:attribute name="parent-property" type="xs:NMTOKEN"/>
         <xs:attribute name="child-property" type="xs:NMTOKEN"/>
         <xs:attribute name="orphan-removal" type="xs:boolean"/>
@@ -121,6 +123,17 @@
             <xs:enumeration value="map"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:complexType name="related-to-type">
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string"/>
+        <xs:attribute name="oclass" type="xs:NMTOKEN" use="required">
+            <xs:annotation>
+                <xs:documentation>Specifies the OrientDB class name for the edge</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="direction" type="odm:direction-type" use="required" default="in"/>
+    </xs:complexType>
 
     <xs:complexType name="emptyType"/>
 
@@ -139,6 +152,13 @@
             <xs:enumeration value="DEFERRED_IMPLICIT"/>
             <xs:enumeration value="DEFERRED_EXPLICIT"/>
             <xs:enumeration value="NOTIFY"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="direction-type">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="in"/>
+            <xs:enumeration value="out"/>
         </xs:restriction>
     </xs:simpleType>
 

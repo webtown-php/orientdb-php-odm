@@ -11,6 +11,12 @@
         <field fieldName="email" type="string"/>
         <field fieldName="mysqlProfileId" type="integer"/>
         <field fieldName="createdAt" type="date"/>
+        
+        <related-to fieldName="follows" oclass="followed" direction="out" />
+        <related-to fieldName="followers" oclass="followed" direction="in" />
+
+        <related-to-via fieldName="managers" target-doc="ReportsTo" oclass="reports_to" direction="in" />
+        <related-to-via fieldName="employees" target-doc="ReportsTo" oclass="reports_to" direction="out" />
 
         <embed-one fieldName="embeddedPhonenumber" target-doc="Phonenumber"/>
         <embed-many fieldName="otherPhonenumbers" target-doc="Phonenumber" collection="list"/>
