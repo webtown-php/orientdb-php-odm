@@ -11,8 +11,9 @@ class RidMap extends \ArrayObject implements Value
     public function toValue() {
         $parts = [];
         foreach ($this as $k => $v) {
-             $parts []= sprintf('"%s" : %s', $k, $v);
+            $parts [] = sprintf('"%s" : %s', $k, $v);
         }
+
         return sprintf('{ %s }', implode(', ', $parts));
     }
 }

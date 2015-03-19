@@ -156,6 +156,8 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             throw MappingException::reflectionFailure($class->getName(), $ex);
         }
 
+        $class->setParentClasses($nonSuperclassParents);
+
         if ($this->evm->hasListeners(Events::loadClassMetadata)) {
             $eventArgs = new LoadClassMetadataEventArgs($class, $this->dm);
             $this->evm->dispatchEvent(Events::loadClassMetadata, $eventArgs);

@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @EmbeddedDocument(class="Phone")
+ * @EmbeddedDocument(oclass="Phone")
  */
 class Phone
 {

@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact;
 
 /**
- * @Document(class="ContactEmptyAddress")
+ * @Document(oclass="ContactEmptyAddress")
  */
 class EmptyAddress
 {

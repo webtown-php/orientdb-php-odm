@@ -146,7 +146,9 @@ class SQLBatchPersister implements PersisterInterface
 
         if (!empty($docs)) {
             // we didn't receive info for all inserted documents
-            throw LockException::lockFailed(array_map(function($arg) { return $arg[1]; }, $docs));
+            throw LockException::lockFailed(array_map(function ($arg) {
+                return $arg[1];
+            }, $docs));
         }
     }
 

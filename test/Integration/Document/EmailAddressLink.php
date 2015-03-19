@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="EmailAddressLink")
+ * @Document(oclass="EmailAddressLink")
  */
 class EmailAddressLink
 {

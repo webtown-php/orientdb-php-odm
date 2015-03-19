@@ -21,7 +21,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="Comment")
+ * @Document(oclass="Comment")
  */
 class Comment
 {

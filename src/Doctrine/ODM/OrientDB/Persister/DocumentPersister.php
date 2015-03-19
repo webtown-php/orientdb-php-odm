@@ -9,7 +9,6 @@ use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\PersistentCollection;
-use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Query\Query;
 
@@ -115,6 +114,7 @@ class DocumentPersister
             case ClassMetadata::LINK_LIST:
             case ClassMetadata::LINK_SET:
             case ClassMetadata::LINK_MAP:
+            case ClassMetadata::LINK_BAG:
                 $this->loadLinkArrayCollection($collection);
                 break;
         }
@@ -128,9 +128,9 @@ class DocumentPersister
 
         if (is_array($data)) {
             $mapping  = $collection->getMapping();
-            $useKey   = (bool)($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
+            $useKey   = boolval($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
             $owner    = $collection->getOwner();
-            $metadata = $this->dm->getClassMetadata($mapping['targetClass']);
+            $metadata = $this->dm->getClassMetadata($mapping['targetDoc']);
             foreach ($data as $key => $v) {
                 $document = $metadata->newInstance();
                 $data     = $this->hydratorFactory->hydrate($document, $v);
@@ -151,7 +151,7 @@ class DocumentPersister
             return;
         }
         $mapping = $collection->getMapping();
-        $useKey  = (bool)($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
+        $useKey  = boolval($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
         if (is_scalar(reset($rows))) {
             $query = new Query(array_values($rows));
             if ($useKey) {
@@ -159,6 +159,7 @@ class DocumentPersister
             }
             $results = $this->binding->execute($query)->getResult();
         } else {
+            // data was already loaded
             $results = $rows;
         }
 

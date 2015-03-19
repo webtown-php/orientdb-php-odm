@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact;
 
 /**
- * @Document(class="ContactAddress")
+ * @Document(oclass="ContactAddress")
  */
 class Address
 {
@@ -107,7 +107,7 @@ class Address
     protected $image;
 
     /**
-     * @Link(targetClass="test")
+     * @Link(targetDoc="test")
      */
     protected $link;
 

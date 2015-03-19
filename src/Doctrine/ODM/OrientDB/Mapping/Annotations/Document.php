@@ -29,7 +29,7 @@ class Document extends AbstractDocument
      * @Required
      * @var string
      */
-    public $class;
+    public $oclass;
 
     /**
      * @var string

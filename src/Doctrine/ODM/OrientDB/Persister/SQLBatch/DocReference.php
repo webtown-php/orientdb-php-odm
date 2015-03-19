@@ -15,8 +15,9 @@ class DocReference implements Value
      * @return DocReference
      */
     public static function create($ref) {
-        $r = new self();
+        $r      = new self();
         $r->ref = $ref;
+
         return $r;
     }
 

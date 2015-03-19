@@ -8,8 +8,11 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\AbstractDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\ChangeTrackingPolicy;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Edge;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\EdgeBag;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
@@ -26,14 +29,18 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Vertex;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata as MD;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
 class AnnotationDriver extends AbstractAnnotationDriver
 {
     protected $entityAnnotationClasses = [
-        Document::class         => 1,
-        MappedSuperclass::class => 2,
-        EmbeddedDocument::class => 3,
+        Document::class         => true,
+        MappedSuperclass::class => true,
+        EmbeddedDocument::class => true,
+        Edge::class             => true,
+        Vertex::class           => true,
     ];
 
     /**
@@ -60,14 +67,15 @@ class AnnotationDriver extends AbstractAnnotationDriver
             throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
         }
 
-        $documentAnnots = [];
+        $documentAnnot = null;
         foreach ($classAnnotations as $annot) {
 
-            foreach ($this->entityAnnotationClasses as $annotClass => $i) {
-                if ($annot instanceof $annotClass) {
-                    $documentAnnots[$i] = $annot;
-                    continue 2;
+            if ($annot instanceof AbstractDocument) {
+                if ($documentAnnot !== null) {
+                    throw MappingException::duplicateDocumentAnnotation($className);
                 }
+                $documentAnnot = $annot;
+                continue;
             }
 
             switch (true) {
@@ -76,19 +84,34 @@ class AnnotationDriver extends AbstractAnnotationDriver
             }
         }
 
-        // find the winning document annotation
-        ksort($documentAnnots);
-        $documentAnnot = reset($documentAnnots);
+        $isDocument = false;
+        switch (true) {
+            case $documentAnnot instanceof Document:
+                $isDocument = true;
+                break;
 
-        if ($documentAnnot instanceof MappedSuperclass) {
-            $metadata->isMappedSuperclass = true;
-        } elseif ($documentAnnot instanceof EmbeddedDocument) {
-            $metadata->isEmbeddedDocument = true;
+            case $documentAnnot instanceof Vertex:
+                $isDocument          = true;
+                $metadata->graphType = MD::GRAPH_TYPE_VERTEX;
+                break;
+
+            case $documentAnnot instanceof Edge:
+                $isDocument          = true;
+                $metadata->graphType = MD::GRAPH_TYPE_EDGE;
+                break;
+
+            case $documentAnnot instanceof EmbeddedDocument:
+                $isDocument                   = true;
+                $metadata->isEmbeddedDocument = true;
+                break;
+            case $documentAnnot instanceof MappedSuperclass:
+                $metadata->isMappedSuperclass = true;
+                break;
         }
 
-        if (isset($documentAnnot->class)) {
-            $metadata->setOrientClass($documentAnnot->class);
+        if ($isDocument) {
             $metadata->isAbstract = $documentAnnot->abstract;
+            $metadata->setOrientClass($documentAnnot->oclass);
         }
 
         foreach ($metadata->reflClass->getProperties() as $property) {
@@ -128,45 +151,50 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         continue;
 
                     case $ann instanceof Link:
-                        $mapping             = $this->linkToArray($mapping, $ann);
+                        $this->mergeLinkToArray($mapping, $ann);
                         $mapping['nullable'] = $ann->nullable;
                         $metadata->mapLink($mapping);
                         continue;
 
                     case $ann instanceof LinkList:
-                        $mapping = $this->linkToArray($mapping, $ann);
+                        $this->mergeLinkToArray($mapping, $ann);
                         $metadata->mapLinkList($mapping);
                         continue;
 
                     case $ann instanceof LinkSet:
-                        $mapping = $this->linkToArray($mapping, $ann);
+                        $this->mergeLinkToArray($mapping, $ann);
                         $metadata->mapLinkSet($mapping);
                         continue;
 
                     case $ann instanceof LinkMap:
-                        $mapping = $this->linkToArray($mapping, $ann);
+                        $this->mergeLinkToArray($mapping, $ann);
                         $metadata->mapLinkMap($mapping);
                         continue;
 
                     case $ann instanceof Embedded:
-                        $mapping             = $this->embeddedToArray($mapping, $ann);
+                        $this->mergeEmbeddedToArray($mapping, $ann);
                         $mapping['nullable'] = $ann->nullable;
                         $metadata->mapEmbedded($mapping);
                         continue;
 
                     case $ann instanceof EmbeddedList:
-                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $this->mergeEmbeddedToArray($mapping, $ann);
                         $metadata->mapEmbeddedList($mapping);
                         continue;
 
                     case $ann instanceof EmbeddedSet:
-                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $this->mergeEmbeddedToArray($mapping, $ann);
                         $metadata->mapEmbeddedSet($mapping);
                         continue;
 
                     case $ann instanceof EmbeddedMap:
-                        $mapping = $this->embeddedToArray($mapping, $ann);
+                        $this->mergeEmbeddedToArray($mapping, $ann);
                         $metadata->mapEmbeddedMap($mapping);
+                        continue;
+
+                    case $ann instanceof EdgeBag:
+                        $this->mergeEdgeBagToArray($mapping, $ann);
+                        $metadata->mapEdgeLinkBag($mapping);
                         continue;
                 }
             }
@@ -184,9 +212,9 @@ class AnnotationDriver extends AbstractAnnotationDriver
         return $mapping;
     }
 
-    private function &linkToArray(array &$mapping, LinkPropertyBase $link) {
+    private function mergeLinkToArray(array &$mapping, LinkPropertyBase $link) {
         $mapping['cascade']       = $link->cascade;
-        $mapping['targetClass']   = $link->targetClass;
+        $mapping['targetDoc']     = $link->targetDoc;
         $mapping['orphanRemoval'] = $link->orphanRemoval;
 
         if (!empty($link->parentProperty)) {
@@ -195,14 +223,16 @@ class AnnotationDriver extends AbstractAnnotationDriver
         if (!empty($link->childProperty)) {
             $mapping['childProperty'] = $link->childProperty;
         }
-
-        return $mapping;
     }
 
-    private function &embeddedToArray(array &$mapping, EmbeddedPropertyBase $embed) {
-        $mapping['targetClass'] = $embed->targetClass;
+    private function mergeEmbeddedToArray(array &$mapping, EmbeddedPropertyBase $embed) {
+        $mapping['targetDoc'] = $embed->targetDoc;
+    }
 
-        return $mapping;
+    private function mergeEdgeBagToArray(array &$mapping, EdgeBag $edge) {
+        $mapping['targetDoc'] = $edge->targetDoc;
+        $mapping['oclass']    = $edge->oclass;
+        $mapping['direction'] = $edge->direction;
     }
 
     /**

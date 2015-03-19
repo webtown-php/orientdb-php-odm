@@ -21,7 +21,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="MapPoint")
+ * @Document(oclass="MapPoint")
  */
 class MapPoint
 {

@@ -14,7 +14,7 @@ namespace Domain\Link;
 use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
-* @ODM\Document(class="pagelink")
+* @ODM\Document(oclass="pagelink")
 */
 class Page extends \Domain\Link
 {

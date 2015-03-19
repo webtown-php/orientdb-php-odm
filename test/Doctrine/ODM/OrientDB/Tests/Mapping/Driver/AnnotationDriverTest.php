@@ -42,7 +42,7 @@ class AnnotationDriverTest extends AbstractMappingDriverTest
 }
 
 /**
- * @Document(class="ColumnWithoutType")
+ * @Document(oclass="ColumnWithoutType")
  */
 class ColumnWithoutType
 {

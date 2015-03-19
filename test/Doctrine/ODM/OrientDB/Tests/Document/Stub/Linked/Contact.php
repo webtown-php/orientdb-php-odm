@@ -5,7 +5,7 @@ namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked;
 use Doctrine\Common\Collections\Collection;
 
 /**
- * @Document(class="LinkedContact")
+ * @Document(oclass="LinkedContact")
  */
 class Contact
 {
@@ -28,13 +28,13 @@ class Contact
     public $name;
 
     /**
-     * @Link(targetClass="EmailAddress", parentProperty="contact", cascade={"persist"})
+     * @Link(targetDoc="EmailAddress", parentProperty="contact", cascade={"persist"})
      * @var EmailAddress
      */
     protected $email;
 
     /**
-     * @LinkList(targetClass="Phone", parentProperty="contact", cascade={"persist"})
+     * @LinkList(targetDoc="Phone", parentProperty="contact", cascade={"persist"})
      * @var Phone[]|Collection
      */
     protected $phones;

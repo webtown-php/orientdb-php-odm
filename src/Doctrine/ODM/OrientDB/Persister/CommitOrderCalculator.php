@@ -50,12 +50,12 @@ class CommitOrderCalculator
             $co->classes[$class->name] = $class;
 
             foreach ($class->associationMappings as $assoc) {
-                if (!isset($assoc['reference'])) {
+                if (!isset($assoc['reference']) || !isset($assoc['targetDoc'])) {
                     continue;
                 }
 
                 /** @var ClassMetadata $dependency */
-                $dependency = $mdf->getMetadataFor($assoc['targetClass']);
+                $dependency = $mdf->getMetadataFor($assoc['targetDoc']);
 
                 if (!$co->hasDependency($dependency, $class)) {
                     $co->addDependency($dependency, $class);

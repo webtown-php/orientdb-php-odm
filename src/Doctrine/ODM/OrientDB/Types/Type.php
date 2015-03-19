@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: stuartcarnie
- * Date: 2/9/15
- * Time: 8:48 PM
- */
 
 namespace Doctrine\ODM\OrientDB\Types;
-
 
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
@@ -29,12 +22,17 @@ abstract class Type
     const DATETIME = 'datetime';
     const DECIMAL = 'decimal';
 
+    const EMBEDDED_SET = 'embedded_set';
+    const LINK_SET = 'link_set';
+    const LINK_LIST = 'link_list';
+    const LINK_MAP = 'link_map';
+    const LINK_BAG = 'link_bag';
 
     /** Map of already instantiated type objects. One instance per type (flyweight). */
-    private static $typeObjects = array();
+    private static $typeObjects = [];
 
     /** The map of supported doctrine mapping types. */
-    private static $typesMap = array(
+    private static $typesMap = [
         self::RID      => 'Doctrine\ODM\OrientDB\Types\RidType',
         self::BOOLEAN  => 'Doctrine\ODM\OrientDB\Types\BooleanType',
 
@@ -52,54 +50,33 @@ abstract class Type
         self::DATETIME => 'Doctrine\ODM\OrientDB\Types\DateTimeType',
 
         self::DECIMAL  => 'Doctrine\ODM\OrientDB\Types\DecimalType',
+    ];
 
-    );
+    /**
+     * For parsing fieldTypes property per
+     * {@link https://github.com/orientechnologies/orientdb-docs/wiki/OrientDB-REST#json-data-type-handling-and-schema-less-mode docs}
+     *
+     * @var array
+     */
+    private static $shortTypesMap = [
+        'f' => self::FLOAT,         // float
+        'c' => self::DECIMAL,       // decimal
+        'l' => self::LONG,          // long
+        'd' => self::DOUBLE,        // double
+        'b' => self::BYTE,          // byte and binary
+        'a' => self::DATE,          // date
+        't' => self::DATETIME,      // datetime
+        's' => self::SHORT,         // short
 
-    /* Prevent instantiation and force use of the factory method. */
+        'e' => self::EMBEDDED_SET,  // Set, because arrays and List are serialized as arrays like [3,4,5]
+        'x' => self::RID,           // links
+        'n' => self::LINK_SET,      // linksets
+        'z' => self::LINK_LIST,     // linklist
+        'm' => self::LINK_MAP,      // linkmap
+        'g' => self::LINK_BAG,      // linkbag
+    ];
+
     final private function __construct() {
-    }
-
-    /**
-     * Converts a value from its PHP representation to its database representation
-     * of this type.
-     *
-     * @param mixed $value The value to convert.
-     *
-     * @return mixed The database representation of the value.
-     */
-    public function convertToDatabaseValue($value) {
-        return $value;
-    }
-
-    /**
-     * Converts a value from its database representation to its PHP representation
-     * of this type.
-     *
-     * @param mixed $value The value to convert.
-     *
-     * @return mixed The PHP representation of the value.
-     */
-    public function convertToPHPValue($value) {
-        return $value;
-    }
-
-    public function codeToDatabaseValue() {
-        return '$return = $value;';
-    }
-
-    public function codeToPHPValue() {
-        return '$return = $value;';
-    }
-
-    /**
-     *
-     * @param mixed $left
-     * @param mixed $right
-     *
-     * @return bool
-     */
-    public function equalsPHP($left, $right) {
-        return $left == $right;
     }
 
     /**
@@ -189,6 +166,53 @@ abstract class Type
      */
     final public static function getTypesMap() {
         return self::$typesMap;
+    }
+
+    final public static function getShortTypesMap() {
+        return self::$shortTypesMap;
+    }
+
+    /**
+     * Converts a value from its PHP representation to its database representation
+     * of this type.
+     *
+     * @param mixed $value The value to convert.
+     *
+     * @return mixed The database representation of the value.
+     */
+    public function convertToDatabaseValue($value) {
+        return $value;
+    }
+
+    /**
+     * Converts a value from its database representation to its PHP representation
+     * of this type.
+     *
+     * @param mixed $value The value to convert.
+     *
+     * @return mixed The PHP representation of the value.
+     */
+    public function convertToPHPValue($value) {
+        return $value;
+    }
+
+    public function codeToDatabaseValue() {
+        return '$return = $value;';
+    }
+
+    public function codeToPHPValue() {
+        return '$return = $value;';
+    }
+
+    /**
+     *
+     * @param mixed $left
+     * @param mixed $right
+     *
+     * @return bool
+     */
+    public function equalsPHP($left, $right) {
+        return $left == $right;
     }
 
     public function __toString() {

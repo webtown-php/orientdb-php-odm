@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded;
 
 /**
- * @EmbeddedDocument(class="EmbeddedEmailAddress")
+ * @EmbeddedDocument(oclass="EmbeddedEmailAddress")
  */
 class EmailAddress
 {

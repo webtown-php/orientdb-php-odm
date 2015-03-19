@@ -23,7 +23,7 @@ namespace Integration\Document;
 use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
- * @Document(class="Profile")
+ * @Document(oclass="Profile")
  */
 class Profile
 {
@@ -43,13 +43,13 @@ class Profile
     public $hash;
 
     /**
-     * @LinkMap(targetClass="Profile")
+     * @LinkMap(targetDoc="Profile")
      * @var Profile[]
      */
     public $followers;
 
     /**
-     * @EmbeddedList(targetClass="Phone")
+     * @EmbeddedList(targetDoc="Phone")
      * @var Phone[]
      */
     public $phones;

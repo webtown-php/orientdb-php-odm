@@ -14,7 +14,7 @@ namespace Domain\Link;
 use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
-* @ODM\Document(class="externallink")
+* @ODM\Document(oclass="externallink")
 */
 class External extends \Domain\Link
 {

@@ -12,5 +12,5 @@ class EmbeddedDocument extends AbstractDocument
      * @Required
      * @var string
      */
-    public $class;
+    public $oclass;
 }

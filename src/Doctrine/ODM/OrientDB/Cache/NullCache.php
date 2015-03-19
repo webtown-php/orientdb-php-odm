@@ -7,7 +7,8 @@ use Doctrine\Common\Cache\CacheProvider;
 /**
  * /dev/null cache
  */
-class NullCache extends CacheProvider {
+class NullCache extends CacheProvider
+{
 
     /**
      * @inheritdoc

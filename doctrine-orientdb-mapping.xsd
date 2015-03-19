@@ -51,7 +51,7 @@
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="repository-class" type="xs:string"/>
         <xs:attribute name="change-tracking-policy" type="odm:change-tracking-policy"/>
-        <xs:attribute name="class" type="xs:NMTOKEN" use="required">
+        <xs:attribute name="oclass" type="xs:NMTOKEN" use="required">
             <xs:annotation>
                 <xs:documentation>Specifies the OrientDB class name for this document</xs:documentation>
             </xs:annotation>
@@ -77,14 +77,14 @@
 
     <xs:complexType name="embedded">
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
-        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string" use="required"/>
         <xs:attribute name="nullable" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="name" type="xs:NMTOKEN"/>
     </xs:complexType>
 
     <xs:complexType name="embedded-many">
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
-        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string" use="required"/>
         <xs:attribute name="collection" type="odm:collection-type" default="list" use="required"/>
         <xs:attribute name="name" type="xs:NMTOKEN"/>
     </xs:complexType>
@@ -94,7 +94,7 @@
             <xs:element name="cascade" type="odm:cascade-type" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
-        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string" use="required"/>
         <xs:attribute name="parent-property" type="xs:NMTOKEN"/>
         <xs:attribute name="child-property" type="xs:NMTOKEN"/>
         <xs:attribute name="orphan-removal" type="xs:boolean"/>
@@ -106,7 +106,7 @@
             <xs:element name="cascade" type="odm:cascade-type" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
-        <xs:attribute name="target-class" type="xs:string" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string" use="required"/>
         <xs:attribute name="parent-property" type="xs:NMTOKEN"/>
         <xs:attribute name="child-property" type="xs:NMTOKEN"/>
         <xs:attribute name="orphan-removal" type="xs:boolean"/>

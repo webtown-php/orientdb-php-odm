@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 /**
- * @Document(class="EmbeddedContact")
+ * @Document(oclass="EmbeddedContact")
  */
 class Contact
 {
@@ -29,13 +29,13 @@ class Contact
     public $name;
 
     /**
-     * @Embedded(targetClass="EmailAddress")
+     * @Embedded(targetDoc="EmailAddress")
      * @var EmailAddress
      */
     public $email;
 
     /**
-     * @EmbeddedList(targetClass="Phone")
+     * @EmbeddedList(targetDoc="Phone")
      * @var Phone[]|Collection
      */
     public $phones;

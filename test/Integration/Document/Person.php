@@ -4,7 +4,7 @@ namespace Integration\Document;
 use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
- * @Document(class="Person")
+ * @Document(oclass="Person")
  */
 class Person
 {
@@ -26,19 +26,19 @@ class Person
     public $name;
 
     /**
-     * @Embedded(targetClass="EmailAddress", nullable=true)
+     * @Embedded(targetDoc="EmailAddress", nullable=true)
      * @var EmailAddress
      */
     public $email;
 
     /**
-     * @EmbeddedList(targetClass="EmailAddress")
+     * @EmbeddedList(targetDoc="EmailAddress")
      * @var EmailAddress[]|PersistentCollection
      */
     public $emails;
 
     /**
-     * @EmbeddedMap(targetClass="Phone")
+     * @EmbeddedMap(targetDoc="Phone")
      * @var Phone[]|PersistentCollection
      */
     public $phones;

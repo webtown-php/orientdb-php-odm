@@ -37,96 +37,143 @@ class Fixtures
 
     function create_classes() {
         $classes = [
-            'Address'      => [
-                'city' => 'STRING',
+            'Address'          => [
+                'p' => [
+                    'city' => 'STRING',
+                ]
             ],
-            'Country'      => null,
-            'City'         => null,
-            'Phone'        => [
-                'phone' => 'STRING'
+            'Country'          => null,
+            'City'             => null,
+            'Phone'            => [
+                'p' => [
+                    'phone' => 'STRING'
+                ]
             ],
             'PhoneLink'        => [
-                'phone' => 'STRING'
+                'p' => [
+                    'phone' => 'STRING'
+                ]
             ],
-            'Profile'      => [
-                'name'      => 'STRING',
-                'followers' => [
-                    'type'  => 'LINKMAP',
-                    'class' => 'Profile',
-                ],
-                'phones'    => [
-                    'type'  => 'EMBEDDEDLIST',
-                    'class' => 'Phone',
-                ],
+            'Profile'          => [
+                'p' => [
+                    'name'      => 'STRING',
+                    'followers' => [
+                        'type'  => 'LINKMAP',
+                        'class' => 'Profile',
+                    ],
+                    'phones'    => [
+                        'type'  => 'EMBEDDEDLIST',
+                        'class' => 'Phone',
+                    ],
+                ]
             ],
-            'Company'      => null,
-            'Comment'      => null,
-            'Post'         => [
-                'comments' => [
-                    'type'  => 'LINKLIST',
-                    'class' => 'Comment',
-                ],
+            'Company'          => null,
+            'Comment'          => null,
+            'Post'             => [
+                'p' => [
+                    'comments' => [
+                        'type'  => 'LINKLIST',
+                        'class' => 'Comment',
+                    ],
+                ]
             ],
-            'MapPoint'     => [
-                'x' => 'FLOAT',
-                'y' => 'FLOAT',
+
+            'MapPoint'         => [
+                'p' => [
+                    'x' => 'FLOAT',
+                    'y' => 'FLOAT',
+                ]
             ],
-            'EmailAddress' => [
-                'type'  => 'STRING',
-                'email' => 'STRING',
+            'EmailAddress'     => [
+                'p' => [
+                    'type'  => 'STRING',
+                    'email' => 'STRING',
+                ]
             ],
             'EmailAddressLink' => [
-                'type'  => 'STRING',
-                'email' => 'STRING',
+                'p' => [
+                    'type'  => 'STRING',
+                    'email' => 'STRING',
+                ]
             ],
-            'Person'       => [
-                'name'   => 'STRING',
-                'email'  => [
-                    'type'  => 'EMBEDDED',
-                    'class' => 'EmailAddress',
-                ],
-                'emails' => [
-                    'type'  => 'EMBEDDEDLIST',
-                    'class' => 'EmailAddress',
-                ],
-                'phones' => [
-                    'type'  => 'EMBEDDEDMAP',
-                    'class' => 'Phone',
+            'Person'           => [
+                'p' => [
+                    'name'   => 'STRING',
+                    'email'  => [
+                        'type'  => 'EMBEDDED',
+                        'class' => 'EmailAddress',
+                    ],
+                    'emails' => [
+                        'type'  => 'EMBEDDEDLIST',
+                        'class' => 'EmailAddress',
+                    ],
+                    'phones' => [
+                        'type'  => 'EMBEDDEDMAP',
+                        'class' => 'Phone',
+                    ]
+
                 ]
             ],
             'PersonLink'       => [
-                'name'   => 'STRING',
-                'email'  => [
-                    'type'  => 'LINK',
-                    'class' => 'EmailAddressLink',
+                'p' => [
+                    'name'   => 'STRING',
+                    'email'  => [
+                        'type'  => 'LINK',
+                        'class' => 'EmailAddressLink',
+                    ],
+                    'emails' => [
+                        'type'  => 'LINKLIST',
+                        'class' => 'EmailAddressLink',
+                    ],
+                    'phones' => [
+                        'type'  => 'LINKMAP',
+                        'class' => 'PhoneLink',
+                    ]
+
                 ],
-                'emails' => [
-                    'type'  => 'LINKLIST',
-                    'class' => 'EmailAddressLink',
-                ],
-                'phones' => [
-                    'type'  => 'LINKMAP',
-                    'class' => 'PhoneLink',
-                ]
             ],
             'TypedCollections' => [
-                'stringList' => [
-                    'type'  => 'EMBEDDEDLIST',
-                    'class' => 'string',
+                'p' => [
+                    'stringList' => [
+                        'type'  => 'EMBEDDEDLIST',
+                        'class' => 'string',
+                    ],
+                    'intSet'     => [
+                        'type'  => 'EMBEDDEDSET',
+                        'class' => 'integer',
+                    ],
+                    'stringMap'  => [
+                        'type'  => 'EMBEDDEDMAP',
+                        'class' => 'string',
+                    ],
+
                 ],
-                'intSet' => [
-                    'type'  => 'EMBEDDEDSET',
-                    'class' => 'integer',
+            ],
+            'PersonV'          => [
+                'extends' => 'V',
+                'p'       => [
+                    'name' => 'STRING',
                 ],
-                'stringMap' => [
-                    'type'  => 'EMBEDDEDMAP',
-                    'class' => 'string',
-                ],
-            ]
+            ],
+            'FollowedE'         => [
+                'extends' => 'E',
+            ],
+            'LikedE'           => [
+                'extends' => 'E',
+            ],
+            'PostV'            => [
+                'extends' => 'V',
+                'p'       => [
+                    'title' => 'STRING',
+                ]
+            ],
         ];
 
-        foreach ($classes as $class => $properties) {
+        foreach ($classes as $class => $defn) {
             $query = "CREATE CLASS " . $class;
+            if (isset($defn['extends'])) {
+                $query .= " EXTENDS {$defn['extends']}";
+            }
 
             $result = $this->client
                 ->post('/command/' . $this->dbname . '/sql', $this->contentType, $query)
@@ -134,7 +181,7 @@ class Fixtures
                 ->json();
 
             $this->{$class} = $result['result'][0]['value'];
-
+            $properties     = isset($defn['p']) ? $defn['p'] : null;
             if ($properties) {
                 foreach ($properties as $name => $md) {
                     if (is_string($md)) {
@@ -173,14 +220,14 @@ class Fixtures
         }
 
         //Insert countries
-        $countries = array('France', 'Italy', 'Spain', 'England', 'Ireland', 'Poland', 'Bulgaria', 'Portogallo', 'Belgium', 'Suisse');
+        $countries = ['France', 'Italy', 'Spain', 'England', 'Ireland', 'Poland', 'Bulgaria', 'Portogallo', 'Belgium', 'Suisse'];
         foreach ($countries as $country) {
             $this->client->post('/document/' . $this->dbname, $this->contentType, '{"@class": "Country", "name": "' . $country . '" }')
                          ->send();
         }
 
         //Insert Profile
-        $profiles = array('David', 'Alex', 'Luke', 'Marko', 'Rexter', 'Gremlin', 'Thinkerpop', 'Frames');
+        $profiles = ['David', 'Alex', 'Luke', 'Marko', 'Rexter', 'Gremlin', 'Thinkerpop', 'Frames'];
         foreach ($profiles as $k => $profile) {
             $data             = new \stdClass();
             $data->{'@class'} = "Profile";
@@ -202,22 +249,55 @@ class Fixtures
         //Insert Comment
         $templateComment = '{"@class": "Comment", "body": "comment number %d" }';
         for ($i = 0; $i <= 5; $i++) {
-            $this->client->post('/document/' . $this->dbname, $this->contentType, sprintf($templateComment, $i, $i))
-                         ->send();
+            $this->client
+                ->post('/document/' . $this->dbname, $this->contentType, sprintf($templateComment, $i, $i))
+                ->send();
         }
 
         //Insert Post
         $templatePost = '{"@class": "Post", "id":"%d","title": "%d", "body": "Body %d", "comments":["#' . $this->Comment . ':3"] }';
         for ($i = 0; $i <= 5; $i++) {
-            $this->client->post('/document/' . $this->dbname, $this->contentType, sprintf($templatePost, $i, $i, $i))
-                         ->send();
+            $this->client
+                ->post('/document/' . $this->dbname, $this->contentType, sprintf($templatePost, $i, $i, $i))
+                ->send();
         }
-        $this->client->post('/document/' . $this->dbname, $this->contentType, '{"@class": "Post", "id":"6","title": "titolo 6", "body": "Body 6", "comments":["#' . $this->Comment . ':2"] }')
-                     ->send();
+        $this->client
+            ->post('/document/' . $this->dbname, $this->contentType, '{"@class": "Post", "id":"6","title": "titolo 6", "body": "Body 6", "comments":["#' . $this->Comment . ':2"] }')
+            ->send();
 
         //Insert MapPoint
-        $this->client->post('/document/' . $this->dbname, $this->contentType, '{"@class": "MapPoint", "x": "42.573968", "y": "13.203125" }')
-                     ->send();
+        $this->client
+            ->post('/document/' . $this->dbname, $this->contentType, '{"@class": "MapPoint", "x": "42.573968", "y": "13.203125" }')
+            ->send();
+
+        $templatePerson = '{"@class": "PersonV", "name": "%s"}';
+        foreach (['George', 'Cameron', 'Sydney'] as $name) {
+            $this->client
+                ->post('/document/' . $this->dbname, $this->contentType, sprintf($templatePerson, $name))
+                ->send();
+        }
+
+        $templatePost = '{"@class": "PostV", "title": "%s"}';
+        foreach (['Hello World', 'Welcome World', 'Another Post'] as $title) {
+            $this->client
+                ->post('/document/' . $this->dbname, $this->contentType, sprintf($templatePost, $title))
+                ->send();
+        }
+
+        $likeE = 'CREATE EDGE LikedE FROM %s to %s';
+        $this->client
+            ->post(sprintf('/command/%s/sql', $this->dbname), $this->contentType, sprintf($likeE, '#26:0', '#29:0'))
+            ->send();
+        $followsE = 'CREATE EDGE FollowedE FROM %s to %s';
+        $this->client
+            ->post(sprintf('/command/%s/sql', $this->dbname), $this->contentType, sprintf($followsE, '#26:0', '#26:1'))
+            ->send();
+        $this->client
+            ->post(sprintf('/command/%s/sql', $this->dbname), $this->contentType, sprintf($followsE, '#26:2', '#26:1'))
+            ->send();
+        $this->client
+            ->post(sprintf('/command/%s/sql', $this->dbname), $this->contentType, sprintf($followsE, '#26:1', '#26:0'))
+            ->send();
 
         return $this;
     }

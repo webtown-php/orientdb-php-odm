@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded;
 
 /**
- * @EmbeddedDocument(class="EmbeddedPhone")
+ * @EmbeddedDocument(oclass="EmbeddedPhone")
  */
 class Phone
 {

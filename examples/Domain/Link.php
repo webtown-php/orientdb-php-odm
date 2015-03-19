@@ -14,7 +14,7 @@ namespace Domain;
 use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
-* @ODM\Document(class="link")
+* @ODM\Document(oclass="link")
 */
 abstract class Link
 {

@@ -2,11 +2,15 @@
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
 
-class EmbeddedPropertyBase extends PropertyBase
+/**
+ * @Annotation
+ * @Target("CLASS")
+ */
+class Vertex extends AbstractDocument
 {
     /**
      * @Required
      * @var string
      */
-    public $targetDoc;
+    public $oclass;
 }

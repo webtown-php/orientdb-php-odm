@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked;
 
 /**
- * @Document(class="LinkedPhone")
+ * @Document(oclass="LinkedPhone")
  */
 class Phone
 {
@@ -36,7 +36,7 @@ class Phone
     public $primary;
 
     /**
-     * @Link(targetClass="Contact", childProperty="phones")
+     * @Link(targetDoc="Contact", childProperty="phones")
      * @var Contact
      */
     public $contact;

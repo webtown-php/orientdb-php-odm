@@ -14,7 +14,7 @@ namespace Domain;
 use Doctrine\ODM\OrientDB\Mapping\Annotations as ODM;
 
 /**
-* @ODM\Document(class="menu")
+* @ODM\Document(oclass="menu")
 */
 class Menu
 {

@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @EmbeddedDocument(class="EmailAddress")
+ * @EmbeddedDocument(oclass="EmailAddress")
  */
 class EmailAddress
 {

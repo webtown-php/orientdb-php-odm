@@ -1205,7 +1205,7 @@ class UnitOfWork implements PropertyChangedListener
             ? [$value]
             : $value->unwrap();
 
-        $associationClass = $this->dm->getClassMetadata($assoc['targetClass']);
+        $associationClass = $this->dm->getClassMetadata($assoc['targetDoc']);
         $useKey           = ($assoc['association'] & ClassMetadata::ASSOCIATION_USE_KEY) !== 0;
         $toMany           = ($assoc['association'] & ClassMetadata::TO_MANY) !== 0;
         $embedded         = isset($assoc['embedded']);

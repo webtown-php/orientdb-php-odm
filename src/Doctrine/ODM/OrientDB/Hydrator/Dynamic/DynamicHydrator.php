@@ -65,7 +65,7 @@ class DynamicHydrator implements HydratorInterface
 
             if ($mapping['association'] & ClassMetadata::TO_MANY) {
                 $coll = new PersistentCollection(new ArrayCollection(), $this->dm, $this->uow);
-                $coll->setOwner($document, $this->metadata->fieldMappings[$mapping['fieldName']]);
+                $coll->setOwner($document, $mapping);
                 $coll->setInitialized(false);
                 if ($propertyValue) {
                     $coll->setData($propertyValue);
@@ -80,7 +80,11 @@ class DynamicHydrator implements HydratorInterface
             }
 
             if ($mapping['association'] === ClassMetadata::LINK) {
-                $link = $this->dm->getReference($propertyValue);
+                if (is_string($propertyValue)) {
+                    $link = $this->dm->getReference($propertyValue);
+                } else {
+                    $link = $this->uow->getOrCreateDocument($propertyValue);
+                }
                 $this->metadata->setFieldValue($document, $fieldName, $link);
                 $hydratedData[$fieldName] = $link;
                 continue;

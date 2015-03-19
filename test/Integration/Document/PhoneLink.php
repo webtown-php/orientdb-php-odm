@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="PhoneLink")
+ * @Document(oclass="PhoneLink")
  */
 class PhoneLink
 {

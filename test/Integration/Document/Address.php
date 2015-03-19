@@ -21,7 +21,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="Address")
+ * @Document(oclass="Address")
  */
 class Address
 {
@@ -36,7 +36,7 @@ class Address
     public $version;
 
     /**
-     * @Link(targetClass="City")
+     * @Link(targetDoc="City")
      */
     protected $city;
 

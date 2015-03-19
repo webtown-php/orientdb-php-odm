@@ -26,14 +26,14 @@ class MappingException extends \Exception
         return new self(sprintf('there is no cluster for %s.', $rid->getValue()));
     }
 
-    public static function noMappingForProperty($property, $class) {
-        return new self(sprintf('the %s class has no mapping for %s property.', $class, $property));
+    public static function noMappingForProperty($property, $document) {
+        return new self(sprintf('the %s document has no mapping for %s property.', $document, $property));
     }
 
-    public static function duplicateOrientClassMapping($orientClass, $existing, $new) {
+    public static function duplicateOrientClassMapping($oclass, $existing, $new) {
         return new self(
             sprintf('attempting to map OrientDB class %s to %s, which is already mapped to %s',
-                $orientClass, $new, $existing));
+                $oclass, $new, $existing));
     }
 
     /**
@@ -41,8 +41,7 @@ class MappingException extends \Exception
      *
      * @return MappingException
      */
-    public static function missingFieldName($document)
-    {
+    public static function missingFieldName($document) {
         return new self("The field or association mapping misses the 'fieldName' attribute in document '$document'.");
     }
 
@@ -68,6 +67,17 @@ class MappingException extends \Exception
      */
     public static function reflectionFailure($document, \ReflectionException $previousException) {
         return new self('an error occurred in ' . $document, 0, $previousException);
+    }
+
+    /**
+     * Exception when a class has multiple document annotations
+     *
+     * @param $className
+     *
+     * @return MappingException
+     */
+    public static function duplicateDocumentAnnotation($className) {
+        return new self(sprintf('class %s has multiple document annotations', $className));
     }
 
     /**

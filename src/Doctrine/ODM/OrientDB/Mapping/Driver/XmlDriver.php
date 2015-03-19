@@ -61,8 +61,8 @@ class XmlDriver extends FileDriver
                 throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
         }
 
-        if (isset($xmlRoot['class'])) {
-            $metadata->setOrientClass((string)$xmlRoot['class']);
+        if (isset($xmlRoot['oclass'])) {
+            $metadata->setOrientClass((string)$xmlRoot['oclass']);
         }
 
         if (isset($xmlRoot['abstract'])) {
@@ -115,7 +115,7 @@ class XmlDriver extends FileDriver
     private function addEmbedMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
         $attributes = $embed->attributes();
         $mapping    = [
-            'targetClass' => isset($attributes['target-class']) ? (string)$attributes['target-class'] : null,
+            'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
         ];
         if (isset($attributes['fieldName'])) {
             $mapping['fieldName'] = (string)$attributes['fieldName'];
@@ -142,8 +142,8 @@ class XmlDriver extends FileDriver
     private function addLinkMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
         $attributes = $embed->attributes();
         $mapping    = [
-            'cascade'     => isset($embed->cascade) ? $this->_getCascadeMappings($embed->cascade) : [],
-            'targetClass' => isset($attributes['target-class']) ? (string)$attributes['target-class'] : null,
+            'cascade'   => isset($embed->cascade) ? $this->_getCascadeMappings($embed->cascade) : [],
+            'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
         ];
         if (isset($attributes['fieldName'])) {
             $mapping['fieldName'] = (string)$attributes['fieldName'];

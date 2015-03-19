@@ -19,7 +19,7 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use PHPUnit\TestCase;
 
 /**
- * @Document(class="Mapped")
+ * @Document(oclass="Mapped")
  */
 class Mapped
 {
@@ -34,12 +34,12 @@ class Mapped
     protected $field;
 
     /**
-     * @Link(targetClass="test")
+     * @Link(targetDoc="test")
      */
     protected $assoc;
 
     /**
-     * @LinkSet(targetClass="test")
+     * @LinkSet(targetDoc="test")
      */
     protected $multiassoc;
 

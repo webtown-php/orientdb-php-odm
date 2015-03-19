@@ -151,7 +151,7 @@ abstract class AbstractMappingDriverTest extends TestCase
 
 /**
  * @ChangeTrackingPolicy("NOTIFY")
- * @Document(class="OUser")
+ * @Document(oclass="OUser")
  */
 class User
 {
@@ -188,27 +188,27 @@ class User
     public $createdAt;
 
     /**
-     * @Link(targetClass="Address", cascade={"remove"}, parentProperty="user")
+     * @Link(targetDoc="Address", cascade={"remove"}, parentProperty="user")
      */
     public $address;
 
     /**
-     * @LinkSet(targetClass="Phonenumber", parentProperty="user", cascade={"persist"}, orphanRemoval=true)
+     * @LinkSet(targetDoc="Phonenumber", parentProperty="user", cascade={"persist"}, orphanRemoval=true)
      */
     public $phonenumbers;
 
     /**
-     * @LinkList(targetClass="Group", cascade={"all"}, parentProperty="user")
+     * @LinkList(targetDoc="Group", cascade={"all"}, parentProperty="user")
      */
     public $groups;
 
     /**
-     * @Embedded(targetClass="Phonenumber", name="embedded_phone_number")
+     * @Embedded(targetDoc="Phonenumber", name="embedded_phone_number")
      */
     public $embeddedPhonenumber;
 
     /**
-     * @EmbeddedList(targetClass="Phonenumber")
+     * @EmbeddedList(targetDoc="Phonenumber")
      */
     public $otherPhonenumbers;
 

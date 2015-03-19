@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked;
 
 /**
- * @Document(class="LinkedEmailAddress")
+ * @Document(oclass="LinkedEmailAddress")
  */
 class EmailAddress
 {
@@ -30,7 +30,7 @@ class EmailAddress
     public $email;
 
     /**
-     * @Link(targetClass="Contact", childProperty="email")
+     * @Link(targetDoc="Contact", childProperty="email")
      * @var Contact
      */
     public $contact;

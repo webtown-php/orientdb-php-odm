@@ -21,7 +21,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="Country")
+ * @Document(oclass="Country")
  */
 class Country
 {

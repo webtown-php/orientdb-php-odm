@@ -4,7 +4,7 @@ namespace Integration\Document;
 use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
- * @Document(class="PersonLink")
+ * @Document(oclass="PersonLink")
  */
 class PersonLink
 {
@@ -26,25 +26,25 @@ class PersonLink
     public $name;
 
     /**
-     * @Link(targetClass="EmailAddressLink", nullable=true, cascade={"persist"}, orphanRemoval=true)
+     * @Link(targetDoc="EmailAddressLink", nullable=true, cascade={"persist"}, orphanRemoval=true)
      * @var EmailAddressLink
      */
     public $email;
 
     /**
-     * @Link(targetClass="EmailAddressLink", nullable=true, cascade={"persist"})
+     * @Link(targetDoc="EmailAddressLink", nullable=true, cascade={"persist"})
      * @var EmailAddressLink
      */
     public $emailNoOrphan;
 
     /**
-     * @LinkList(targetClass="EmailAddressLink", cascade={"persist"}, orphanRemoval=true)
+     * @LinkList(targetDoc="EmailAddressLink", cascade={"persist"}, orphanRemoval=true)
      * @var EmailAddressLink[]|PersistentCollection
      */
     public $emails;
 
     /**
-     * @LinkMap(targetClass="PhoneLink", cascade={"persist"}, orphanRemoval=true)
+     * @LinkMap(targetDoc="PhoneLink", cascade={"persist"}, orphanRemoval=true)
      * @var PhoneLink[]|PersistentCollection
      */
     public $phones;

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: stuartcarnie
- * Date: 2/9/15
- * Time: 1:12 PM
- */
 
 namespace Doctrine\ODM\OrientDB;
 
@@ -110,21 +104,21 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
-     * Set hints to account for during reconstitution/lookup of the documents.
-     *
-     * @param array $hints
-     */
-    public function setHints(array $hints) {
-        $this->hints = $hints;
-    }
-
-    /**
      * Get hints to account for during reconstitution/lookup of the documents.
      *
      * @return array $hints
      */
     public function getHints() {
         return $this->hints;
+    }
+
+    /**
+     * Set hints to account for during reconstitution/lookup of the documents.
+     *
+     * @param array $hints
+     */
+    public function setHints(array $hints) {
+        $this->hints = $hints;
     }
 
     /**
@@ -142,6 +136,44 @@ class PersistentCollection implements BaseCollection
             $data = (array)$data;
         }
         $this->data = $data;
+    }
+
+    /**
+     * Gets a boolean flag indicating whether this collection is dirty which means
+     * its state needs to be synchronized with the database.
+     *
+     * @return boolean TRUE if the collection is dirty, FALSE otherwise.
+     */
+    public function isDirty() {
+        return $this->isDirty;
+    }
+
+    /**
+     * Sets a boolean flag, indicating whether this collection is dirty.
+     *
+     * @param boolean $dirty Whether the collection should be marked dirty or not.
+     */
+    public function setDirty($dirty) {
+        $this->isDirty = $dirty;
+    }
+
+    /**
+     * INTERNAL:
+     * Clears the internal snapshot information and sets isDirty to true if the collection
+     * has elements.
+     */
+    public function clearSnapshot() {
+        $this->snapshot = [];
+        $this->isDirty  = $this->count() ? true : false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count() {
+        $this->initialize();
+
+        return $this->coll->count();
     }
 
     /**
@@ -166,7 +198,7 @@ class PersistentCollection implements BaseCollection
 
         // Reattach any NEW objects added through add()
         if ($newObjects) {
-            $useKey = (bool)($this->mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
+            $useKey = boolval($this->mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
             foreach ($newObjects as $key => $obj) {
                 if ($useKey) {
                     $this->coll->set($key, $obj);
@@ -182,74 +214,12 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
-     * Marks this collection as changed/dirty.
-     */
-    private function changed() {
-        if ($this->isDirty) {
-            return;
-        }
-
-        $this->isDirty = true;
-
-        if ($this->dm &&
-            $this->mapping !== null &&
-            $this->mapping['isOwningSide'] &&
-            $this->owner //&&
-            //$this->dm->getClassMetadata(get_class($this->owner))->isChangeTrackingNotify()
-        ) {
-            $this->uow->scheduleForDirtyCheck($this->owner);
-        }
-    }
-
-    /**
-     * Gets a boolean flag indicating whether this collection is dirty which means
-     * its state needs to be synchronized with the database.
-     *
-     * @return boolean TRUE if the collection is dirty, FALSE otherwise.
-     */
-    public function isDirty() {
-        return $this->isDirty;
-    }
-
-    /**
-     * Sets a boolean flag, indicating whether this collection is dirty.
-     *
-     * @param boolean $dirty Whether the collection should be marked dirty or not.
-     */
-    public function setDirty($dirty) {
-        $this->isDirty = $dirty;
-    }
-
-    /**
-     * INTERNAL:
-     * Sets the collection's owning entity together with the AssociationMapping that
-     * describes the association between the owner and the elements of the collection.
-     *
-     * @param object $document
-     * @param array  $mapping
-     */
-    public function setOwner($document, array $mapping) {
-        $this->owner   = $document;
-        $this->mapping = $mapping;
-    }
-
-    /**
      * INTERNAL:
      * Tells this collection to take a snapshot of its current state.
      */
     public function takeSnapshot() {
         $this->snapshot = $this->coll->toArray();
         $this->isDirty  = false;
-    }
-
-    /**
-     * INTERNAL:
-     * Clears the internal snapshot information and sets isDirty to true if the collection
-     * has elements.
-     */
-    public function clearSnapshot() {
-        $this->snapshot = [];
-        $this->isDirty  = $this->count() ? true : false;
     }
 
     /**
@@ -304,6 +274,19 @@ class PersistentCollection implements BaseCollection
         return $this->owner;
     }
 
+    /**
+     * INTERNAL:
+     * Sets the collection's owning entity together with the AssociationMapping that
+     * describes the association between the owner and the elements of the collection.
+     *
+     * @param object $document
+     * @param array  $mapping
+     */
+    public function setOwner($document, array $mapping) {
+        $this->owner   = $document;
+        $this->mapping = $mapping;
+    }
+
     public function getMapping() {
         return $this->mapping;
     }
@@ -313,21 +296,21 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
-     * Sets the initialized flag of the collection, forcing it into that state.
-     *
-     * @param boolean $bool
-     */
-    public function setInitialized($bool) {
-        $this->initialized = $bool;
-    }
-
-    /**
      * Checks whether this collection has been initialized.
      *
      * @return boolean
      */
     public function isInitialized() {
         return $this->initialized;
+    }
+
+    /**
+     * Sets the initialized flag of the collection, forcing it into that state.
+     *
+     * @param boolean $bool
+     */
+    public function setInitialized($bool) {
+        $this->initialized = $bool;
     }
 
     /** {@inheritdoc} */
@@ -342,26 +325,6 @@ class PersistentCollection implements BaseCollection
         $this->initialize();
 
         return $this->coll->last();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function remove($key) {
-        $this->initialize();
-        $removed = $this->coll->remove($key);
-
-        if (!$removed) {
-            return $removed;
-        }
-
-        $this->changed();
-
-        if ($this->isOrphanRemovalEnabled()) {
-            $this->uow->scheduleOrphanRemoval($removed);
-        }
-
-        return $removed;
     }
 
     /**
@@ -385,12 +348,47 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
-     * {@inheritdoc}
+     * Marks this collection as changed/dirty.
      */
-    public function containsKey($key) {
-        $this->initialize();
+    private function changed() {
+        if ($this->isDirty) {
+            return;
+        }
 
-        return $this->coll->containsKey($key);
+        $this->isDirty = true;
+
+        if ($this->dm &&
+            $this->mapping !== null &&
+            $this->mapping['isOwningSide'] &&
+            $this->owner //&&
+            //$this->dm->getClassMetadata(get_class($this->owner))->isChangeTrackingNotify()
+        ) {
+            $this->uow->scheduleForDirtyCheck($this->owner);
+        }
+    }
+
+    /**
+     * Returns whether or not this collection has orphan removal enabled.
+     *
+     * Embedded documents are automatically considered as "orphan removal enabled" because they might have references
+     * that require to trigger cascade remove operations.
+     *
+     * @return boolean
+     */
+    private function isOrphanRemovalEnabled() {
+        if ($this->mapping === null) {
+            return false;
+        }
+
+        if (isset($this->mapping['embedded'])) {
+            return true;
+        }
+
+        if (isset($this->mapping['reference']) && $this->mapping['isOwningSide'] && $this->mapping['orphanRemoval']) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -423,15 +421,6 @@ class PersistentCollection implements BaseCollection
     /**
      * {@inheritdoc}
      */
-    public function get($key) {
-        $this->initialize();
-
-        return $this->coll->get($key);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getKeys() {
         $this->initialize();
 
@@ -445,40 +434,6 @@ class PersistentCollection implements BaseCollection
         $this->initialize();
 
         return $this->coll->getValues();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count() {
-        $this->initialize();
-
-        return $this->coll->count();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function set($key, $value) {
-        $this->coll->set($key, $value);
-        $this->changed();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function add($value) {
-        $this->coll->add($value);
-        $this->changed();
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isEmpty() {
-        return $this->count() === 0;
     }
 
     /**
@@ -560,6 +515,13 @@ class PersistentCollection implements BaseCollection
     /**
      * {@inheritdoc}
      */
+    public function isEmpty() {
+        return $this->count() === 0;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function slice($offset, $length = null) {
         $this->initialize();
 
@@ -577,8 +539,6 @@ class PersistentCollection implements BaseCollection
         return ['coll', 'initialized'];
     }
 
-    /* ArrayAccess implementation */
-
     /**
      * @see containsKey()
      */
@@ -587,11 +547,31 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function containsKey($key) {
+        $this->initialize();
+
+        return $this->coll->containsKey($key);
+    }
+
+    /**
      * @see get()
      */
     public function offsetGet($offset) {
         return $this->get($offset);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function get($key) {
+        $this->initialize();
+
+        return $this->coll->get($key);
+    }
+
+    /* ArrayAccess implementation */
 
     /**
      * @see add()
@@ -606,10 +586,48 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function add($value) {
+        $this->coll->add($value);
+        $this->changed();
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function set($key, $value) {
+        $this->coll->set($key, $value);
+        $this->changed();
+    }
+
+    /**
      * @see remove()
      */
     public function offsetUnset($offset) {
         return $this->remove($offset);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function remove($key) {
+        $this->initialize();
+        $removed = $this->coll->remove($key);
+
+        if (!$removed) {
+            return $removed;
+        }
+
+        $this->changed();
+
+        if ($this->isOrphanRemovalEnabled()) {
+            $this->uow->scheduleOrphanRemoval($removed);
+        }
+
+        return $removed;
     }
 
     public function key() {
@@ -659,29 +677,5 @@ class PersistentCollection implements BaseCollection
         $this->snapshot = [];
 
         $this->changed();
-    }
-
-    /**
-     * Returns whether or not this collection has orphan removal enabled.
-     *
-     * Embedded documents are automatically considered as "orphan removal enabled" because they might have references
-     * that require to trigger cascade remove operations.
-     *
-     * @return boolean
-     */
-    private function isOrphanRemovalEnabled() {
-        if ($this->mapping === null) {
-            return false;
-        }
-
-        if (isset($this->mapping['embedded'])) {
-            return true;
-        }
-
-        if (isset($this->mapping['reference']) && $this->mapping['isOwningSide'] && $this->mapping['orphanRemoval']) {
-            return true;
-        }
-
-        return false;
     }
 }

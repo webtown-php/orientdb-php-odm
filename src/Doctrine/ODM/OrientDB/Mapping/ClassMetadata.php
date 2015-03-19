@@ -27,6 +27,41 @@ use Doctrine\ODM\OrientDB\Mapping as DataMapper;
 class ClassMetadata implements DoctrineMetadata
 {
     /**
+     * prefix for the field that maps outgoing connections of a vertex
+     */
+    const CONNECTION_OUT_PREFIX = 'out_';
+
+    /**
+     * prefix for the field that maps incoming connections of a vertex
+     */
+    const CONNECTION_IN_PREFIX = 'in_';
+
+    /**
+     * Base OrientDB class for all vertex documents
+     */
+    const VERTEX_BASE_CLASS = 'V';
+
+    /**
+     * Base OrientDB class for all edge documents
+     */
+    const EDGE_BASE_CLASS = 'E';
+
+    /**
+     * The mapped class is not a descendant of either Vertex or Edge
+     */
+    const GRAPH_TYPE_NONE = 0;
+
+    /**
+     * The mapped class is a descendant of the Vertex class
+     */
+    const GRAPH_TYPE_VERTEX = 1;
+
+    /**
+     * The mapped class is a descendant of the Edge class
+     */
+    const GRAPH_TYPE_EDGE = 2;
+
+    /**
      * Identifies a link association
      */
     const LINK = 0x01;
@@ -138,23 +173,37 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * READ-ONLY: Whether this class describes the mapping of a mapped superclass.
      *
-     * @var boolean
+     * @var bool
      */
     public $isMappedSuperclass = false;
 
     /**
      * READ-ONLY: Whether this class describes the mapping of a embedded document.
      *
-     * @var boolean
+     * @var bool
      */
     public $isEmbeddedDocument = false;
 
     /**
      * READ-ONLY: Whether this class describes the mapping of an abstract document.
      *
-     * @var boolean
+     * @var bool
      */
     public $isAbstract = false;
+
+    /**
+     * READ-ONLY: Whether this class is a descendant of the OrientDB Vertex class
+     *
+     * @var bool
+     */
+    public $graphType = self::GRAPH_TYPE_NONE;
+
+    /**
+     * READ-ONLY: The names of the parent classes (ancestors).
+     *
+     * @var array
+     */
+    public $parentClasses = [];
 
     /**
      * READ-ONLY: The policy used for change-tracking on entities of this class.
@@ -357,7 +406,7 @@ class ClassMetadata implements DoctrineMetadata
             throw new \InvalidArgumentException("association name expected, '" . $assocName . "' is not an association.");
         }
 
-        return $this->associationMappings[$assocName]['targetClass'];
+        return $this->associationMappings[$assocName]['targetDoc'];
     }
 
     /**
@@ -372,7 +421,7 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Whether the change tracking policy of this class is "deferred explicit".
      *
-     * @return boolean
+     * @return bool
      */
     public function isChangeTrackingDeferredExplicit() {
         return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_EXPLICIT;
@@ -381,7 +430,7 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Whether the change tracking policy of this class is "deferred implicit".
      *
-     * @return boolean
+     * @return bool
      */
     public function isChangeTrackingDeferredImplicit() {
         return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_IMPLICIT;
@@ -390,7 +439,7 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Whether the change tracking policy of this class is "notify".
      *
-     * @return boolean
+     * @return bool
      */
     public function isChangeTrackingNotify() {
         return $this->changeTrackingPolicy == self::CHANGETRACKING_NOTIFY;
@@ -454,6 +503,15 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
+     * Checks if this document is the root in a document hierarchy
+     *
+     * @return bool
+     */
+    public function isRootDocument() {
+        return $this->name === $this->rootDocumentName;
+    }
+
+    /**
      * Adds a mapping for a field
      *
      * @param array $mapping The mapping.
@@ -473,13 +531,13 @@ class ClassMetadata implements DoctrineMetadata
         }
 
         $namespace = $this->reflClass->getNamespaceName();
-        if (isset($mapping['targetClass']) && strpos($mapping['targetClass'], '\\') === false && strlen($namespace)) {
-            $mapping['targetClass'] = $namespace . '\\' . $mapping['targetClass'];
+        if (isset($mapping['targetDoc']) && strpos($mapping['targetDoc'], '\\') === false && strlen($namespace)) {
+            $mapping['targetDoc'] = $namespace . '\\' . $mapping['targetDoc'];
         }
 
-        // If targetClass is unqualified, assume it is in the same namespace as
-        // the sourceClass.
-        $mapping['sourceClass'] = $this->name;
+        // If targetDoc is unqualified, assume it is in the same namespace as
+        // the sourceDoc.
+        $mapping['sourceDoc'] = $this->name;
 
         $cascades = isset($mapping['cascade']) ? array_map('strtolower', (array)$mapping['cascade']) : [];
 
@@ -604,6 +662,27 @@ class ClassMetadata implements DoctrineMetadata
     public function mapLinkMap(array $mapping) {
         $mapping['association'] = self::LINK_MAP;
         $mapping['reference']   = true;
+        $this->mapField($mapping);
+
+        return $this;
+    }
+
+    /**
+     * Adds a mapping for a edge link bag, used for graph edges
+     *
+     * @param array $mapping
+     *
+     * @return $this
+     * @throws MappingException
+     */
+    public function mapEdgeLinkBag(array $mapping) {
+        $mapping['association'] = self::LINK_BAG;
+        $mapping['reference']   = true;
+        $suffix                 = $mapping['oclass'] !== self::EDGE_BASE_CLASS
+            ? $mapping['oclass']
+            : '';
+
+        $mapping['name'] = sprintf('%s%s', $mapping['direction'] === 'in' ? self::CONNECTION_IN_PREFIX : self::CONNECTION_OUT_PREFIX, $suffix);
         $this->mapField($mapping);
 
         return $this;
@@ -768,6 +847,22 @@ class ClassMetadata implements DoctrineMetadata
         }
 
         $this->customRepositoryClassName = $repositoryClassName;
+    }
+
+    /**
+     * Sets the parent class names.
+     * Assumes that the class names in the passed array are in the order:
+     * directParent -> directParentParent -> directParentParentParent ... -> root.
+     *
+     * @param array $classNames
+     *
+     * @return void
+     */
+    public function setParentClasses(array $classNames) {
+        $this->parentClasses = $classNames;
+        if (count($classNames) > 0) {
+            $this->rootDocumentName = array_pop($classNames);
+        }
     }
 
     /**

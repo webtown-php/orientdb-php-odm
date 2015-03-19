@@ -9,9 +9,6 @@ namespace Doctrine\ODM\OrientDB;
  */
 final class Events
 {
-    private function __construct() {
-    }
-
     /**
      * The preRemove event occurs for a given document before the respective
      * DocumentManager remove operation for that document is executed.
@@ -21,7 +18,6 @@ final class Events
      * @var string
      */
     const preRemove = 'preRemove';
-
     /**
      * The postRemove event occurs for a document after the document has
      * been deleted. It will be invoked after the database delete operations.
@@ -31,7 +27,6 @@ final class Events
      * @var string
      */
     const postRemove = 'postRemove';
-
     /**
      * The prePersist event occurs for a given document before the respective
      * DocumentManager persist operation for that document is executed.
@@ -41,7 +36,6 @@ final class Events
      * @var string
      */
     const prePersist = 'prePersist';
-
     /**
      * The postPersist event occurs for a document after the document has
      * been made persistent. It will be invoked after the database insert operations.
@@ -52,7 +46,6 @@ final class Events
      * @var string
      */
     const postPersist = 'postPersist';
-
     /**
      * The preUpdate event occurs before the database update operations to
      * document data.
@@ -62,7 +55,6 @@ final class Events
      * @var string
      */
     const preUpdate = 'preUpdate';
-
     /**
      * The postUpdate event occurs after the database update operations to
      * document data.
@@ -72,7 +64,6 @@ final class Events
      * @var string
      */
     const postUpdate = 'postUpdate';
-
     /**
      * The preLoad event occurs for a document before the document has been loaded
      * into the current DocumentManager from the database or before the refresh operation
@@ -83,7 +74,6 @@ final class Events
      * @var string
      */
     const preLoad = 'preLoad';
-
     /**
      * The postLoad event occurs for a document after the document has been loaded
      * into the current DocumentManager from the database or after the refresh operation
@@ -98,7 +88,6 @@ final class Events
      * @var string
      */
     const postLoad = 'postLoad';
-
     /**
      * The loadClassMetadata event occurs after the mapping metadata for a class
      * has been loaded from a mapping source (annotations/xml/yaml).
@@ -106,14 +95,12 @@ final class Events
      * @var string
      */
     const loadClassMetadata = 'loadClassMetadata';
-
     /**
      * The preFlush event occurs when the DocumentManager#flush() operation is invoked,
      * but before any changes to managed documents have been calculated. This event is
      * always raised right after DocumentManager#flush() call.
      */
     const preFlush = 'preFlush';
-
     /**
      * The onFlush event occurs when the DocumentManager#flush() operation is invoked,
      * after any changes to managed documents have been determined but before any
@@ -124,7 +111,6 @@ final class Events
      * @var string
      */
     const onFlush = 'onFlush';
-
     /**
      * The postFlush event occurs when the DocumentManager#flush() operation is invoked and
      * after all actual database operations are executed successfully. The event is only raised if there is
@@ -135,7 +121,6 @@ final class Events
      * @var string
      */
     const postFlush = 'postFlush';
-
     /**
      * The onClear event occurs when the DocumentManager#clear() operation is invoked,
      * after all references to documents have been removed from the unit of work.
@@ -143,4 +128,7 @@ final class Events
      * @var string
      */
     const onClear = 'onClear';
+
+    private function __construct() {
+    }
 }

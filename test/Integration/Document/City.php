@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @Document(class="City")
+ * @Document(oclass="City")
  */
 class City extends Country
 {

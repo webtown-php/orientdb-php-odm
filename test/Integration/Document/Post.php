@@ -23,7 +23,7 @@ namespace Integration\Document;
 use Doctrine\ODM\OrientDB\PersistentCollection;
 
 /**
- * @Document(class="Post")
+ * @Document(oclass="Post")
  */
 class Post
 {
@@ -38,7 +38,7 @@ class Post
     public $version;
 
     /**
-     * @LinkList(targetClass="Comment")
+     * @LinkList(targetDoc="Comment")
      */
     public $comments;
 
