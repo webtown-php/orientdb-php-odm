@@ -47,14 +47,15 @@ class XmlDriver extends FileDriver
 
         switch ($xmlRoot->getName()) {
             case 'document':
+                $metadata->setIsDocument();
                 break;
 
             case 'embedded-document':
-                $metadata->isEmbeddedDocument = true;
+                $metadata->setIsEmbeddedDocument();
                 break;
 
             case 'mapped-superclass':
-                $metadata->isMappedSuperclass = true;
+                $metadata->setIsMappedSuperclass();
                 break;
 
             default:
@@ -65,8 +66,8 @@ class XmlDriver extends FileDriver
             $metadata->setOrientClass((string)$xmlRoot['oclass']);
         }
 
-        if (isset($xmlRoot['abstract'])) {
-            $metadata->isAbstract = ((string)$xmlRoot['abstract'] === 'true');
+        if (isset($xmlRoot['abstract']) && ((string)$xmlRoot['abstract'] === 'true')) {
+            $metadata->setIsAbstract();
         }
 
         if (isset($xmlRoot->{'rid'})) {

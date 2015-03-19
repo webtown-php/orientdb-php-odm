@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @Edge(oclass="LikedE")
+ * @Relationship(oclass="LikedE")
  */
 class LikedE extends Edge
 {

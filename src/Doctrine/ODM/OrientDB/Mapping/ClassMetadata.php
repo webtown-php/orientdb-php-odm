@@ -26,6 +26,52 @@ use Doctrine\ODM\OrientDB\Mapping as DataMapper;
  */
 class ClassMetadata implements DoctrineMetadata
 {
+    # region class attributes
+
+    const CA_NONE = 0x0000;
+
+    /**
+     * class is a document, represented by an associated OrientDB class
+     */
+    const CA_TYPE_DOCUMENT = 0x0001;
+
+    /**
+     * class is a mapped superclass
+     */
+    const CA_TYPE_MAPPED_SUPERCLASS = 0x0002;
+
+    /**
+     * class is an embedded document
+     */
+    const CA_TYPE_EMBEDDED = 0x004;
+
+    /**
+     * class inherits from vertex, and supports edge relationships
+     */
+    const CA_IS_VERTEX = 0x0010;
+
+    /**
+     * class inherits from edge and supports relating vertexes
+     */
+    const CA_IS_EDGE = 0x0020;
+
+    /**
+     * class is abstract, and cannot be persisted directly to OrientDB, but will have an associated class
+     */
+    const CA_IS_ABSTRACT = 0x0040;
+
+    /**
+     * mask for all document type flags, which are mutually exclusive
+     */
+    const CA_MASK_DOC_TYPE = 0x0007;
+
+    /**
+     * mask indicating this class inherits from an OrientDB graph class
+     */
+    const CA_MASK_GRAPH_SUPPORT = 0x0030;
+
+    #endregion
+
     /**
      * prefix for the field that maps outgoing connections of a vertex
      */
@@ -45,21 +91,6 @@ class ClassMetadata implements DoctrineMetadata
      * Base OrientDB class for all edge documents
      */
     const EDGE_BASE_CLASS = 'E';
-
-    /**
-     * The mapped class is not a descendant of either Vertex or Edge
-     */
-    const GRAPH_TYPE_NONE = 0;
-
-    /**
-     * The mapped class is a descendant of the Vertex class
-     */
-    const GRAPH_TYPE_VERTEX = 1;
-
-    /**
-     * The mapped class is a descendant of the Edge class
-     */
-    const GRAPH_TYPE_EDGE = 2;
 
     /**
      * Identifies a link association
@@ -171,32 +202,11 @@ class ClassMetadata implements DoctrineMetadata
     public $rootDocumentName;
 
     /**
-     * READ-ONLY: Whether this class describes the mapping of a mapped superclass.
+     * READ-ONLY: Various flags
      *
-     * @var bool
+     * @var int
      */
-    public $isMappedSuperclass = false;
-
-    /**
-     * READ-ONLY: Whether this class describes the mapping of a embedded document.
-     *
-     * @var bool
-     */
-    public $isEmbeddedDocument = false;
-
-    /**
-     * READ-ONLY: Whether this class describes the mapping of an abstract document.
-     *
-     * @var bool
-     */
-    public $isAbstract = false;
-
-    /**
-     * READ-ONLY: Whether this class is a descendant of the OrientDB Vertex class
-     *
-     * @var bool
-     */
-    public $graphType = self::GRAPH_TYPE_NONE;
+    public $attributes = self::CA_NONE;
 
     /**
      * READ-ONLY: The names of the parent classes (ancestors).
@@ -329,6 +339,180 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function getVersion() {
         return $this->version;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDocument() {
+        return ($this->attributes & self::CA_TYPE_DOCUMENT) !== 0;
+    }
+
+    /**
+     * Set the document attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function setIsDocument() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_DOC_TYPE) | self::CA_TYPE_DOCUMENT;
+
+        return $this;
+    }
+
+    /**
+     * Clear the document attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function clearIsDocument() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_DOC_TYPE) & ~self::CA_TYPE_DOCUMENT;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMappedSuperclass() {
+        return ($this->attributes & self::CA_TYPE_MAPPED_SUPERCLASS) !== 0;
+    }
+
+    /**
+     * Set the mapped superclass attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function setIsMappedSuperclass() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_DOC_TYPE) | self::CA_TYPE_MAPPED_SUPERCLASS;
+
+        return $this;
+    }
+
+    /**
+     * Clear the mapped superclass attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function clearIsMappedSuperclass() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_DOC_TYPE) & ~self::CA_TYPE_MAPPED_SUPERCLASS;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmbeddedDocument() {
+        return ($this->attributes & self::CA_TYPE_EMBEDDED) !== 0;
+    }
+
+    /**
+     * Set the embeddd attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function setIsEmbeddedDocument() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_DOC_TYPE) | self::CA_TYPE_EMBEDDED;
+
+        return $this;
+    }
+
+    /**
+     * Clear the embedded attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function clearIsEmbeddedDocument() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_DOC_TYPE) & ~self::CA_TYPE_EMBEDDED;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isVertex() {
+        return ($this->attributes & self::CA_IS_VERTEX) !== 0;
+    }
+
+    /**
+     * Set the vertex attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function setIsVertex() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_GRAPH_SUPPORT) | self::CA_IS_VERTEX;
+
+        return $this;
+    }
+
+    /**
+     * Clear the vertex attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function clearIsVertex() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_GRAPH_SUPPORT) & ~self::CA_IS_VERTEX;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEdge() {
+        return ($this->attributes & self::CA_IS_EDGE) !== 0;
+    }
+
+    /**
+     * Set the edge attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function setIsEdge() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_GRAPH_SUPPORT) | self::CA_IS_EDGE;
+
+        return $this;
+    }
+
+    /**
+     * Clear the edge attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function clearIsEdge() {
+        $this->attributes = ($this->attributes & ~self::CA_MASK_GRAPH_SUPPORT) & ~self::CA_IS_EDGE;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAbstract() {
+        return ($this->attributes & self::CA_IS_ABSTRACT) !== 0;
+    }
+
+    /**
+     * Set the abstract attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function setIsAbstract() {
+        $this->attributes = $this->attributes | self::CA_IS_ABSTRACT;
+
+        return $this;
+    }
+
+    /**
+     * Clear the abstract attribute flag for this mapping
+     *
+     * @return $this
+     */
+    public function clearIsAbstract() {
+        $this->attributes = $this->attributes & ~self::CA_IS_ABSTRACT;
+
+        return $this;
     }
 
     /**

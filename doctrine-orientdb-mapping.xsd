@@ -21,6 +21,7 @@
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="embedded-document" type="odm:document" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="mapped-superclass" type="odm:document" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

@@ -127,7 +127,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     protected function isEntity(ClassMetadataInfo $class) {
         /** @var ClassMetadata $class */
-        return ($class->isMappedSuperclass || $class->isAbstract || $class->isEmbeddedDocument) === false;
+        return $class->isDocument();
     }
 
     /**
@@ -145,7 +145,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
 //            $class->setLifecycleCallbacks($parent->lifecycleCallbacks);
 //            $class->setAlsoLoadMethods($parent->alsoLoadMethods);
             $class->setChangeTrackingPolicy($parent->changeTrackingPolicy);
-            if ($parent->isMappedSuperclass) {
+            if ($parent->isMappedSuperclass()) {
                 $class->setCustomRepositoryClass($parent->customRepositoryClassName);
             }
         }
@@ -183,7 +183,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
             throw MappingException::missingRidProperty($className);
         }
 
-        if (!$class->isMappedSuperclass && !isset($class->orientClass)) {
+        if ($class->isDocument() && !isset($class->orientClass)) {
             throw MappingException::missingOClass($className);
         }
     }
@@ -196,7 +196,7 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      */
     private function addInheritedFields(ClassMetadata $subClass, ClassMetadata $parentClass) {
         foreach ($parentClass->fieldMappings as $fieldName => $mapping) {
-            if (!isset($mapping['inherited']) && !$parentClass->isMappedSuperclass) {
+            if (!isset($mapping['inherited']) && !$parentClass->isMappedSuperclass()) {
                 $mapping['inherited'] = $parentClass->name;
             }
             if (!isset($mapping['declared'])) {

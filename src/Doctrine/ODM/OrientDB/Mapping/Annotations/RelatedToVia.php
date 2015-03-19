@@ -8,5 +8,5 @@ namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
  */
 class RelatedToVia extends RelatedToBase
 {
-    
+
 }

@@ -11,8 +11,6 @@ use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnot
 use Doctrine\ODM\OrientDB\Mapping\Annotations\AbstractDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\ChangeTrackingPolicy;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\Edge;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
@@ -27,12 +25,12 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkSet;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\MappedSuperclass;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedTo;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToVia;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\Relationship;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Vertex;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadata as MD;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
 class AnnotationDriver extends AbstractAnnotationDriver
@@ -41,7 +39,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
         Document::class         => true,
         MappedSuperclass::class => true,
         EmbeddedDocument::class => true,
-        Edge::class             => true,
+        Relationship::class     => true,
         Vertex::class           => true,
     ];
 
@@ -90,34 +88,40 @@ class AnnotationDriver extends AbstractAnnotationDriver
         switch (true) {
             case $documentAnnot instanceof Document:
                 $isDocument = true;
+                $metadata->setIsDocument();
                 break;
 
             case $documentAnnot instanceof Vertex:
-                $isDocument          = true;
-                $metadata->graphType = MD::GRAPH_TYPE_VERTEX;
+                $isDocument = true;
+                $metadata->setIsDocument();
+                $metadata->setIsVertex();
                 break;
 
-            case $documentAnnot instanceof Edge:
-                $isDocument          = true;
-                $metadata->graphType = MD::GRAPH_TYPE_EDGE;
+            case $documentAnnot instanceof Relationship:
+                $isDocument = true;
+                $metadata->setIsDocument();
+                $metadata->setIsEdge();
                 break;
 
             case $documentAnnot instanceof EmbeddedDocument:
-                $isDocument                   = true;
-                $metadata->isEmbeddedDocument = true;
+                $isDocument = true;
+                $metadata->setIsEmbeddedDocument();
                 break;
+
             case $documentAnnot instanceof MappedSuperclass:
-                $metadata->isMappedSuperclass = true;
+                $metadata->setIsMappedSuperclass();
                 break;
         }
 
         if ($isDocument) {
-            $metadata->isAbstract = $documentAnnot->abstract;
+            if ($documentAnnot->abstract === true) {
+                $metadata->setIsAbstract();
+            }
             $metadata->setOrientClass($documentAnnot->oclass);
         }
 
         foreach ($metadata->reflClass->getProperties() as $property) {
-            if (($metadata->isMappedSuperclass && !$property->isPrivate())
+            if (($metadata->isMappedSuperclass() && !$property->isPrivate())
                 ||
                 $metadata->isInheritedField($property->name)
             ) {

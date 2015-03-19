@@ -7,6 +7,7 @@ use Integration\Document\PersonV;
 use PHPUnit\TestCase;
 
 /**
+ * Tests
  * @group integration
  */
 class PersistenceWithGraphTest extends TestCase
@@ -26,7 +27,7 @@ class PersistenceWithGraphTest extends TestCase
      */
     public function persist_single_document() {
         /** @var PersonV $p */
-        $p = $this->manager->findByRid('#26:0', '*:1');
+        $p = $this->manager->findByRid('#26:1', '*:1');
         $followers = $p->followers->toArray();
     }
 }

@@ -6,7 +6,7 @@ namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
  * @Annotation
  * @Target("CLASS")
  */
-class Edge extends AbstractDocument
+class Relationship extends AbstractDocument
 {
     /**
      * @Required

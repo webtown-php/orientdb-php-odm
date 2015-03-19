@@ -3,7 +3,7 @@
 namespace Integration\Document;
 
 /**
- * @Edge(oclass="E")
+ * @Relationship(oclass="E")
  */
 class Edge
 {

@@ -5,7 +5,6 @@
 require_once __DIR__ . '/Document.php';
 require_once __DIR__ . '/EmbeddedDocument.php';
 require_once __DIR__ . '/MappedSuperclass.php';
-require_once __DIR__ . '/Edge.php';
 require_once __DIR__ . '/Vertex.php';
 
 require_once __DIR__ . '/ChangeTrackingPolicy.php';
@@ -29,3 +28,4 @@ require_once __DIR__ . '/EmbeddedSet.php';
 require_once __DIR__ . '/RelatedToBase.php';
 require_once __DIR__ . '/RelatedTo.php';
 require_once __DIR__ . '/RelatedToVia.php';
+require_once __DIR__ . '/Relationship.php';

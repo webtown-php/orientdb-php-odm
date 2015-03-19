@@ -416,7 +416,7 @@ class UnitOfWork implements PropertyChangedListener
 
         /** @var ClassMetadata $class */
         $class = $this->dm->getClassMetadata(get_class($document));
-        if ($class->isEmbeddedDocument) {
+        if ($class->isEmbeddedDocument()) {
             $id = $oid;
         } else {
             $id = $this->getRid($document);
@@ -509,7 +509,7 @@ class UnitOfWork implements PropertyChangedListener
 
             /** @noinspection PhpMissingBreakStatementInspection */
             case self::STATE_REMOVED:
-                if (!$class->isEmbeddedDocument) {
+                if (!$class->isEmbeddedDocument()) {
                     // Document becomes managed again
                     if ($this->isScheduledForDelete($document)) {
                         unset($this->documentDeletions[$oid]);
@@ -570,7 +570,7 @@ class UnitOfWork implements PropertyChangedListener
             $this->evm->dispatchEvent(Events::prePersist, new LifecycleEventArgs($document, $this->dm));
         }
 
-        if (!$class->isEmbeddedDocument) {
+        if (!$class->isEmbeddedDocument()) {
             $idValue                         = $class->getIdentifierValue($document);
             $this->documentIdentifiers[$oid] = $idValue;
         }
@@ -940,7 +940,7 @@ class UnitOfWork implements PropertyChangedListener
 
         foreach ($this->identityMap as $className => $documents) {
             $class = $this->dm->getClassMetadata($className);
-            if ($class->isEmbeddedDocument) {
+            if ($class->isEmbeddedDocument()) {
                 // Embedded documents should only compute by the document itself which include the embedded document.
                 // This is done separately later.
                 // @see computeChangeSet()
@@ -982,7 +982,7 @@ class UnitOfWork implements PropertyChangedListener
         foreach ($this->documentInsertions as $document) {
             $class = $this->dm->getClassMetadata(get_class($document));
 
-            if ($class->isEmbeddedDocument) {
+            if ($class->isEmbeddedDocument()) {
                 continue;
             }
 
@@ -1190,7 +1190,7 @@ class UnitOfWork implements PropertyChangedListener
 
         $isNewParentDocument   = isset($this->documentInsertions[spl_object_hash($parentDocument)]);
         $parentClass           = $this->dm->getClassMetadata(get_class($parentDocument));
-        $topOrExistingDocument = (!$isNewParentDocument || !$parentClass->isEmbeddedDocument);
+        $topOrExistingDocument = (!$isNewParentDocument || $parentClass->isDocument());
 
         if ($value instanceof PersistentCollection && $value->isDirty()) {
             if ($topOrExistingDocument && $assoc['isOwningSide']) {
@@ -1262,7 +1262,7 @@ class UnitOfWork implements PropertyChangedListener
      */
     protected function getRid($document) {
         $metadata = $this->dm->getClassMetadata(ClassUtils::getClass($document));
-        if ($metadata->isEmbeddedDocument) {
+        if ($metadata->isEmbeddedDocument()) {
             return spl_object_hash($document);
         }
 
@@ -1289,7 +1289,7 @@ class UnitOfWork implements PropertyChangedListener
     public function registerManaged($document, $rid, array $data = null) {
         $oid   = spl_object_hash($document);
         $class = $this->dm->getClassMetadata(get_class($document));
-        if ($class->isEmbeddedDocument || $rid === null) {
+        if ($class->isEmbeddedDocument() || $rid === null) {
             $this->documentIdentifiers[$oid] = $oid;
         } else {
             $this->documentIdentifiers[$oid] = $rid;
@@ -1504,7 +1504,7 @@ class UnitOfWork implements PropertyChangedListener
 
         $class = $this->dm->getClassMetadata(get_class($document));
 
-        if ($class->isEmbeddedDocument) {
+        if ($class->isEmbeddedDocument()) {
             return self::STATE_NEW;
         }
 
@@ -1558,7 +1558,7 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         $class = $this->dm->getClassMetadata(get_class($document));
-        if ($class->isEmbeddedDocument) {
+        if ($class->isEmbeddedDocument()) {
             $id = spl_object_hash($document);
         } else {
             $id = $this->documentIdentifiers[spl_object_hash($document)];

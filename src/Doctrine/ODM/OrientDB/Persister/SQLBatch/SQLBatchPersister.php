@@ -60,7 +60,7 @@ class SQLBatchPersister implements PersisterInterface
         foreach ($uow->getDocumentUpdates() as $oid => $doc) {
             /** @var ClassMetadata $md */
             $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument) {
+            if ($md->isEmbeddedDocument()) {
                 continue;
             }
 
@@ -113,7 +113,7 @@ class SQLBatchPersister implements PersisterInterface
         foreach ($uow->getDocumentDeletions() as $oid => $doc) {
             /** @var ClassMetadata $md */
             $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument) {
+            if ($md->isEmbeddedDocument()) {
                 continue;
             }
 
@@ -163,7 +163,7 @@ class SQLBatchPersister implements PersisterInterface
         foreach ($ordered as $oid => $doc) {
             /** @var ClassMetadata $md */
             $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument) {
+            if ($md->isEmbeddedDocument()) {
                 continue;
             }
             $id   = $this->createDocVarReference($doc);
@@ -277,7 +277,7 @@ class SQLBatchPersister implements PersisterInterface
     public function prepareData(ClassMetadata $class, UnitOfWork $uow, $document, $isInsert = false) {
         $insertData = new \stdClass();
 
-        if ($class->isEmbeddedDocument) {
+        if ($class->isEmbeddedDocument()) {
             $insertData->{'@type'}  = 'd';
             $insertData->{'@class'} = $class->getOrientClass();
             $cs                     = $uow->getDocumentActualData($document);
