@@ -1,7 +1,7 @@
 <?php
 
 namespace Integration\Document;
-use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 
 /**
  * @Vertex(oclass="PersonV")
@@ -15,13 +15,13 @@ class PersonV extends Vertex
     public $name;
     /**
      * @RelatedTo(oclass="LikedE", direction="in")
-     * @var PersistentCollection
+     * @var \Doctrine\ODM\OrientDB\Collections\PersistentCollection
      */
     public $liked;
 
     /**
      * @RelatedTo(oclass="LikedE", direction="out")
-     * @var PersistentCollection|LikedE[]
+     * @var \Doctrine\ODM\OrientDB\Collections\PersistentCollection|LikedE[]
      */
     public $likes;
 
@@ -33,7 +33,7 @@ class PersonV extends Vertex
 
     /**
      * @RelatedTo(targetDoc="PersonV", oclass="FollowedE", direction="out")
-     * @var PersistentCollection|PersonV[]
+     * @var \Doctrine\ODM\OrientDB\Collections\PersistentCollection|PersonV[]
      */
     public $followed;
 }

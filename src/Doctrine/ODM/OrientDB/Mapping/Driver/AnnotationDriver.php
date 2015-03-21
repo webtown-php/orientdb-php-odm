@@ -25,8 +25,8 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkSet;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\MappedSuperclass;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Property;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\PropertyBase;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedTo;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToBase;
-use Doctrine\ODM\OrientDB\Mapping\Annotations\RelatedToVia;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Relationship;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
@@ -200,7 +200,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
                     case $ann instanceof RelatedToBase:
                         $this->mergeRelatedToBase($ann, $mapping);
-                        $mapping['via'] = ($ann instanceof RelatedToVia);
+                        $mapping['indirect'] = ($ann instanceof RelatedTo);
                         $metadata->mapRelatedToLinkBag($mapping);
                         continue;
                 }

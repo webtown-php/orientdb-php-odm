@@ -10,7 +10,7 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
-use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 use Integration\Document\Post;
 use PHPUnit\TestCase;
 

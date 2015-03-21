@@ -1,17 +1,12 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB;
+namespace Doctrine\ODM\OrientDB\Collections;
 
 use Doctrine\Common\Collections\Collection as BaseCollection;
+use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
+use Doctrine\ODM\OrientDB\UnitOfWork;
 
-/**
- * A PersistentCollection represents a collection of elements that have persistent state.
- *
- * @since       1.0
- * @author      Jonathan H. Wage <jonwage@gmail.com>
- * @author      Roman Borschel <roman@code-factory.org>
- */
 class PersistentCollection implements BaseCollection
 {
     /**
@@ -91,16 +86,6 @@ class PersistentCollection implements BaseCollection
         $this->coll = $coll;
         $this->dm   = $dm;
         $this->uow  = $uow;
-    }
-
-    /**
-     * Sets the document manager and unit of work (used during merge operations).
-     *
-     * @param DocumentManager $dm
-     */
-    public function setDocumentManager(DocumentManager $dm) {
-        $this->dm  = $dm;
-        $this->uow = $dm->getUnitOfWork();
     }
 
     /**
@@ -289,10 +274,6 @@ class PersistentCollection implements BaseCollection
 
     public function getMapping() {
         return $this->mapping;
-    }
-
-    public function getTypeClass() {
-        return $this->typeClass;
     }
 
     /**

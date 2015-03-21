@@ -118,7 +118,7 @@ class XmlDriver extends FileDriver
         }
         if (isset($xmlRoot->{'related-to-via'})) {
             foreach ($xmlRoot->{'related-to-via'} as $node) {
-                $this->addRelatedToMapping($metadata, $node, true);
+                $this->addRelatedToMapping($metadata, $node, false);
             }
         }
     }
@@ -188,11 +188,11 @@ class XmlDriver extends FileDriver
         }
     }
 
-    private function addRelatedToMapping(ClassMetadata $class, \SimpleXMLElement $embed, $via = false) {
+    private function addRelatedToMapping(ClassMetadata $class, \SimpleXMLElement $embed, $indirect = true) {
         $attributes = $embed->attributes();
         $mapping    = [
             'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
-            'via'       => $via,
+            'indirect'  => $indirect,
         ];
         if (isset($attributes['fieldName'])) {
             $mapping['fieldName'] = (string)$attributes['fieldName'];

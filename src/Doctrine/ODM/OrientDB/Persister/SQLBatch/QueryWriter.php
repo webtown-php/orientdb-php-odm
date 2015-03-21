@@ -39,6 +39,23 @@ class QueryWriter
         return $this->inserts++;
     }
 
+    public function addCreateVertexQuery($var, $class, \stdClass $fields) {
+        $query           = "let %s = CREATE VERTEX %s SET %s RETURN @rid";
+        $this->queries[] = sprintf($query, $var, $class, $this->flattenFields($fields));
+
+        // returned so we can map the rid to the document
+        return $this->inserts++;
+    }
+
+    /**
+     * @param string   $class
+     * @param string[] $rids
+     */
+    public function addCreateEdgeQuery($class, $rids) {
+        $query           = "CREATE EDGE %s FROM %s TO %s";
+        $this->queries[] = sprintf($query, $class, $rids[0], $rids[1]);
+    }
+
     protected function flattenFields(\stdClass $fields) {
         $parts = '';
         foreach ($fields as $name => $value) {
@@ -92,34 +109,60 @@ class QueryWriter
         $this->queries[] = sprintf($query, $let, $rid, $this->flattenFields($fields), $return, $where, $lock);
     }
 
-    public function addCollectionAddQuery($identifier, $fieldName, $value, $lock = 'DEFAULT') {
+    public function addCollectionAddQuery($rid, $fieldName, $value, $lock = 'DEFAULT') {
         $query           = "UPDATE %s ADD %s = [%s] LOCK %s";
-        $this->queries[] = sprintf($query, $identifier, $fieldName, $value, $lock);
+        $this->queries[] = sprintf($query, $rid, $fieldName, $value, $lock);
     }
 
-    public function addCollectionDelQuery($identifier, $fieldName, $value, $lock = 'DEFAULT') {
+    public function addCollectionDelQuery($rid, $fieldName, $value, $lock = 'DEFAULT') {
         $query           = "UPDATE %s REMOVE %s = [%s] LOCK %s";
-        $this->queries[] = sprintf($query, $identifier, $fieldName, $value, $lock);
+        $this->queries[] = sprintf($query, $rid, $fieldName, $value, $lock);
     }
 
-    public function addCollectionMapPutQuery($identifier, $fieldName, $key, $value, $lock = 'DEFAULT') {
+    public function addCollectionMapPutQuery($rid, $fieldName, $key, $value, $lock = 'DEFAULT') {
         $query           = "UPDATE %s PUT %s = '%s', %s LOCK %s";
-        $this->queries[] = sprintf($query, $identifier, $fieldName, $key, $value, $lock);
+        $this->queries[] = sprintf($query, $rid, $fieldName, $key, $value, $lock);
     }
 
-    public function addCollectionMapDelQuery($identifier, $fieldName, $key, $lock = 'DEFAULT') {
+    public function addCollectionMapDelQuery($rid, $fieldName, $key, $lock = 'DEFAULT') {
         $query           = "UPDATE %s REMOVE %s = '%s' LOCK %s";
-        $this->queries[] = sprintf($query, $identifier, $fieldName, $key, $lock);
+        $this->queries[] = sprintf($query, $rid, $fieldName, $key, $lock);
     }
 
     /**
-     * @TODO cover vertex/edge deletion
-     *
-     * @param string $identifier
+     * @param string $rid
      * @param string $lock
      */
-    public function addDeleteQuery($identifier, $lock = 'DEFAULT') {
+    public function addDeleteQuery($rid, $lock = 'DEFAULT') {
         $query           = "DELETE FROM %s LOCK %s";
-        $this->queries[] = sprintf($query, $identifier, $lock);
+        $this->queries[] = sprintf($query, $rid, $lock);
+    }
+
+    /**
+     * @param string $rid
+     * @param string $lock
+     */
+    public function addDeleteVertexQuery($rid, $lock = 'DEFAULT') {
+        $query           = "DELETE VERTEX %s LOCK %s";
+        $this->queries[] = sprintf($query, $rid, $lock);
+    }
+
+    /**
+     * @param string $rid
+     * @param string $lock
+     */
+    public function addDeleteEdgeByRidQuery($rid, $lock = 'DEFAULT') {
+        $query           = "DELETE EDGE %s LOCK %s";
+        $this->queries[] = sprintf($query, $rid, $lock);
+    }
+
+    /**
+     * @param string   $oclass
+     * @param string[] $rids
+     * @param string   $lock
+     */
+    public function addDeleteEdgeQuery($oclass, $rids, $lock = 'DEFAULT') {
+        $query           = "DELETE EDGE FROM %s TO %s WHERE @class = '%s' LOCK %s";
+        $this->queries[] = sprintf($query, $rids[0], $rids[1], $oclass, $lock);
     }
 }

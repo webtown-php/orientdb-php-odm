@@ -20,7 +20,7 @@
 
 namespace Integration\Document;
 
-use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 
 /**
  * @Document(oclass="Profile")
@@ -55,7 +55,7 @@ class Profile
     public $phones;
 
     /**
-     * @return Phone[]|PersistentCollection
+     * @return Phone[]|\Doctrine\ODM\OrientDB\Collections\PersistentCollection
      */
     public function getPhones() {
         return $this->phones;

@@ -133,7 +133,7 @@ class ClassMetadata implements DoctrineMetadata
     /**
      * Identifies associations that must use key
      */
-    const ASSOCIATION_USE_KEY = 0xA0A;
+    const ASSOCIATION_USE_KEY = 0xA1A;
 
     /**
      * Combined bit mask for single-valued associations.
@@ -289,10 +289,10 @@ class ClassMetadata implements DoctrineMetadata
         $this->setter = function ($document, $property, $value) {
             $document->$property = $value;
         };
-
-        $this->getter       = function ($document, $property) {
+        $this->getter = function ($document, $property) {
             return $document->$property;
         };
+
         $this->instantiator = new Instantiator();
     }
 

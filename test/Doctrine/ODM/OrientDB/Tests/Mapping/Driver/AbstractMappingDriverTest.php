@@ -119,10 +119,10 @@ abstract class AbstractMappingDriverTest extends TestCase
      */
     public function relates_to_direct_mappings($class) {
         $m = $class->associationMappings['follows'];
-        $this->assertFalse($m['via']);
+        $this->assertTrue($m['indirect']);
         $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
         $m = $class->associationMappings['followers'];
-        $this->assertFalse($m['via']);
+        $this->assertTrue($m['indirect']);
         $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
 
         return $class;
@@ -138,10 +138,10 @@ abstract class AbstractMappingDriverTest extends TestCase
      */
     public function relates_to_via_mappings($class) {
         $m = $class->associationMappings['managers'];
-        $this->assertTrue($m['via']);
+        $this->assertFalse($m['indirect']);
         $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
         $m = $class->associationMappings['employees'];
-        $this->assertTrue($m['via']);
+        $this->assertFalse($m['indirect']);
         $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
 
         return $class;

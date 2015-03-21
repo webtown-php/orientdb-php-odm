@@ -4,11 +4,11 @@ namespace Doctrine\ODM\OrientDB\Persister;
 
 
 use Doctrine\Common\EventManager;
+use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\ODM\OrientDB\PersistentCollection;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Query\Query;
 
@@ -108,25 +108,26 @@ class DocumentPersister
             case ClassMetadata::EMBED_LIST:
             case ClassMetadata::EMBED_SET:
             case ClassMetadata::EMBED_MAP:
-                $this->loadEmbedArrayCollection($collection);
+                $this->loadEmbedCollection($collection);
                 break;
 
             case ClassMetadata::LINK_LIST:
             case ClassMetadata::LINK_SET:
             case ClassMetadata::LINK_MAP:
-                $this->loadLinkArrayCollection($collection);
+                $this->loadReferenceCollection($collection);
                 break;
             case ClassMetadata::LINK_BAG:
-                if ($mapping['via']) {
-                    $this->loadLinkArrayCollection($collection);
+                if ($mapping['indirect']) {
+                    $this->loadIndirectReferenceCollection($collection);
                 } else {
-                    $this->loadDirectArrayCollection($collection);
+                    $this->loadReferenceCollection($collection);
+
                 }
                 break;
         }
     }
 
-    private function loadEmbedArrayCollection(PersistentCollection $collection) {
+    private function loadEmbedCollection(PersistentCollection $collection) {
         $data = $collection->getData();
         if (count($data) === 0) {
             return;
@@ -151,14 +152,14 @@ class DocumentPersister
         }
     }
 
-    private function loadLinkArrayCollection(PersistentCollection $collection) {
+    private function loadReferenceCollection(PersistentCollection $collection) {
         $rows = $collection->getData();
         if (count($rows) === 0) {
             return;
         }
         $mapping = $collection->getMapping();
         $useKey  = boolval($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
-        if (is_scalar(reset($rows))) {
+        if (is_string(reset($rows))) {
             $query = new Query(array_values($rows));
             if ($useKey) {
                 $keys = array_flip($rows);
@@ -180,7 +181,16 @@ class DocumentPersister
         }
     }
 
-    private function loadDirectArrayCollection(PersistentCollection $collection) {
+    static private function &extractVertexes(array $rows, $prop) {
+        $results = [];
+        foreach ($rows as $row) {
+            $results[$row->{'@rid'}] = $row->{$prop};
+        }
+
+        return $results;
+    }
+
+    private function loadIndirectReferenceCollection(PersistentCollection $collection) {
         $rows = $collection->getData();
         if (count($rows) === 0) {
             return;
@@ -188,24 +198,46 @@ class DocumentPersister
         $mapping = $collection->getMapping();
         $prop    = $mapping['direction'] === 'in' ? 'out' : 'in';
 
-        $rids    = [];
-        $results = [];
+        $rids     = [];
+        $results  = [];
+        $edgeRids = [];
         foreach ($rows as $row) {
+            if (is_string($row)) {
+                // edge RID
+                $edgeRids[] = $row;
+                continue;
+            }
+
+            // edge is loaded, so we
+            $edgeRid = $row->{'@rid'};
             if (is_string($row->{$prop})) {
-                $rids[] = $row->{$prop};
+                $rids[$row->{$prop}][] = $edgeRid;
             } else {
-                $results[] = $rows->{$prop};
+                $results[$edgeRid] = $rows->{$prop};
             }
         }
 
+        // load edges and their immediate children (*:1)
+        if ($edgeRids) {
+            $query   = new Query($edgeRids);
+            $loaded  = $this->binding->execute($query, '*:1')->getResult();
+            $results = array_merge($results, self::extractVertexes($loaded, $prop));
+        }
+
         if ($rids) {
-            $query   = new Query(array_values($rids));
-            $results = array_merge($results, $this->binding->execute($query)->getResult());
+            $query  = new Query(array_keys($rids));
+            $loaded = $this->binding->execute($query)->getResult();
+            foreach ($loaded as $row) {
+                $rid = $row->{'@rid'};
+                foreach ($rids[$rid] as $edge) {
+                    $results[$edge] = $row;
+                }
+            }
         }
 
         foreach ($results as $key => $data) {
             $document = $this->uow->getOrCreateDocument($data);
-            $collection->add($document);
+            $collection->set($key, $document);
         }
     }
 

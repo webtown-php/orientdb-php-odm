@@ -27,7 +27,28 @@ class PersistenceWithGraphTest extends TestCase
      */
     public function persist_single_document() {
         /** @var PersonV $p */
-        $p = $this->manager->findByRid('#26:1', '*:1');
+        $p = $this->manager->findByRid('#26:1');
         $followers = $p->followers->toArray();
+    }
+
+    /**
+     * @test
+     */
+    public function add_follow() {
+        /** @var PersonV $p */
+        $p = $this->manager->findByRid('#26:1');
+        /** @var PersonV $o */
+        $o = $this->manager->findByRid('#26:0');
+        $p->followed->add($o);
+        $o = $this->manager->findByRid('#26:2');
+        $p->followed->add($o);
+        $this->manager->flush();
+        $this->manager->clear();
+
+        /** @var PersonV $p */
+        $p = $this->manager->findByRid('#26:1');
+
+        $p->followed->removeElement($p->followed->first());
+        $this->manager->flush();
     }
 }

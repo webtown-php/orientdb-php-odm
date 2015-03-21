@@ -20,7 +20,7 @@
 
 namespace Integration\Document;
 
-use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 
 /**
  * @Document(oclass="Post")
@@ -61,7 +61,7 @@ class Post
     }
 
     /**
-     * @return PersistentCollection|Comment[]
+     * @return \Doctrine\ODM\OrientDB\Collections\PersistentCollection|Comment[]
      */
     public function getComments() {
         return $this->comments;

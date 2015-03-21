@@ -1,7 +1,7 @@
 <?php
 
 namespace Integration\Document;
-use Doctrine\ODM\OrientDB\PersistentCollection;
+use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 
 /**
  * @Document(oclass="Person")

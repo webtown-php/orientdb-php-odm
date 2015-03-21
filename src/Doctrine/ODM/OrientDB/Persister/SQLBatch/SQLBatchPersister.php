@@ -53,105 +53,6 @@ class SQLBatchPersister implements PersisterInterface
         $this->executeUpdateDeletes($uow);
     }
 
-    private function executeUpdateDeletes(UnitOfWork $uow) {
-        $queryWriter = new QueryWriter();
-
-        $docs = [];
-        foreach ($uow->getDocumentUpdates() as $oid => $doc) {
-            /** @var ClassMetadata $md */
-            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument()) {
-                continue;
-            }
-
-            $id      = $this->createDocVarReference($doc);
-            $rid     = $uow->getDocumentRid($doc);
-            $data    = $this->prepareData($md, $uow, $doc);
-            $version = null;
-            if ($md->version) {
-                $version = $md->getFieldValue($doc, $md->version);
-            }
-            $queryWriter->addUpdateQuery($rid, $data, $id->toValue(), $version);
-            $docs[] = [$id, $doc, $md];
-        }
-
-        foreach ($uow->getCollectionUpdates() as $coll) {
-            $assoc = $coll->getMapping();
-            if (isset($assoc['embedded'])) {
-                continue;
-            }
-
-            $isMap     = boolval($assoc['association'] & ClassMetadata::LINK_MAP);
-            $fieldName = $assoc['fieldName'];
-            $owner     = $coll->getOwner();
-            $ownerRef  = strval($this->getDocReference($owner));
-
-            if ($isMap) {
-                foreach ($coll->getInsertDiff() as $key => $doc) {
-                    $queryWriter->addCollectionMapPutQuery($ownerRef, $fieldName, $key, $uow->getDocumentRid($doc));
-                }
-
-                foreach ($coll->getDeleteDiff() as $key => $doc) {
-                    $queryWriter->addCollectionMapDelQuery($ownerRef, $fieldName, $key);
-                }
-            } else {
-                $rids = array_map(function ($doc) use ($uow) {
-                    return $uow->getDocumentRid($doc);
-                }, $coll->getInsertDiff());
-                if (count($rids) > 0) {
-                    $queryWriter->addCollectionAddQuery($ownerRef, $fieldName, implode(',', $rids));
-                }
-                $rids = array_map(function ($doc) use ($uow) {
-                    return $uow->getDocumentRid($doc);
-                }, $coll->getDeleteDiff());
-                if (count($rids) > 0) {
-                    $queryWriter->addCollectionDelQuery($ownerRef, $fieldName, implode(',', $rids));
-                }
-            }
-        }
-
-        foreach ($uow->getDocumentDeletions() as $oid => $doc) {
-            /** @var ClassMetadata $md */
-            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument()) {
-                continue;
-            }
-
-            $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
-        }
-
-        $queries = $queryWriter->getQueries();
-        if (!$queries) {
-            // nothing to do
-            return;
-        }
-
-        if (!empty($docs)) {
-            $parts = [];
-            foreach ($docs as $k => list ($v)) {
-                $parts [] = sprintf('d%s : %s', $k, $v);
-            }
-            $queries [] = sprintf('return { %s }', implode(', ', $parts));
-        }
-
-        $updates = $this->executeQueries($queries);
-        foreach ($updates as $k => $val) {
-            if (isset($docs[$k]) && $val instanceof \stdClass) {
-                /** @var ClassMetadata $md */
-                list ($_, $doc, $md) = $docs[$k];
-                unset($docs[$k]);
-                $md->setFieldValue($doc, $md->version, $val->value);
-            }
-        }
-
-        if (!empty($docs)) {
-            // we didn't receive info for all inserted documents
-            throw LockException::lockFailed(array_map(function ($arg) {
-                return $arg[1];
-            }, $docs));
-        }
-    }
-
     private function executeInserts(UnitOfWork $uow) {
         $this->references = [];
         $this->writer     = $queryWriter = new QueryWriter();
@@ -202,6 +103,133 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         $this->references = [];
+    }
+
+    private function executeUpdateDeletes(UnitOfWork $uow) {
+        $queryWriter = new QueryWriter();
+
+        $docs = [];
+        foreach ($uow->getDocumentUpdates() as $oid => $doc) {
+            /** @var ClassMetadata $md */
+            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            if ($md->isEmbeddedDocument()) {
+                continue;
+            }
+
+            $id      = $this->createDocVarReference($doc);
+            $rid     = $uow->getDocumentRid($doc);
+            $data    = $this->prepareData($md, $uow, $doc);
+            $version = null;
+            if ($md->version) {
+                $version = $md->getFieldValue($doc, $md->version);
+            }
+            $queryWriter->addUpdateQuery($rid, $data, $id->toValue(), $version);
+            $docs[] = [$id, $doc, $md];
+        }
+
+        foreach ($uow->getCollectionUpdates() as $coll) {
+            $assoc = $coll->getMapping();
+            if (isset($assoc['embedded'])) {
+                continue;
+            }
+
+            $owner     = $coll->getOwner();
+            $ownerRef  = strval($this->getDocReference($owner));
+            $fieldName = $assoc['fieldName'];
+
+            switch ($assoc['association']) {
+                case ClassMetadata::LINK_BAG:
+                    if ($assoc['direction'] === 'out') {
+                        $rids = [$ownerRef, null];
+                        $pos  = 1;
+                    } else {
+                        $rids = [null, $ownerRef];
+                        $pos  = 0;
+                    }
+
+                    if ($assoc['indirect']) {
+                        // add new edges
+                        foreach ($coll->getInsertDiff() as $key => $related) {
+                            $rids[$pos] = $this->getDocReference($related);
+                            $queryWriter->addCreateEdgeQuery($assoc['oclass'], $rids);
+                        }
+                        foreach ($coll->getDeleteDiff() as $related) {
+                            $rids[$pos] = $this->getDocReference($related);
+                            $queryWriter->addDeleteEdgeQuery($assoc['oclass'], $rids);
+                        }
+                    } else {
+                        throw new \Exception('RelatedToVia updates not yet implemented');
+                    }
+                    continue;
+
+                case ClassMetadata::LINK_MAP:
+                    foreach ($coll->getInsertDiff() as $key => $doc) {
+                        $queryWriter->addCollectionMapPutQuery($ownerRef, $fieldName, $key, $uow->getDocumentRid($doc));
+                    }
+
+                    foreach ($coll->getDeleteDiff() as $key => $doc) {
+                        $queryWriter->addCollectionMapDelQuery($ownerRef, $fieldName, $key);
+                    }
+                    continue;
+
+                default:
+                    $rids = array_map(function ($doc) use ($uow) {
+                        return $uow->getDocumentRid($doc);
+                    }, $coll->getInsertDiff());
+                    if (count($rids) > 0) {
+                        $queryWriter->addCollectionAddQuery($ownerRef, $fieldName, implode(',', $rids));
+                    }
+                    $rids = array_map(function ($doc) use ($uow) {
+                        return $uow->getDocumentRid($doc);
+                    }, $coll->getDeleteDiff());
+                    if (count($rids) > 0) {
+                        $queryWriter->addCollectionDelQuery($ownerRef, $fieldName, implode(',', $rids));
+                    }
+                    continue;
+            }
+
+        }
+
+        foreach ($uow->getDocumentDeletions() as $oid => $doc) {
+            /** @var ClassMetadata $md */
+            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            if ($md->isEmbeddedDocument()) {
+                continue;
+            }
+
+            $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
+        }
+
+        $queries = $queryWriter->getQueries();
+        if (!$queries) {
+            // nothing to do
+            return;
+        }
+
+        if (!empty($docs)) {
+            $parts = [];
+            foreach ($docs as $k => list ($v)) {
+                $parts [] = sprintf('d%s : %s', $k, $v);
+            }
+            $queries [] = sprintf('return { %s }', implode(', ', $parts));
+        }
+
+        $updates = $this->executeQueries($queries);
+        foreach ($updates as $k => $val) {
+            if (isset($docs[$k]) && $val instanceof \stdClass) {
+                /** @var ClassMetadata $md */
+                list ($_, $doc, $md) = $docs[$k];
+                unset($docs[$k]);
+                $md->setFieldValue($doc, $md->version, $val->value);
+            }
+        }
+
+        if (!empty($docs)) {
+            // we didn't receive info for all inserted documents
+            throw LockException::lockFailed(array_map(function ($arg) {
+                return $arg[1];
+            }, $docs));
+        }
     }
 
     /**
@@ -357,16 +385,6 @@ class SQLBatchPersister implements PersisterInterface
         return $insertData;
     }
 
-    private function getRid($ref) {
-        /** @var ClassMetadata $rmd */
-        $rmd = $this->metadataFactory->getMetadataFor(get_class($ref));
-
-        $rid = $rmd->getIdentifierValue($ref);
-        if ($rid === null) {
-            throw new OrientDBException('document has not been persisted');
-        }
-    }
-
     private function getDocReference($ref) {
         $oid = spl_object_hash($ref);
         if (isset($this->references[$oid])) {
@@ -390,7 +408,7 @@ class SQLBatchPersister implements PersisterInterface
     }
 
     /**
-     * @param $ref
+     * @param object $ref
      *
      * @return DocReference
      */
@@ -401,5 +419,18 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         return $this->references[$oid];
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return DocReference
+     */
+    private function createVar($id) {
+        if (!isset($this->references[$id])) {
+            $this->references[$id] = DocReference::create('$d' . $this->varId++);
+        }
+
+        return $this->references[$id];
     }
 }
