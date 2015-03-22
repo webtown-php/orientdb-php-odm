@@ -64,6 +64,10 @@ class PersistenceWithLinkedDocumentTest extends TestCase
     /**
      * @test
      * @depends persist_with_link
+     *
+     * @param string $rid
+     *
+     * @return string
      */
     public function update_top_level_and_linked_document($rid) {
         /** @var Person $d */
@@ -86,6 +90,8 @@ class PersistenceWithLinkedDocumentTest extends TestCase
     /**
      * @test
      * @depends update_top_level_and_linked_document
+     *
+     * @param string $rid
      */
     public function update_linked_document_to_null($rid) {
         /** @var Person $d */
@@ -109,7 +115,7 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      * @test
      * @depends persist_with_link
      *
-     * @param $rid
+     * @param string $rid
      */
     public function delete_document_with_linked($rid) {
         $document = $this->manager->findByRid($rid);
@@ -158,6 +164,10 @@ class PersistenceWithLinkedDocumentTest extends TestCase
     /**
      * @test
      * @depends persist_with_linked_list_document
+     *
+     * @param string $rid
+     *
+     * @return string
      */
     public function update_with_linked_list_document($rid) {
         /** @var Person $d */
@@ -180,6 +190,10 @@ class PersistenceWithLinkedDocumentTest extends TestCase
     /**
      * @test
      * @depends persist_with_linked_list_document
+     *
+     * @param string $rid
+     *
+     * @return string
      */
     public function remove_item_from_linked_list_document($rid) {
         /** @var Person $d */
@@ -201,9 +215,39 @@ class PersistenceWithLinkedDocumentTest extends TestCase
 
     /**
      * @test
+     * @depends remove_item_from_linked_list_document
+     *
+     * @param string $rid
+     *
+     * @return string
+     */
+    public function clear_linked_list_document($rid) {
+        /** @var Person $d */
+        $d = $this->manager->findByRid($rid);
+        $erid = $d->emails->first()->rid;
+        $this->manager->clear();
+
+        /** @var Person $d */
+        $d = $this->manager->findByRid($rid);
+        $d->emails->clear();
+
+        $this->manager->flush();
+        $this->manager->clear();
+
+        /** @var Person $d */
+        $d = $this->manager->findByRid($rid);
+        $this->assertCount(0, $d->emails);
+
+        $this->assertNull($this->manager->findByRid($erid));
+
+        return $rid;
+    }
+
+    /**
+     * @test
      * @depends persist_with_linked_list_document
      *
-     * @param $rid
+     * @param string $rid
      */
     public function delete_with_linked_list_document($rid) {
         $d = $this->manager->findByRid($rid);

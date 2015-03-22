@@ -35,5 +35,5 @@ class PersonV extends Vertex
      * @RelatedTo(targetDoc="PersonV", oclass="FollowedE", direction="out")
      * @var \Doctrine\ODM\OrientDB\Collections\PersistentCollection|PersonV[]
      */
-    public $followed;
+    public $follows;
 }

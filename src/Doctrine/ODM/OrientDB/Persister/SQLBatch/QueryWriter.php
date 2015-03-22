@@ -119,6 +119,11 @@ class QueryWriter
         $this->queries[] = sprintf($query, $rid, $fieldName, $value, $lock);
     }
 
+    public function addCollectionClearQuery($rid, $fieldName, $lock = 'DEFAULT') {
+        $query           = "UPDATE %s SET %s = [] LOCK %s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, $lock);
+    }
+
     public function addCollectionMapPutQuery($rid, $fieldName, $key, $value, $lock = 'DEFAULT') {
         $query           = "UPDATE %s PUT %s = '%s', %s LOCK %s";
         $this->queries[] = sprintf($query, $rid, $fieldName, $key, $value, $lock);
@@ -127,6 +132,11 @@ class QueryWriter
     public function addCollectionMapDelQuery($rid, $fieldName, $key, $lock = 'DEFAULT') {
         $query           = "UPDATE %s REMOVE %s = '%s' LOCK %s";
         $this->queries[] = sprintf($query, $rid, $fieldName, $key, $lock);
+    }
+
+    public function addCollectionMapClearQuery($rid, $fieldName, $lock = 'DEFAULT') {
+        $query           = "UPDATE %s SET %s = {} LOCK %s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, $lock);
     }
 
     /**
@@ -157,10 +167,19 @@ class QueryWriter
     /**
      * @param string   $oclass
      * @param string[] $rids
-     * @param string   $lock
      */
-    public function addDeleteEdgeQuery($oclass, $rids, $lock = 'DEFAULT') {
-        $query           = "DELETE EDGE FROM %s TO %s WHERE @class = '%s' LOCK %s";
-        $this->queries[] = sprintf($query, $rids[0], $rids[1], $oclass, $lock);
+    public function addDeleteEdgeQuery($oclass, $rids) {
+        $query           = "DELETE EDGE FROM %s TO %s WHERE @class = '%s'";
+        $this->queries[] = sprintf($query, $rids[0], $rids[1], $oclass);
+    }
+
+    /**
+     * @param string $oclass
+     * @param string $dir
+     * @param string $rid
+     */
+    public function addDeleteEdgeCollectionQuery($oclass, $dir, $rid) {
+        $query           = "DELETE EDGE %s WHERE %s = %s";
+        $this->queries[] = sprintf($query, $oclass, $dir, $rid);
     }
 }

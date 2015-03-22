@@ -608,7 +608,7 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * @return array
+     * @return PersistentCollection[]
      */
     public function getCollectionDeletions() {
         return $this->collectionDeletions;

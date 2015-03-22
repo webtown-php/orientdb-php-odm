@@ -131,6 +131,83 @@ class SQLBatchPersister implements PersisterInterface
             $docs[] = [$id, $doc, $md];
         }
 
+        $this->processCollectionDeletions($queryWriter, $uow);
+        $this->processCollectionUpdates($queryWriter, $uow);
+
+        foreach ($uow->getDocumentDeletions() as $oid => $doc) {
+            /** @var ClassMetadata $md */
+            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            if ($md->isEmbeddedDocument()) {
+                continue;
+            }
+
+            if ($md->isVertex()) {
+                $queryWriter->addDeleteVertexQuery($uow->getDocumentRid($doc));
+            } else {
+                $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
+            }
+        }
+
+        $queries = $queryWriter->getQueries();
+        if (!$queries) {
+            // nothing to do
+            return;
+        }
+
+        if (!empty($docs)) {
+            $parts = [];
+            foreach ($docs as $k => list ($v)) {
+                $parts [] = sprintf('d%s : %s', $k, $v);
+            }
+            $queries [] = sprintf('return { %s }', implode(', ', $parts));
+        }
+
+        $updates = $this->executeQueries($queries);
+        foreach ($updates as $k => $val) {
+            if (isset($docs[$k]) && $val instanceof \stdClass) {
+                /** @var ClassMetadata $md */
+                list ($_, $doc, $md) = $docs[$k];
+                unset($docs[$k]);
+                $md->setFieldValue($doc, $md->version, $val->value);
+            }
+        }
+
+        if (!empty($docs)) {
+            // we didn't receive info for all inserted documents
+            throw LockException::lockFailed(array_map(function ($arg) {
+                return $arg[1];
+            }, $docs));
+        }
+    }
+
+    private function processCollectionDeletions(QueryWriter $queryWriter, UnitOfWork $uow) {
+        foreach ($uow->getCollectionDeletions() as $coll) {
+            $assoc = $coll->getMapping();
+            if (isset($assoc['embedded'])) {
+                continue;
+            }
+
+            $owner     = $coll->getOwner();
+            $ownerRef  = strval($this->getDocReference($owner));
+            $fieldName = $assoc['fieldName'];
+
+            switch ($assoc['association']) {
+                case ClassMetadata::LINK_BAG:
+                    $queryWriter->addDeleteEdgeCollectionQuery($assoc['oclass'], $assoc['direction'], $ownerRef);
+                    continue;
+
+                case ClassMetadata::LINK_MAP:
+                    $queryWriter->addCollectionMapClearQuery($ownerRef, $fieldName);
+                    continue;
+
+                default:
+                    $queryWriter->addCollectionClearQuery($ownerRef, $fieldName);
+                    continue;
+            }
+
+        }
+    }
+    private function processCollectionUpdates(QueryWriter $queryWriter, UnitOfWork $uow) {
         foreach ($uow->getCollectionUpdates() as $coll) {
             $assoc = $coll->getMapping();
             if (isset($assoc['embedded'])) {
@@ -192,51 +269,6 @@ class SQLBatchPersister implements PersisterInterface
                     continue;
             }
 
-        }
-
-        foreach ($uow->getDocumentDeletions() as $oid => $doc) {
-            /** @var ClassMetadata $md */
-            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument()) {
-                continue;
-            }
-
-            if ($md->isVertex()) {
-                $queryWriter->addDeleteVertexQuery($uow->getDocumentRid($doc));
-            } else {
-                $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
-            }
-        }
-
-        $queries = $queryWriter->getQueries();
-        if (!$queries) {
-            // nothing to do
-            return;
-        }
-
-        if (!empty($docs)) {
-            $parts = [];
-            foreach ($docs as $k => list ($v)) {
-                $parts [] = sprintf('d%s : %s', $k, $v);
-            }
-            $queries [] = sprintf('return { %s }', implode(', ', $parts));
-        }
-
-        $updates = $this->executeQueries($queries);
-        foreach ($updates as $k => $val) {
-            if (isset($docs[$k]) && $val instanceof \stdClass) {
-                /** @var ClassMetadata $md */
-                list ($_, $doc, $md) = $docs[$k];
-                unset($docs[$k]);
-                $md->setFieldValue($doc, $md->version, $val->value);
-            }
-        }
-
-        if (!empty($docs)) {
-            // we didn't receive info for all inserted documents
-            throw LockException::lockFailed(array_map(function ($arg) {
-                return $arg[1];
-            }, $docs));
         }
     }
 
