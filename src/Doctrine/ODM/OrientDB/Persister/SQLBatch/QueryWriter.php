@@ -140,20 +140,18 @@ class QueryWriter
 
     /**
      * @param string $rid
-     * @param string $lock
      */
-    public function addDeleteVertexQuery($rid, $lock = 'DEFAULT') {
-        $query           = "DELETE VERTEX %s LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $lock);
+    public function addDeleteVertexQuery($rid) {
+        $query           = "DELETE VERTEX %s";
+        $this->queries[] = sprintf($query, $rid);
     }
 
     /**
      * @param string $rid
-     * @param string $lock
      */
-    public function addDeleteEdgeByRidQuery($rid, $lock = 'DEFAULT') {
-        $query           = "DELETE EDGE %s LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $lock);
+    public function addDeleteEdgeByRidQuery($rid) {
+        $query           = "DELETE EDGE %s";
+        $this->queries[] = sprintf($query, $rid);
     }
 
     /**

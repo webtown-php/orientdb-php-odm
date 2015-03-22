@@ -70,7 +70,11 @@ class SQLBatchPersister implements PersisterInterface
             $id   = $this->createDocVarReference($doc);
             $data = $this->prepareData($md, $uow, $doc);
 
-            $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
+            if ($md->isVertex()) {
+                $queryWriter->addCreateVertexQuery($id->toValue(), $md->getOrientClass(), $data);
+            } else {
+                $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
+            }
             $docs[] = [$id, $doc, $md];
         }
 
@@ -197,7 +201,11 @@ class SQLBatchPersister implements PersisterInterface
                 continue;
             }
 
-            $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
+            if ($md->isVertex()) {
+                $queryWriter->addDeleteVertexQuery($uow->getDocumentRid($doc));
+            } else {
+                $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
+            }
         }
 
         $queries = $queryWriter->getQueries();

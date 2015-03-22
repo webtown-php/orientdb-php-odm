@@ -23,16 +23,48 @@ class PersistenceWithGraphTest extends TestCase
 
     /**
      * @test
-     * @return mixed
+     * @return string[]
      */
-    public function persist_single_document() {
-        /** @var PersonV $p */
-        $p = $this->manager->findByRid('#26:1');
-        $followers = $p->followers->toArray();
+    public function persist_vertices() {
+        $j = new PersonV();
+        $j->name = "Jennifer";
+        $this->manager->persist($j);
+
+        $s = new PersonV();
+        $s->name = "Sydney";
+        $this->manager->persist($s);
+
+        $c = new PersonV();
+        $c->name = "Cameron";
+        $this->manager->persist($c);
+
+        $this->manager->flush();
+
+        return [$j->rid, $s->rid, $c->rid];
     }
 
     /**
+     * @depends persist_vertices
      * @test
+     * @param $rids
+     */
+    public function delete_vertices($rids) {
+        foreach ($rids as $rid) {
+            $v = $this->manager->findByRid($rid);
+            $this->manager->remove($v);
+        }
+
+        $this->manager->flush();
+        $this->manager->clear();
+
+        foreach ($rids as $rid) {
+            $v = $this->manager->findByRid($rid);
+            $this->assertNull($v);
+        }
+    }
+
+    /**
+     * @ntest
      */
     public function add_follow() {
         /** @var PersonV $p */
