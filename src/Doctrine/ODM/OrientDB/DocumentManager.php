@@ -23,7 +23,6 @@ namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ODM\OrientDB\Caster\CastingMismatchException;
 use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
@@ -142,7 +141,7 @@ class DocumentManager implements ObjectManager
      * @return array|Mixed
      */
     public function execute(Query $query, $fetchPlan = null) {
-        return $this->getUnitOfWork()->execute($query, $fetchPlan);
+        return $this->uow->execute($query, $fetchPlan);
     }
 
     /**
@@ -212,12 +211,10 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * @todo to implement/test
-     *
      * @param $document
      */
     public function flush($document = null) {
-        $this->getUnitOfWork()->commit($document);
+        $this->uow->commit($document);
     }
 
     /**
@@ -228,7 +225,7 @@ class DocumentManager implements ObjectManager
      * @return \Doctrine\ODM\OrientDB\Mapping\ClassMetadata
      */
     public function getClassMetadata($class) {
-        return $this->getMetadataFactory()->getMetadataFor($class);
+        return $this->metadataFactory->getMetadataFor($class);
     }
 
     /**
@@ -327,21 +324,21 @@ class DocumentManager implements ObjectManager
         if (!is_object($document)) {
             throw new \InvalidArgumentException(gettype($document));
         }
-        $this->getUnitOfWork()->persist($document);
+        $this->uow->persist($document);
     }
 
     /**
      * @inheritdoc
      */
     public function remove($object) {
-        $this->getUnitOfWork()->remove($object);
+        $this->uow->remove($object);
     }
 
     /**
      * @inheritdoc
      */
     public function refresh($object) {
-        $this->getUnitOfWork()->refresh($object);
+        $this->uow->refresh($object);
     }
 
     /**

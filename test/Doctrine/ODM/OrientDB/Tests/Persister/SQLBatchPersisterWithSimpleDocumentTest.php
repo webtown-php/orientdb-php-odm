@@ -133,6 +133,8 @@ JSON
             ->willReturn([]);
         $uow->getCollectionUpdates()
             ->willReturn([]);
+        $uow->getCollectionDeletions()
+            ->willReturn([]);
         $uow->getDocumentDeletions()
             ->willReturn([]);
         $uow->getDocumentActualData(Arg::is($c))
