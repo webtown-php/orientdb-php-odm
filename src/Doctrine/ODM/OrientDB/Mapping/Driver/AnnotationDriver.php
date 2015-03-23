@@ -17,6 +17,7 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedMap;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedPropertyBase;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedSet;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\In;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Link;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkList;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\LinkMap;
@@ -31,6 +32,7 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\Relationship;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Vertex;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\VertexLink;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
 class AnnotationDriver extends AbstractAnnotationDriver
@@ -203,6 +205,14 @@ class AnnotationDriver extends AbstractAnnotationDriver
                         $mapping['indirect'] = ($ann instanceof RelatedTo);
                         $metadata->mapRelatedToLinkBag($mapping);
                         continue;
+
+                    case $ann instanceof VertexLink:
+                        if (isset($ann->targetDoc)) {
+                            $mapping['targetDoc'] = $ann->targetDoc;
+                        }
+                        $dir = $ann instanceof In ? 'in' : 'out';
+                        $metadata->mapVertexLink($mapping, $dir);
+                        continue;
                 }
             }
         }
@@ -221,7 +231,9 @@ class AnnotationDriver extends AbstractAnnotationDriver
 
     private function mergeLink(LinkPropertyBase $link, array &$mapping) {
         $mapping['cascade']       = $link->cascade;
-        $mapping['targetDoc']     = $link->targetDoc;
+        if (isset($link->targetDoc)) {
+            $mapping['targetDoc'] = $link->targetDoc;
+        }
         $mapping['orphanRemoval'] = $link->orphanRemoval;
 
         if (!empty($link->parentProperty)) {
@@ -233,11 +245,15 @@ class AnnotationDriver extends AbstractAnnotationDriver
     }
 
     private function mergeEmbedded(EmbeddedPropertyBase $embed, array &$mapping) {
-        $mapping['targetDoc'] = $embed->targetDoc;
+        if (isset($embed->targetDoc)) {
+            $mapping['targetDoc'] = $embed->targetDoc;
+        }
     }
 
     private function mergeRelatedToBase(RelatedToBase $edge, array &$mapping) {
-        $mapping['targetDoc'] = $edge->targetDoc;
+        if (isset($edge->targetDoc)) {
+            $mapping['targetDoc'] = $edge->targetDoc;
+        }
         $mapping['oclass']    = $edge->oclass;
         $mapping['direction'] = $edge->direction;
     }

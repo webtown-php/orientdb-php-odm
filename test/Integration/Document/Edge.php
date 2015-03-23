@@ -14,14 +14,14 @@ class Edge
     public $rid;
 
     /**
-     * @Link
-     * @var
+     * @In
+     * @var object
      */
     public $in;
 
     /**
-     * @Link
-     * @var
+     * @Out
+     * @var object
      */
     public $out;
 }

@@ -341,8 +341,8 @@ class PersistentCollection implements BaseCollection
         if ($this->dm &&
             $this->mapping !== null &&
             $this->mapping['isOwningSide'] &&
-            $this->owner //&&
-            //$this->dm->getClassMetadata(get_class($this->owner))->isChangeTrackingNotify()
+            $this->owner &&
+            $this->dm->getClassMetadata(get_class($this->owner))->isChangeTrackingNotify()
         ) {
             $this->uow->scheduleForDirtyCheck($this->owner);
         }

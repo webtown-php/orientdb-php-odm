@@ -170,14 +170,6 @@ class UnitOfWork implements PropertyChangedListener
     private $persisters = [];
 
     /**
-     * Array of parent associations between embedded documents
-     *
-     * @todo We might need to clean up this array in clear(), doDetach(), etc.
-     * @var array
-     */
-    private $parentAssociations = [];
-
-    /**
      * Embedded documents that are scheduled for removal.
      *
      * @var array
@@ -189,39 +181,6 @@ class UnitOfWork implements PropertyChangedListener
         $this->dm              = $manager;
         $this->evm             = $evm;
         $this->hydratorFactory = $hydratorFactory;
-    }
-
-    /**
-     * Sets the parent association for a given embedded document.
-     *
-     * @param object $document
-     * @param array  $mapping
-     * @param object $parent
-     * @param string $propertyPath
-     */
-    public function setParentAssociation($document, $mapping, $parent, $propertyPath) {
-        $oid                            = spl_object_hash($document);
-        $this->parentAssociations[$oid] = [$mapping, $parent, $propertyPath];
-    }
-
-    /**
-     * Gets the parent association for a given embedded document.
-     *
-     *     <code>
-     *     list($mapping, $parent, $propertyPath) = $this->getParentAssociation($embeddedDocument);
-     *     </code>
-     *
-     * @param object $document
-     *
-     * @return array $association
-     */
-    public function getParentAssociation($document) {
-        $oid = spl_object_hash($document);
-        if (!isset($this->parentAssociations[$oid])) {
-            return null;
-        }
-
-        return $this->parentAssociations[$oid];
     }
 
     /**
@@ -280,13 +239,13 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         if (!($this->documentInsertions ||
-            $this->documentDeletions ||
             $this->documentUpdates ||
+            $this->documentDeletions ||
             $this->collectionUpdates ||
             $this->collectionDeletions ||
             $this->orphanRemovals)
         ) {
-            return; // Nothing to do.
+            return;
         }
 
         if ($this->orphanRemovals) {
@@ -295,7 +254,6 @@ class UnitOfWork implements PropertyChangedListener
             }
         }
 
-        // Raise onFlush
         if ($this->evm->hasListeners(Events::onFlush)) {
             $this->evm->dispatchEvent(Events::onFlush, new Event\OnFlushEventArgs($this->dm));
         }
@@ -572,7 +530,6 @@ class UnitOfWork implements PropertyChangedListener
             $this->documentDeletions =
             $this->collectionUpdates =
             $this->collectionDeletions =
-            $this->parentAssociations =
             $this->orphanRemovals = [];
         } else {
             $visited = [];
@@ -1219,14 +1176,10 @@ class UnitOfWork implements PropertyChangedListener
                         throw OrientDBInvalidArgumentException::newDocumentFoundThroughRelationship($assoc, $doc);
                     }
                     $this->persistNew($class, $doc);
-                    if ($embedded) {
-                        $this->setParentAssociation($doc, $assoc, $parentDocument, $path);
-                    }
                     $this->computeChangeSet($class, $doc);
                     continue;
 
                 case $state === self::STATE_MANAGED && $embedded:
-                    $this->setParentAssociation($doc, $assoc, $parentDocument, $path);
                     $this->computeChangeSet($class, $doc);
                     continue;
 

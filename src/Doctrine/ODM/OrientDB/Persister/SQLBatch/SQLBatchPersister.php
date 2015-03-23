@@ -67,13 +67,34 @@ class SQLBatchPersister implements PersisterInterface
             if ($md->isEmbeddedDocument()) {
                 continue;
             }
+
             $id   = $this->createDocVarReference($doc);
             $data = $this->prepareData($md, $uow, $doc);
 
-            if ($md->isVertex()) {
-                $queryWriter->addCreateVertexQuery($id->toValue(), $md->getOrientClass(), $data);
-            } else {
-                $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
+            switch (true) {
+                case $md->isVertex():
+                    $queryWriter->addCreateVertexQuery($id->toValue(), $md->getOrientClass(), $data);
+                    break;
+
+                case $md->isEdge():
+                    // no way to fetch the returned RID of the created edge
+                    if (!property_exists($data, 'in')) {
+
+                    }
+
+                    if (!property_exists($data, 'out')) {
+
+                    }
+                    $in  = $data->in;
+                    $out = $data->out;
+                    unset($data->in, $data->out);
+                    $queryWriter->addCreateEdgeQuery($id->toValue(), $md->getOrientClass(), $out, $in, $data);
+                    break;
+
+                default:
+                    $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
+                    break;
+
             }
             $docs[] = [$id, $doc, $md];
         }
@@ -192,7 +213,7 @@ class SQLBatchPersister implements PersisterInterface
             $fieldName = $assoc['fieldName'];
 
             switch ($assoc['association']) {
-                case ClassMetadata::LINK_BAG:
+                case ClassMetadata::LINK_BAG_EDGE:
                     $queryWriter->addDeleteEdgeCollectionQuery($assoc['oclass'], $assoc['direction'], $ownerRef);
                     continue;
 
@@ -207,6 +228,7 @@ class SQLBatchPersister implements PersisterInterface
 
         }
     }
+
     private function processCollectionUpdates(QueryWriter $queryWriter, UnitOfWork $uow) {
         foreach ($uow->getCollectionUpdates() as $coll) {
             $assoc = $coll->getMapping();
@@ -219,7 +241,12 @@ class SQLBatchPersister implements PersisterInterface
             $fieldName = $assoc['fieldName'];
 
             switch ($assoc['association']) {
-                case ClassMetadata::LINK_BAG:
+                case ClassMetadata::LINK_BAG_EDGE:
+                    if (!$assoc['indirect']) {
+                        // nothing to do, as insert / update / delete is handled by cascade operations
+                        continue;
+                    }
+
                     if ($assoc['direction'] === 'out') {
                         $rids = [$ownerRef, null];
                         $pos  = 1;
@@ -228,18 +255,14 @@ class SQLBatchPersister implements PersisterInterface
                         $pos  = 0;
                     }
 
-                    if ($assoc['indirect']) {
-                        // add new edges
-                        foreach ($coll->getInsertDiff() as $key => $related) {
-                            $rids[$pos] = $this->getDocReference($related);
-                            $queryWriter->addCreateEdgeQuery($assoc['oclass'], $rids);
-                        }
-                        foreach ($coll->getDeleteDiff() as $related) {
-                            $rids[$pos] = $this->getDocReference($related);
-                            $queryWriter->addDeleteEdgeQuery($assoc['oclass'], $rids);
-                        }
-                    } else {
-                        throw new \Exception('RelatedToVia updates not yet implemented');
+                    // add new edges
+                    foreach ($coll->getInsertDiff() as $key => $related) {
+                        $rids[$pos] = $this->getDocReference($related);
+                        $queryWriter->addCreateLightEdgeQuery($assoc['oclass'], $rids);
+                    }
+                    foreach ($coll->getDeleteDiff() as $related) {
+                        $rids[$pos] = $this->getDocReference($related);
+                        $queryWriter->addDeleteEdgeQuery($assoc['oclass'], $rids);
                     }
                     continue;
 
@@ -459,18 +482,5 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         return $this->references[$oid];
-    }
-
-    /**
-     * @param string $id
-     *
-     * @return DocReference
-     */
-    private function createVar($id) {
-        if (!isset($this->references[$id])) {
-            $this->references[$id] = DocReference::create('$d' . $this->varId++);
-        }
-
-        return $this->references[$id];
     }
 }

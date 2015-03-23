@@ -193,17 +193,6 @@ JSON
         $this->assertEquals('syd@gmail.com', $c->email->email);
 
         $this->assertEquals(UnitOfWork::STATE_MANAGED, $this->uow->getDocumentState($c->email));
-        $pa = $this->uow->getParentAssociation($c->email);
-
-        $this->assertCount(3, $pa);
-        // mapping
-        $this->assertTrue(is_array($pa[0]));
-
-        // parent contact
-        $this->assertEquals($c, $pa[1]);
-
-        // property path
-        $this->assertEquals('email', $pa[2]);
     }
 
     /**

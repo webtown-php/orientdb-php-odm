@@ -37,7 +37,7 @@ class SQLBatchPersisterWithEmbeddedDocumentTest extends TestCase
     /**
      * @test
      */
-    public function first() {
+    public function sets_RID_and_registers_inserted_document_with_UnitOfWork() {
         $c   = new Contact();
         $oid = spl_object_hash($c);
 
@@ -49,12 +49,22 @@ class SQLBatchPersisterWithEmbeddedDocumentTest extends TestCase
 
         $uow->getDocumentUpdates()
             ->willReturn([]);
+        $uow->getCollectionUpdates()
+            ->willReturn([]);
+        $uow->getCollectionDeletions()
+            ->willReturn([]);
         $uow->getDocumentDeletions()
             ->willReturn([]);
+        $uow->getDocumentActualData(Arg::is($c))
+            ->willReturn([]);
+        $uow->registerManaged($c, '#1:0', [])
+            ->shouldBeCalled();
 
         $res = json_decode(<<<JSON
 {
-    "result":[]
+    "result":[{
+        "d0":"#1:0"
+    }]
 }
 JSON
         );

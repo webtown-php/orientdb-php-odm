@@ -100,7 +100,6 @@ class DynamicHydrator implements HydratorInterface
                 $doc              = $embeddedMetadata->newInstance();
                 $embeddedData     = $this->dm->getHydratorFactory()->hydrate($doc, $propertyValue, $hints);
                 $this->uow->registerManaged($doc, null, $embeddedData);
-                $this->uow->setParentAssociation($doc, $mapping, $document, $name);
                 $this->metadata->setFieldValue($document, $fieldName, $doc);
                 $hydratedData[$fieldName] = $doc;
                 continue;

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<doctrine-orientdb-mapping xmlns="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
-                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                           xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping
-                  http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd">
+<doctrine-orientdb-mapping
+        xmlns="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping
+            http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping.xsd">
 
     <document name="Doctrine\ODM\OrientDB\Tests\Mapping\Driver\User" oclass="OUser" change-tracking-policy="NOTIFY">
         <rid fieldName="id"/>
@@ -11,12 +13,6 @@
         <field fieldName="email" type="string"/>
         <field fieldName="mysqlProfileId" type="integer"/>
         <field fieldName="createdAt" type="date"/>
-        
-        <related-to fieldName="follows" oclass="followed" direction="out" />
-        <related-to fieldName="followers" oclass="followed" direction="in" />
-
-        <related-to-via fieldName="managers" target-doc="ReportsTo" oclass="reports_to" direction="in" />
-        <related-to-via fieldName="employees" target-doc="ReportsTo" oclass="reports_to" direction="out" />
 
         <embed-one fieldName="embeddedPhonenumber" target-doc="Phonenumber"/>
         <embed-many fieldName="otherPhonenumbers" target-doc="Phonenumber" collection="list"/>

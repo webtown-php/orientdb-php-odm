@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-orientdb-mapping
+        xmlns="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping
+            http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping.xsd">
+
+    <vertex name="Doctrine\ODM\OrientDB\Tests\Mapping\Driver\ContactV" oclass="ContactV">
+        <rid fieldName="rid"/>
+        <field fieldName="name" type="string"/>
+
+        <related-to fieldName="follows" oclass="follows" direction="out"/>
+        <related-to fieldName="followers" oclass="follows" direction="in"/>
+
+        <related-to-via fieldName="liked" oclass="liked" direction="out" target-doc="LikedE"/>
+        <related-to-via fieldName="likes" oclass="liked" direction="in" target-doc="LikedE"/>
+    </vertex>
+</doctrine-orientdb-mapping>

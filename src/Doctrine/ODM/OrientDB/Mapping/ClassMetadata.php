@@ -109,9 +109,9 @@ class ClassMetadata implements DoctrineMetadata
      */
     const LINK_MAP = 0x08;
     /**
-     * Identifies a link bag association
+     * Identifies a link bag association specifically for graph edges
      */
-    const LINK_BAG = 0x10;
+    const LINK_BAG_EDGE = 0x10;
 
     /**
      * Identifies a embedded association
@@ -251,14 +251,14 @@ class ClassMetadata implements DoctrineMetadata
     public $reflFields;
 
     /**
-     * READONLY
+     * READ-ONLY
      *
      * @var array
      */
     public $fieldMappings = [];
 
     /**
-     * READONLY
+     * READ-ONLY
      *
      * @var array
      */
@@ -816,9 +816,11 @@ class ClassMetadata implements DoctrineMetadata
     public function mapRelatedToLinkBag(array $mapping) {
         $this->_validateFieldMapping($mapping);
 
-        $mapping['association'] = self::LINK_BAG;
-        $mapping['reference']   = true;
-        $suffix                 = $mapping['oclass'] !== self::EDGE_BASE_CLASS
+        $mapping['association']   = self::LINK_BAG_EDGE;
+        $mapping['reference']     = true;
+        $mapping['cascade']       = ['persist'];
+        $mapping['orphanRemoval'] = !$mapping['indirect'];
+        $suffix                   = $mapping['oclass'] !== self::EDGE_BASE_CLASS
             ? $mapping['oclass']
             : '';
 
@@ -830,6 +832,21 @@ class ClassMetadata implements DoctrineMetadata
         $this->_mapField($mapping);
 
         return $this;
+    }
+
+    public function mapVertexLink($mapping, $direction) {
+        $mapping = array_merge([
+                'name'        => $direction,
+                'type'        => 'object',
+                'nullable'    => false,
+                'association' => self::LINK,
+                'reference'   => true,
+            ],
+            $mapping
+        );
+
+        $this->_validateFieldMapping($mapping);
+        $this->_mapField($mapping);
     }
 
     /**

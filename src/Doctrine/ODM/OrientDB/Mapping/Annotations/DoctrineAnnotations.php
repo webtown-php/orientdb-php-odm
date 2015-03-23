@@ -29,3 +29,5 @@ require_once __DIR__ . '/RelatedToBase.php';
 require_once __DIR__ . '/RelatedTo.php';
 require_once __DIR__ . '/RelatedToVia.php';
 require_once __DIR__ . '/Relationship.php';
+require_once __DIR__ . '/In.php';
+require_once __DIR__ . '/Out.php';

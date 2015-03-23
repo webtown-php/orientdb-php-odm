@@ -116,7 +116,8 @@ class DocumentPersister
             case ClassMetadata::LINK_MAP:
                 $this->loadReferenceCollection($collection);
                 break;
-            case ClassMetadata::LINK_BAG:
+
+            case ClassMetadata::LINK_BAG_EDGE:
                 if ($mapping['indirect']) {
                     $this->loadIndirectReferenceCollection($collection);
                 } else {
@@ -136,13 +137,11 @@ class DocumentPersister
         if (is_array($data)) {
             $mapping  = $collection->getMapping();
             $useKey   = boolval($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
-            $owner    = $collection->getOwner();
             $metadata = $this->dm->getClassMetadata($mapping['targetDoc']);
             foreach ($data as $key => $v) {
                 $document = $metadata->newInstance();
                 $data     = $this->hydratorFactory->hydrate($document, $v);
                 $this->uow->registerManaged($document, null, $data);
-                $this->uow->setParentAssociation($document, $mapping, $owner, $mapping['name'] . '.' . $key);
                 if ($useKey) {
                     $collection->set($key, $document);
                 } else {

@@ -47,11 +47,19 @@ class QueryWriter
         return $this->inserts++;
     }
 
+    public function addCreateEdgeQuery($var, $class, $from, $to, \stdClass $fields) {
+        $query           = "let %s = CREATE EDGE %s FROM %s TO %s SET %s";
+        $this->queries[] = sprintf($query, $var, $class, $from, $to, $this->flattenFields($fields));
+
+        // returned so we can map the rid to the document
+        return $this->inserts++;
+    }
+
     /**
      * @param string   $class
      * @param string[] $rids
      */
-    public function addCreateEdgeQuery($class, $rids) {
+    public function addCreateLightEdgeQuery($class, $rids) {
         $query           = "CREATE EDGE %s FROM %s TO %s";
         $this->queries[] = sprintf($query, $class, $rids[0], $rids[1]);
     }

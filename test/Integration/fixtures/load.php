@@ -160,6 +160,9 @@ class Fixtures
             ],
             'LikedE'           => [
                 'extends' => 'E',
+                'p' => [
+                    'description' => 'STRING',
+                ],
             ],
             'PostV'            => [
                 'extends' => 'V',

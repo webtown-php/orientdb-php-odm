@@ -25,7 +25,7 @@ class XmlDriver extends FileDriver
         $result     = [];
         $xmlElement = simplexml_load_file($file);
 
-        foreach (['document', 'embedded-document', 'mapped-superclass'] as $type) {
+        foreach (['document', 'embedded-document', 'mapped-superclass', 'vertex', 'relationship'] as $type) {
             if (isset($xmlElement->$type)) {
                 foreach ($xmlElement->$type as $documentElement) {
                     $documentName          = (string)$documentElement['name'];
@@ -48,6 +48,16 @@ class XmlDriver extends FileDriver
         switch ($xmlRoot->getName()) {
             case 'document':
                 $metadata->setIsDocument();
+                break;
+
+            case 'vertex':
+                $metadata->setIsDocument();
+                $metadata->setIsVertex();
+                break;
+
+            case 'relationship':
+                $metadata->setIsDocument();
+                $metadata->setIsEdge();
                 break;
 
             case 'embedded-document':
@@ -78,6 +88,20 @@ class XmlDriver extends FileDriver
         if (isset($xmlRoot->{'version'})) {
             $field = $xmlRoot->{'version'};
             $metadata->mapVersion((string)$field['fieldName']);
+        }
+
+        if ($metadata->isEdge()) {
+            if (isset($xmlRoot->{'in'})) {
+                $mapping = [];
+                $this->_copyCommonPropertyAttributesToMapping($xmlRoot->{'in'}->attributes(), $mapping);
+                $metadata->mapVertexLink($mapping, 'in');
+            }
+
+            if (isset($xmlRoot->{'out'})) {
+                $mapping = [];
+                $this->_copyCommonPropertyAttributesToMapping($xmlRoot->{'out'}->attributes(), $mapping);
+                $metadata->mapVertexLink($mapping, 'out');
+            }
         }
 
         // Evaluate <change-tracking-policy...>
@@ -123,14 +147,19 @@ class XmlDriver extends FileDriver
         }
     }
 
-    private function addEmbedMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
-        $attributes = $embed->attributes();
-        $mapping    = [
-            'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
-        ];
+    private function _copyCommonPropertyAttributesToMapping(\SimpleXMLElement $attributes, array &$mapping) {
         if (isset($attributes['fieldName'])) {
             $mapping['fieldName'] = (string)$attributes['fieldName'];
         }
+        if (isset($attributes['target-doc'])) {
+            $mapping['targetDoc'] = (string)$attributes['target-doc'];
+        }
+    }
+
+    private function addEmbedMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
+        $attributes = $embed->attributes();
+        $mapping = [];
+        $this->_copyCommonPropertyAttributesToMapping($attributes, $mapping);
 
         switch ($type) {
             case 'one':
@@ -154,11 +183,10 @@ class XmlDriver extends FileDriver
         $attributes = $embed->attributes();
         $mapping    = [
             'cascade'   => isset($embed->cascade) ? $this->_getCascadeMappings($embed->cascade) : [],
-            'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
         ];
-        if (isset($attributes['fieldName'])) {
-            $mapping['fieldName'] = (string)$attributes['fieldName'];
-        }
+
+        $this->_copyCommonPropertyAttributesToMapping($attributes, $mapping);
+
         if (isset($attributes['orphan-removal'])) {
             $mapping['orphanRemoval'] = ((string)$attributes['orphan-removal'] === 'true');
         }
@@ -191,12 +219,9 @@ class XmlDriver extends FileDriver
     private function addRelatedToMapping(ClassMetadata $class, \SimpleXMLElement $embed, $indirect = true) {
         $attributes = $embed->attributes();
         $mapping    = [
-            'targetDoc' => isset($attributes['target-doc']) ? (string)$attributes['target-doc'] : null,
             'indirect'  => $indirect,
         ];
-        if (isset($attributes['fieldName'])) {
-            $mapping['fieldName'] = (string)$attributes['fieldName'];
-        }
+        $this->_copyCommonPropertyAttributesToMapping($attributes, $mapping);
         if (isset($attributes['oclass'])) {
             $mapping['oclass'] = (string)$attributes['oclass'];
         }

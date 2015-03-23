@@ -23,33 +23,53 @@ abstract class AbstractMappingDriverTest extends TestCase
         return $class;
     }
 
-    public function testLoadMapping() {
+    /**
+     * @test
+     * @return ClassMetadata
+     */
+    public function can_load_mapping_for_class() {
         $entityClassName = User::class;
 
         return $this->createClassMetadata($entityClassName);
     }
 
     /**
-     * @depends testLoadMapping
+     * @depends can_load_mapping_for_class
+     * @test
      *
      * @param ClassMetadata $class
      *
      * @return ClassMetadata
      */
-    public function testOClassName($class) {
+    public function orientClass_is_set($class) {
         $this->assertEquals('OUser', $class->orientClass);
 
         return $class;
     }
 
     /**
-     * @depends testLoadMapping
+     * @depends can_load_mapping_for_class
+     * @test
      *
      * @param ClassMetadata $class
      *
      * @return ClassMetadata
      */
-    public function testChangeTrackingPolicy($class) {
+    public function is_document_mapping(ClassMetadata $class) {
+        $this->assertTrue($class->isDocument());
+
+        return $class;
+    }
+
+    /**
+     * @depends can_load_mapping_for_class
+     * @test
+     *
+     * @param ClassMetadata $class
+     *
+     * @return ClassMetadata
+     */
+    public function isChangeTrackingPolicy_set_to_NOTIFY($class) {
         $this->assertEquals(ClassMetadata::CHANGETRACKING_NOTIFY, $class->changeTrackingPolicy);
         $this->assertTrue($class->isChangeTrackingNotify());
 
@@ -58,14 +78,15 @@ abstract class AbstractMappingDriverTest extends TestCase
 
 
     /**
-     * @depends testLoadMapping
+     * @depends can_load_mapping_for_class
+     * @test
      *
      * @param ClassMetadata $class
      *
      * @return ClassMetadata
      */
-    public function testFieldMappings($class) {
-        $this->assertEquals(15, count($class->fieldMappings));
+    public function all_fields_are_mapped($class) {
+        $this->assertEquals(11, count($class->fieldMappings));
         $this->assertTrue(isset($class->fieldMappings['id']));
         $this->assertTrue(isset($class->fieldMappings['version']));
         $this->assertTrue(isset($class->fieldMappings['name']));
@@ -75,14 +96,15 @@ abstract class AbstractMappingDriverTest extends TestCase
     }
 
     /**
-     * @depends testLoadMapping
+     * @depends can_load_mapping_for_class
+     * @test
      *
      * @param ClassMetadata $class
      *
      * @return ClassMetadata
      */
-    public function testAssociationMappings($class) {
-        $this->assertEquals(9, count($class->associationMappings));
+    public function all_associations_are_mapped($class) {
+        $this->assertEquals(5, count($class->associationMappings));
         $this->assertTrue(isset($class->associationMappings['address']));
         $this->assertTrue(isset($class->associationMappings['phonenumbers']));
         $this->assertTrue(isset($class->associationMappings['groups']));
@@ -93,62 +115,7 @@ abstract class AbstractMappingDriverTest extends TestCase
     }
 
     /**
-     * @depends testAssociationMappings
-     * @test
-     *
-     * @param ClassMetadata $class
-     *
-     * @return ClassMetadata
-     */
-    public function relates_to_mappings($class) {
-        $this->assertTrue(isset($class->associationMappings['follows']));
-        $this->assertTrue(isset($class->associationMappings['followers']));
-        $this->assertTrue(isset($class->associationMappings['managers']));
-        $this->assertTrue(isset($class->associationMappings['employees']));
-
-        return $class;
-    }
-
-    /**
-     * @depends relates_to_mappings
-     * @test
-     *
-     * @param ClassMetadata $class
-     *
-     * @return ClassMetadata
-     */
-    public function relates_to_direct_mappings($class) {
-        $m = $class->associationMappings['follows'];
-        $this->assertTrue($m['indirect']);
-        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
-        $m = $class->associationMappings['followers'];
-        $this->assertTrue($m['indirect']);
-        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
-
-        return $class;
-    }
-
-    /**
-     * @depends relates_to_mappings
-     * @test
-     *
-     * @param ClassMetadata $class
-     *
-     * @return ClassMetadata
-     */
-    public function relates_to_via_mappings($class) {
-        $m = $class->associationMappings['managers'];
-        $this->assertFalse($m['indirect']);
-        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
-        $m = $class->associationMappings['employees'];
-        $this->assertFalse($m['indirect']);
-        $this->assertEquals(ClassMetadata::LINK_BAG, $m['association']);
-
-        return $class;
-    }
-
-    /**
-     * @depends testAssociationMappings
+     * @depends all_associations_are_mapped
      *
      * @param ClassMetadata $class
      *
@@ -189,17 +156,250 @@ abstract class AbstractMappingDriverTest extends TestCase
     }
 
     /**
-     * @depends testLoadMapping
+     * @depends can_load_mapping_for_class
+     * @test
      *
      * @param ClassMetadata $class
      */
-    public function testGetAssociationTargetClass($class) {
+    public function getAssociationTargetClass_returns_expected_value($class) {
         $this->assertEquals('Doctrine\ODM\OrientDB\Tests\Mapping\Driver\Address', $class->getAssociationTargetClass('address'));
         $this->assertEquals('Doctrine\ODM\OrientDB\Tests\Mapping\Driver\Group', $class->getAssociationTargetClass('groups'));
         $this->assertEquals('Doctrine\ODM\OrientDB\Tests\Mapping\Driver\Phonenumber', $class->getAssociationTargetClass('phonenumbers'));
         $this->assertEquals('Doctrine\ODM\OrientDB\Tests\Mapping\Driver\Phonenumber', $class->getAssociationTargetClass('embeddedPhonenumber'));
         $this->assertEquals('Doctrine\ODM\OrientDB\Tests\Mapping\Driver\Phonenumber', $class->getAssociationTargetClass('otherPhonenumbers'));
     }
+
+    #region vertex mapping
+
+    /**
+     * @test
+     *
+     * @return ClassMetadata
+     */
+    public function load_vertex_document() {
+        $entityClassName = ContactV::class;
+
+        return $this->createClassMetadata($entityClassName);
+    }
+
+    /**
+     * @depends load_vertex_document
+     * @test
+     *
+     * @param $md
+     *
+     * @return ClassMetadata
+     */
+    public function vertex_document_has_correct_oclass(ClassMetadata $md) {
+        $this->assertEquals('ContactV', $md->orientClass);
+
+        return $md;
+    }
+
+    /**
+     * @depends load_vertex_document
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function is_vertex_document(ClassMetadata $md) {
+        $this->assertTrue($md->isVertex());
+
+        return $md;
+    }
+
+    /**
+     * @depends is_vertex_document
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function vertex_has_correct_field_mappings(ClassMetadata $md) {
+        $this->assertCount(6, $md->fieldMappings);
+        $this->assertArrayHasKey('rid', $md->fieldMappings);
+        $this->assertArrayHasKey('name', $md->fieldMappings);
+
+        return $md;
+    }
+
+    /**
+     * @depends is_vertex_document
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function vertex_has_correct_association_mappings(ClassMetadata $md) {
+        $this->assertCount(4, $md->associationMappings);
+        $this->assertArrayHasKey('liked', $md->associationMappings);
+        $this->assertArrayHasKey('likes', $md->associationMappings);
+        $this->assertArrayHasKey('follows', $md->associationMappings);
+        $this->assertArrayHasKey('followers', $md->associationMappings);
+
+        return $md;
+    }
+
+    /**
+     * @depends vertex_has_correct_association_mappings
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function vertex_has_correct_RelatedToVia_mappings(ClassMetadata $md) {
+        foreach (['liked', 'likes'] as $p) {
+            $m = $md->associationMappings[$p];
+            $this->assertEquals(LikedE::class, $m['targetDoc']);
+            $this->assertEquals('liked', $m['oclass']);
+            $this->assertEquals(ClassMetadata::LINK_BAG_EDGE, $m['association']);
+            $this->assertFalse($m['indirect']);
+            $this->assertTrue($m['isOwningSide']);
+            $this->assertTrue($m['orphanRemoval']);
+        }
+
+        $this->assertEquals('out', $md->associationMappings['liked']['direction']);
+        $this->assertEquals('in', $md->associationMappings['likes']['direction']);
+
+        return $md;
+    }
+
+    /**
+     * @depends vertex_has_correct_association_mappings
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function vertex_has_correct_RelatedTo_mappings(ClassMetadata $md) {
+        foreach (['follows', 'followers'] as $p) {
+            $m = $md->associationMappings[$p];
+            $this->assertArrayNotHasKey('targetDoc', $m);
+            $this->assertEquals('follows', $m['oclass']);
+            $this->assertEquals(ClassMetadata::LINK_BAG_EDGE, $m['association']);
+            $this->assertTrue($m['indirect']);
+        }
+
+        $this->assertEquals('out', $md->associationMappings['follows']['direction']);
+        $this->assertEquals('in', $md->associationMappings['followers']['direction']);
+
+        return $md;
+    }
+
+    #endregion
+
+    #region edge mapping
+
+    /**
+     * @test
+     *
+     * @return ClassMetadata
+     */
+    public function load_edge_document() {
+        $entityClassName = LikedE::class;
+
+        return $this->createClassMetadata($entityClassName);
+    }
+
+    /**
+     * @depends load_edge_document
+     * @test
+     *
+     * @param $md
+     *
+     * @return ClassMetadata
+     */
+    public function edge_document_has_correct_oclass(ClassMetadata $md) {
+        $this->assertEquals('LikedE', $md->orientClass);
+
+        return $md;
+    }
+
+    /**
+     * @depends load_edge_document
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function is_edge_document(ClassMetadata $md) {
+        $this->assertTrue($md->isEdge());
+
+        return $md;
+    }
+
+    /**
+     * @depends is_edge_document
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function edge_has_correct_field_mappings(ClassMetadata $md) {
+        $this->assertCount(4, $md->fieldMappings);
+        $this->assertArrayHasKey('rid', $md->fieldMappings);
+        $this->assertArrayHasKey('description', $md->fieldMappings);
+
+        return $md;
+    }
+
+    /**
+     * @depends is_edge_document
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function edge_has_correct_association_mappings(ClassMetadata $md) {
+        $this->assertCount(2, $md->associationMappings);
+        $this->assertArrayHasKey('in', $md->associationMappings);
+        $this->assertArrayHasKey('out', $md->associationMappings);
+
+        return $md;
+    }
+
+    /**
+     * @depends edge_has_correct_association_mappings
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function edge_has_correct_In_mapping(ClassMetadata $md) {
+        $m = $md->associationMappings['in'];
+        $this->assertEquals('in', $m['name']);
+        $this->assertEquals(ClassMetadata::LINK, $m['association']);
+
+        return $md;
+    }
+
+    /**
+     * @depends edge_has_correct_association_mappings
+     * @test
+     *
+     * @param ClassMetadata $md
+     *
+     * @return ClassMetadata
+     */
+    public function edge_has_correct_Out_mapping(ClassMetadata $md) {
+        $m = $md->associationMappings['out'];
+        $this->assertEquals('out', $m['name']);
+        $this->assertEquals(ClassMetadata::LINK, $m['association']);
+
+        return $md;
+    }
+
+    #endregion
 }
 
 /**
@@ -266,30 +466,6 @@ class User
     public $otherPhonenumbers;
 
     /**
-     * @RelatedTo(oclass="followed", direction="out")
-     * @var User[]
-     */
-    public $follows;
-
-    /**
-     * @RelatedTo(oclass="followed", direction="in")
-     * @var User[]
-     */
-    public $followers;
-
-    /**
-     * @RelatedToVia(targetDoc="ReportsTo", oclass="reports_to", direction="in")
-     * @var array
-     */
-    public $managers;
-
-    /**
-     * @RelatedToVia(targetDoc="ReportsTo", oclass="reports_to", direction="out")
-     * @var array
-     */
-    public $employees;
-
-    /**
      * @PrePersist
      */
     public function doStuffOnPrePersist() {
@@ -311,4 +487,75 @@ class User
     public static function loadMetadata(ClassMetadata $metadata) {
 
     }
+}
+
+/**
+ * @Vertex(oclass="ContactV")
+ */
+class ContactV
+{
+    /**
+     * @RID
+     */
+    public $rid;
+
+    /**
+     * @Property(type="string")
+     * @var string
+     */
+    public $name;
+
+    /**
+     * @RelatedToVia(targetDoc="LikedE", oclass="liked", direction="out")
+     * @var LikedE[]
+     */
+    public $liked;
+
+    /**
+     * @RelatedToVia(targetDoc="LikedE", oclass="liked", direction="in")
+     * @var LikedE[]
+     */
+    public $likes;
+
+    /**
+     * @RelatedTo(oclass="follows", direction="out")
+     * @var ContactV[]
+     */
+    public $follows;
+
+    /**
+     * @RelatedTo(oclass="follows", direction="in")
+     * @var ContactV[]
+     */
+    public $followers;
+}
+
+/**
+ * @Relationship(oclass="LikedE")
+ */
+class LikedE
+{
+    /**
+     * @RID
+     * @var string
+     */
+    public $rid;
+
+    /**
+     * @Property
+     * @var string
+     */
+    public $description;
+
+    /**
+     * @Out
+     * @var
+     */
+    public $out;
+
+    /**
+     * @In
+     * @var object
+     */
+    public $in;
 }

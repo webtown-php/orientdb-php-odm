@@ -20,6 +20,8 @@
                         <xs:documentation>Defines metadata for mapping a document to a PHP object</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element name="vertex" type="odm:vertex" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="relationship" type="odm:relationship" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="embedded-document" type="odm:document" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element name="mapped-superclass" type="odm:document" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
@@ -43,13 +45,12 @@
                 </xs:annotation>
             </xs:element>
             <xs:element name="field" type="odm:field" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="related-to" type="odm:related-to-type" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="related-to-via" type="odm:related-to-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="embed-one" type="odm:embedded" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="embed-many" type="odm:embedded-many" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="link-one" type="odm:link" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="link-many" type="odm:link-many" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0"/>
+            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>
+            <xs:any minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="repository-class" type="xs:string"/>
@@ -65,6 +66,79 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="extends" type="xs:NMTOKEN" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="vertex">
+        <xs:sequence>
+            <xs:element name="rid" type="odm:meta-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Specifies the record ID property for this document</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="version" type="odm:meta-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Specifies the @version property for this document</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="field" type="odm:field" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="related-to" type="odm:related-to-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="related-to-via" type="odm:related-to-type" minOccurs="0" maxOccurs="unbounded"/>
+
+            <xs:element name="embed-one" type="odm:embedded" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="embed-many" type="odm:embedded-many" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="link-one" type="odm:link" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="link-many" type="odm:link-many" minOccurs="0" maxOccurs="unbounded"/>
+
+            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>
+            <xs:any minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="repository-class" type="xs:string"/>
+        <xs:attribute name="change-tracking-policy" type="odm:change-tracking-policy"/>
+        <xs:attribute name="oclass" type="xs:NMTOKEN" use="required">
+            <xs:annotation>
+                <xs:documentation>Specifies the OrientDB class name for this document</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="abstract" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">specifies whether the type is abstract</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="extends" type="xs:NMTOKEN" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="relationship">
+        <xs:sequence>
+            <xs:element name="rid" type="odm:meta-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Specifies the record ID property for this document</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="version" type="odm:meta-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Specifies the @version property for this document</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="field" type="odm:field" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="out" type="odm:vertex-link" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="in" type="odm:vertex-link" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>
+            <xs:any minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="repository-class" type="xs:string"/>
+        <xs:attribute name="change-tracking-policy" type="odm:change-tracking-policy"/>
+        <xs:attribute name="oclass" type="xs:NMTOKEN" use="required">
+            <xs:annotation>
+                <xs:documentation>Specifies the OrientDB class name for this document</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="vertex-link">
+        <xs:attribute name="fieldName" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="target-doc" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="meta-type">

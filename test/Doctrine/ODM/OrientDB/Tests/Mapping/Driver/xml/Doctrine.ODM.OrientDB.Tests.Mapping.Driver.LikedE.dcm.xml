@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-orientdb-mapping
+        xmlns="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping
+            http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping.xsd">
+
+    <relationship name="Doctrine\ODM\OrientDB\Tests\Mapping\Driver\LikedE" oclass="LikedE">
+        <rid fieldName="rid"/>
+        <field fieldName="description" name="username" type="string"/>
+        <out fieldName="out"/>
+        <in fieldName="in"/>
+    </relationship>
+</doctrine-orientdb-mapping>
