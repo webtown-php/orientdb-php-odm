@@ -10,7 +10,7 @@ use PHPUnit\TestCase;
 /**
  * @group functional
  */
-class UnitOfWorkChangeSetWithSimpleDocumentTest extends TestCase
+class UnitOfWorkSimpleDocumentTest extends TestCase
 {
     /**
      * @var DocumentManager

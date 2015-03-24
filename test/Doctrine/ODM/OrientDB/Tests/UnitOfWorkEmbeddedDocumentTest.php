@@ -12,7 +12,7 @@ use PHPUnit\TestCase;
 /**
  * @group functional
  */
-class UnitOfWorkChangeSetWithEmbeddedDocumentTest extends TestCase
+class UnitOfWorkEmbeddedDocumentTest extends TestCase
 {
     /**
      * @var DocumentManager

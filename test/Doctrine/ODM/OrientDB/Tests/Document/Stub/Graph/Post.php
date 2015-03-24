@@ -12,4 +12,10 @@ class Post
      * @var string
      */
     public $rid;
+
+    /**
+     * @Property(type="string")
+     * @var string
+     */
+    public $title;
 }

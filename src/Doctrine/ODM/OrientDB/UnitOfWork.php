@@ -19,13 +19,6 @@ use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\OrientDB\Query\Query;
 
-/**
- * Class UnitOfWork
- *
- * @package    Doctrine\ODM
- * @subpackage OrientDB
- * @author     Tamás Millián <tamas.millian@gmail.com>
- */
 class UnitOfWork implements PropertyChangedListener
 {
     /**
@@ -760,8 +753,156 @@ class UnitOfWork implements PropertyChangedListener
         }
     }
 
+    /**
+     * Detaches a document from the persistence management. It's persistence will
+     * no longer be managed by Doctrine.
+     *
+     * @param object $document The document to detach.
+     */
+    public function detach($document) {
+        $visited = [];
+        $this->doDetach($document, $visited);
+    }
+
+    /**
+     * Executes a detach operation on the given document.
+     *
+     * @param object $document
+     * @param array  $visited
+     *
+     * @internal This method always considers documents with an assigned identifier as DETACHED.
+     */
+    private function doDetach($document, array &$visited) {
+        $oid = spl_object_hash($document);
+        if (isset($visited[$oid])) {
+            return; // Prevent infinite recursion
+        }
+
+        $visited[$oid] = $document; // mark visited
+
+        switch ($this->getDocumentState($document, self::STATE_DETACHED)) {
+            case self::STATE_MANAGED:
+                $this->removeFromIdentityMap($document);
+                unset($this->documentInsertions[$oid], $this->documentUpdates[$oid],
+                    $this->documentDeletions[$oid], $this->documentIdentifiers[$oid],
+                    $this->documentStates[$oid], $this->originalDocumentData[$oid]);
+                break;
+            case self::STATE_NEW:
+            case self::STATE_DETACHED:
+                return;
+        }
+
+        $this->cascadeDetach($document, $visited);
+    }
+
     public function refresh($document) {
-        throw new \Exception('not implemented');
+        $visited = [];
+        $this->doRefresh($document, $visited);
+    }
+
+    private function doRefresh($document, array &$visited) {
+        $oid = spl_object_hash($document);
+
+        if (isset($visited[$oid])) {
+            return;
+        }
+
+        $visited[$oid] = $document;
+
+        if ($this->getDocumentState($document) !== self::STATE_MANAGED) {
+            throw OrientDBInvalidArgumentException::documentNotManaged($document);
+        }
+
+        $class = $this->dm->getClassMetadata(get_class($document));
+
+        $rid = $this->getDocumentRid($document);
+        $this->getDocumentPersister($class->name)->refresh($rid, $document);
+
+        $this->cascadeRefresh($document, $visited);
+    }
+
+    /**
+     * Cascades a refresh operation to associated documents.
+     *
+     * @param object $document
+     * @param array  $visited
+     */
+    private function cascadeRefresh($document, array &$visited) {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->fieldMappings as $fieldName => $mapping) {
+            if (!$mapping['isCascadeRefresh']) {
+                continue;
+            }
+            if (isset($mapping['embedded'])) {
+                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
+                    if ($relatedDocuments instanceof PersistentCollection) {
+                        // Unwrap so that foreach() does not initialize
+                        $relatedDocuments = $relatedDocuments->unwrap();
+                    }
+                    foreach ($relatedDocuments as $relatedDocument) {
+                        $this->cascadeRefresh($relatedDocument, $visited);
+                    }
+                } elseif ($relatedDocuments !== null) {
+                    $this->cascadeRefresh($relatedDocuments, $visited);
+                }
+            } elseif (isset($mapping['reference'])) {
+                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
+                    if ($relatedDocuments instanceof PersistentCollection) {
+                        // Unwrap so that foreach() does not initialize
+                        $relatedDocuments = $relatedDocuments->unwrap();
+                    }
+                    foreach ($relatedDocuments as $relatedDocument) {
+                        $this->doRefresh($relatedDocument, $visited);
+                    }
+                } elseif ($relatedDocuments !== null) {
+                    $this->doRefresh($relatedDocuments, $visited);
+                }
+            }
+        }
+    }
+
+    /**
+     * Cascades a detach operation to associated documents.
+     *
+     * @param object $document
+     * @param array  $visited
+     */
+    private function cascadeDetach($document, array &$visited) {
+        $class = $this->dm->getClassMetadata(get_class($document));
+        foreach ($class->fieldMappings as $fieldName => $mapping) {
+            if (!$mapping['isCascadeDetach']) {
+                continue;
+            }
+            if (isset($mapping['embedded'])) {
+                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
+                    if ($relatedDocuments instanceof PersistentCollection) {
+                        // Unwrap so that foreach() does not initialize
+                        $relatedDocuments = $relatedDocuments->unwrap();
+                    }
+                    foreach ($relatedDocuments as $relatedDocument) {
+                        $this->cascadeDetach($relatedDocument, $visited);
+                    }
+                } elseif ($relatedDocuments !== null) {
+                    $this->cascadeDetach($relatedDocuments, $visited);
+                }
+            } elseif (isset($mapping['reference'])) {
+                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
+                    if ($relatedDocuments instanceof PersistentCollection) {
+                        // Unwrap so that foreach() does not initialize
+                        $relatedDocuments = $relatedDocuments->unwrap();
+                    }
+                    foreach ($relatedDocuments as $relatedDocument) {
+                        $this->doDetach($relatedDocument, $visited);
+                    }
+                } elseif ($relatedDocuments !== null) {
+                    $this->doDetach($relatedDocuments, $visited);
+                }
+            }
+        }
     }
 
     /**
@@ -789,7 +930,7 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function getDocumentActualData($document) {
         $class      = $this->dm->getClassMetadata(get_class($document));
-        $actualData = array();
+        $actualData = [];
         foreach ($class->fieldMappings as $fieldName => $mapping) {
             if (isset($mapping['notSaved'])) {
                 continue;
@@ -1152,11 +1293,8 @@ class UnitOfWork implements PropertyChangedListener
         $associationClass = isset($assoc['targetDoc'])
             ? $this->dm->getClassMetadata($assoc['targetDoc'])
             : null;
-        $useKey           = ($assoc['association'] & ClassMetadata::ASSOCIATION_USE_KEY) !== 0;
-        $toMany           = ($assoc['association'] & ClassMetadata::TO_MANY) !== 0;
         $embedded         = isset($assoc['embedded']);
 
-        $count = 0;
         foreach ($value as $key => $doc) {
             if ($associationClass && !($doc instanceof $associationClass->name)) {
                 throw OrientDBInvalidArgumentException::invalidAssociation($associationClass, $assoc, $doc);
@@ -1165,11 +1303,6 @@ class UnitOfWork implements PropertyChangedListener
             $class = $this->dm->getClassMetadata(get_class($doc));
             $state = $this->getDocumentState($doc, self::STATE_NEW);
 
-            // Handle "set" strategy for multi-level hierarchy
-            $pathKey = $useKey ? $key : $count;
-            $path    = $toMany ? $assoc['name'] . '.' . $pathKey : $assoc['name'];
-
-            $count++;
             switch (true) {
                 case $state === self::STATE_NEW:
                     if (!$assoc['isCascadePersist']) {
@@ -1591,6 +1724,21 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function createPersister() {
         return new SQLBatchPersister($this->dm->getMetadataFactory(), $this->dm->getBinding());
+    }
+
+    /**
+     * Helper method to initialize a lazy loading proxy or persistent collection.
+     *
+     * @param object
+     * @return void
+     */
+    public function initializeObject($obj)
+    {
+        if ($obj instanceof Proxy) {
+            $obj->__load();
+        } elseif ($obj instanceof PersistentCollection) {
+            $obj->initialize();
+        }
     }
 
     private static function objToStr($obj) {

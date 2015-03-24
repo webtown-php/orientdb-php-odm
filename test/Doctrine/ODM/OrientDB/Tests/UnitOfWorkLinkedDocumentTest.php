@@ -11,7 +11,7 @@ use PHPUnit\TestCase;
 /**
  * @group functional
  */
-class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
+class UnitOfWorkLinkedDocumentTest extends TestCase
 {
     /**
      * @var DocumentManager
@@ -58,7 +58,7 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
     /**
      * @test
      */
-    public function getDocumentChangeSet_update_value_in_embedded() {
+    public function getDocumentChangeSet_update_value_in_linked() {
         $c       = new Contact();
         $c->name = "Sydney";
         $c->rid  = "#1:1";
@@ -86,7 +86,7 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
     /**
      * @test
      */
-    public function getDocumentChangeSet_update_creates_embedded() {
+    public function getDocumentChangeSet_update_creates_linked() {
         $c       = new Contact();
         $c->name = "Sydney";
         $c->rid  = "#1:1";
@@ -112,7 +112,7 @@ class UnitOfWorkChangeSetWithLinkedDocumentTest extends TestCase
     /**
      * @test
      */
-    public function getDocumentChangeSet_update_nulls_embedded() {
+    public function getDocumentChangeSet_update_nulls_linked() {
         $c       = new Contact();
         $c->name = "Sydney";
         $c->rid  = "#1:1";

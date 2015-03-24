@@ -2,7 +2,6 @@
 
 namespace Doctrine\ODM\OrientDB\Persister;
 
-
 use Doctrine\Common\EventManager;
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 use Doctrine\ODM\OrientDB\DocumentManager;
@@ -41,13 +40,6 @@ class DocumentPersister
     private $uow;
 
     /**
-     * The Hydrator instance
-     *
-     * @var HydratorInterface
-     */
-    private $hydrator;
-
-    /**
      * The ClassMetadata instance for the document type being persisted.
      *
      * @var ClassMetadata
@@ -61,6 +53,10 @@ class DocumentPersister
         $this->uow             = $uow;
         $this->hydratorFactory = $hydratorFactory;
         $this->class           = $class;
+    }
+
+    public function refresh($rid, $document) {
+        $this->load($rid, '*:0', $document);
     }
 
     /**

@@ -10,23 +10,14 @@
  * file that was distributed with this source code.
  */
 
-/**
- * Manager class.
- *
- * @package    Doctrine\ODM
- * @subpackage OrientDB
- * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
- * @author     David Funaro <ing.davidino@gmail.com>
- */
-
 namespace Doctrine\ODM\OrientDB;
 
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
@@ -35,6 +26,15 @@ use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\Query;
 
+/**
+ * Manager class.
+ *
+ * @package    Doctrine\ODM
+ * @subpackage OrientDB
+ * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
+ * @author     David Funaro <ing.davidino@gmail.com>
+ * @author     Stuart Carnie <stuart.carnie@gmail.com>
+ */
 class DocumentManager implements ObjectManager
 {
     /**
@@ -120,12 +120,14 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * @todo to implement/test
-     *
-     * @param object $object
+     * @inheritdoc
      */
     public function detach($object) {
-        throw new \Exception();
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException(gettype($object));
+        }
+
+        $this->uow->detach($object);
     }
 
     /**
@@ -306,14 +308,22 @@ class DocumentManager implements ObjectManager
     /**
      * @inheritdoc
      */
-    public function initializeObject($obj) {
-        throw new \Exception();
+    public function initializeObject($object) {
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException(gettype($object));
+        }
+
+        $this->uow->initializeObject($object);
     }
 
     /**
      * @inheritdoc
      */
     public function merge($object) {
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException(gettype($object));
+        }
+
         throw new \Exception();
     }
 
@@ -331,6 +341,10 @@ class DocumentManager implements ObjectManager
      * @inheritdoc
      */
     public function remove($object) {
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException(gettype($object));
+        }
+
         $this->uow->remove($object);
     }
 
@@ -338,6 +352,10 @@ class DocumentManager implements ObjectManager
      * @inheritdoc
      */
     public function refresh($object) {
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException(gettype($object));
+        }
+
         $this->uow->refresh($object);
     }
 
@@ -352,7 +370,12 @@ class DocumentManager implements ObjectManager
      * @inheritdoc
      */
     public function contains($object) {
-        throw new \Exception();
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException(gettype($object));
+        }
+
+        return (($this->uow->isScheduledForInsert($object) || $this->uow->isInIdentityMap($object))
+            && !$this->uow->isScheduledForDelete($object));
     }
 
     /**
