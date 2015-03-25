@@ -5,10 +5,14 @@ namespace Doctrine\ODM\OrientDB\Tests\Mapping;
 
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Types\Rid;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use PHPUnit\TestCase;
 
 class ClusterMapTest extends TestCase
 {
+    /**
+     * @return \PHPUnit_Framework_MockObject_MockObject|BindingInterface
+     */
     protected function createBinding() {
         $binding = $this->getMockBuilder('\Doctrine\OrientDB\Binding\HttpBinding')
                         ->disableOriginalConstructor()
