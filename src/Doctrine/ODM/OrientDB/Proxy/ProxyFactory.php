@@ -59,10 +59,17 @@ class ProxyFactory extends AbstractProxyFactory
         parent::__construct($proxyGenerator, $this->metadataFactory, $autoGenerate);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function skipClass(BaseClassMetadata $classMetadata) {
-        return false;
+        /** @var ClassMetadata $classMetadata */
+        return $classMetadata->isMappedSuperclass() || $classMetadata->getReflectionClass()->isAbstract();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function createProxyDefinition($className) {
         /** @var ClassMetadata $classMetadata */
         $classMetadata     = $this->metadataFactory->getMetadataFor($className);
@@ -82,18 +89,18 @@ class ProxyFactory extends AbstractProxyFactory
     /**
      * Generates a closure capable of initializing a proxy
      *
-     * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
-     * @param DocumentPersister                                  $documentPersister
-     * @param \ReflectionProperty                                $reflectionId
+     * @param ClassMetadata       $class
+     * @param DocumentPersister   $documentPersister
+     * @param \ReflectionProperty $reflectionId
      *
      * @return callable
      */
     private function createInitializer(
-        BaseClassMetadata $classMetadata,
+        ClassMetadata $class,
         DocumentPersister $documentPersister,
         \ReflectionProperty $reflectionId
     ) {
-        if ($classMetadata->getReflectionClass()->hasMethod('__wakeup')) {
+        if ($class->getReflectionClass()->hasMethod('__wakeup')) {
             return function (BaseProxy $proxy) use ($reflectionId, $documentPersister) {
                 $proxy->__setInitializer(null);
                 $proxy->__setCloner(null);
@@ -140,18 +147,18 @@ class ProxyFactory extends AbstractProxyFactory
     /**
      * Generates a closure capable of finalizing a cloned proxy
      *
-     * @param \Doctrine\Common\Persistence\Mapping\ClassMetadata $classMetadata
-     * @param DocumentPersister                                  $documentPersister
-     * @param \ReflectionProperty                                $reflectionId
+     * @param ClassMetadata       $class
+     * @param DocumentPersister   $documentPersister
+     * @param \ReflectionProperty $reflectionId
      *
      * @return callable
      */
     private function createCloner(
-        BaseClassMetadata $classMetadata,
+        ClassMetadata $class,
         DocumentPersister $documentPersister,
         \ReflectionProperty $reflectionId
     ) {
-        return function (BaseProxy $proxy) use ($reflectionId, $documentPersister, $classMetadata) {
+        return function (BaseProxy $proxy) use ($reflectionId, $documentPersister, $class) {
             if ($proxy->__isInitialized()) {
                 return;
             }
@@ -164,12 +171,8 @@ class ProxyFactory extends AbstractProxyFactory
                 throw DocumentNotFoundException::documentNotFound(get_class($proxy), $rid);
             }
 
-            foreach ($classMetadata->getReflectionClass()->getProperties() as $reflectionProperty) {
-                $propertyName = $reflectionProperty->getName();
-                if ($classMetadata->hasField($propertyName) || $classMetadata->hasAssociation($propertyName)) {
-                    $reflectionProperty->setAccessible(true);
-                    $reflectionProperty->setValue($proxy, $reflectionProperty->getValue($original));
-                }
+            foreach ($class->reflFields as $name => $property) {
+                $property->setValue($proxy, $property->getValue($original));
             }
         };
     }

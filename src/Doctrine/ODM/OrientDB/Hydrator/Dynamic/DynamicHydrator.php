@@ -58,7 +58,7 @@ class DynamicHydrator implements HydratorInterface
 
                 $type  = Type::getType($mapping['type']);
                 $value = $type->convertToPHPValue($propertyValue);
-                $this->metadata->setFieldValue($document, $fieldName, $value);
+                $this->metadata->reflFields[$fieldName]->setValue($document, $value);
                 $hydratedData[$fieldName] = $value;
                 continue;
             }
@@ -70,7 +70,7 @@ class DynamicHydrator implements HydratorInterface
                 if ($propertyValue) {
                     $coll->setData($propertyValue);
                 }
-                $this->metadata->setFieldValue($document, $fieldName, $coll);
+                $this->metadata->reflFields[$fieldName]->setValue($document, $coll);
                 $hydratedData[$fieldName] = $coll;
                 continue;
             }
@@ -85,7 +85,7 @@ class DynamicHydrator implements HydratorInterface
                 } else {
                     $link = $this->uow->getOrCreateDocument($propertyValue);
                 }
-                $this->metadata->setFieldValue($document, $fieldName, $link);
+                $this->metadata->reflFields[$fieldName]->setValue($document, $link);
                 $hydratedData[$fieldName] = $link;
                 continue;
             }
@@ -100,7 +100,7 @@ class DynamicHydrator implements HydratorInterface
                 $doc              = $embeddedMetadata->newInstance();
                 $embeddedData     = $this->dm->getHydratorFactory()->hydrate($doc, $propertyValue, $hints);
                 $this->uow->registerManaged($doc, null, $embeddedData);
-                $this->metadata->setFieldValue($document, $fieldName, $doc);
+                $this->metadata->reflFields[$fieldName]->setValue($document, $doc);
                 $hydratedData[$fieldName] = $doc;
                 continue;
             }

@@ -661,7 +661,7 @@ class ClassMetadata implements DoctrineMetadata
      * @inheritdoc
      */
     public function getIdentifierValues($object) {
-        return [$this->getFieldValue($object, $this->identifier)];
+        return [$this->getIdentifierValue($object)];
     }
 
     /**
@@ -672,7 +672,7 @@ class ClassMetadata implements DoctrineMetadata
      * @return string
      */
     public function getIdentifierValue($document) {
-        return $this->getFieldValue($document, $this->identifier);
+        return $this->reflFields[$this->identifier]->getValue($document);
     }
 
     /**
@@ -934,30 +934,6 @@ class ClassMetadata implements DoctrineMetadata
 
     public function getOrientClass() {
         return $this->orientClass;
-    }
-
-    /**
-     * Given a $property and its $value, sets that property on the given $document
-     *
-     * @param mixed  $document
-     * @param string $property
-     * @param string $value
-     */
-    public function setFieldValue($document, $property, $value) {
-        $p = $this->setter->bindTo(null, $document);
-        $p($document, $property, $value);
-    }
-
-    /**
-     * Gets the value of the specified $property
-     *
-     * @param mixed  $document
-     * @param string $property
-     */
-    public function getFieldValue($document, $property) {
-        $p = $this->getter->bindTo(null, $document);
-
-        return $p($document, $property);
     }
 
     /**

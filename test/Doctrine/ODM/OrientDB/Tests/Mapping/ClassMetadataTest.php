@@ -27,12 +27,15 @@ class ClassMetadataTest extends TestCase
 
     public function setup() {
         $this->metadata = new ClassMetadata(Mapped::class);
-        $this->metadata->initializeReflection(new RuntimeReflectionService());
+        $reflService = new RuntimeReflectionService();
+        $this->metadata->initializeReflection($reflService);
 
-        $this->metadata->setIdentifier('rid');
+        $this->metadata->mapRid('rid');
         $this->metadata->mapField(['fieldName' => 'field', 'name' => 'field', 'type' => 'string']);
         $this->metadata->mapLink(['fieldName' => 'assoc', 'name' => 'assoc']);
         $this->metadata->mapLinkSet(['fieldName' => 'multiassoc', 'name' => 'multiassoc']);
+
+        $this->metadata->wakeupReflection($reflService);
     }
 
     function testGetName() {
@@ -40,7 +43,7 @@ class ClassMetadataTest extends TestCase
     }
 
     function testGetIdentifier() {
-        $this->assertEquals(array('rid'), $this->metadata->getIdentifier());
+        $this->assertEquals(['rid'], $this->metadata->getIdentifier());
     }
 
     function testGetIdentifierValues() {
@@ -78,11 +81,11 @@ class ClassMetadataTest extends TestCase
     }
 
     function testGetFieldNames() {
-        $this->assertEquals(array('field', 'assoc', 'multiassoc'), $this->metadata->getFieldNames());
+        $this->assertEquals(['rid', 'field', 'assoc', 'multiassoc'], $this->metadata->getFieldNames());
     }
 
     function testGetAssociationNames() {
-        $this->assertEquals(array('assoc', 'multiassoc'), $this->metadata->getAssociationNames());
+        $this->assertEquals(['assoc', 'multiassoc'], $this->metadata->getAssociationNames());
     }
 
     function testGetTypeOfField() {

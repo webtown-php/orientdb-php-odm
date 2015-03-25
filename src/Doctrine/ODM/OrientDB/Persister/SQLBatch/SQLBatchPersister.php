@@ -116,7 +116,7 @@ class SQLBatchPersister implements PersisterInterface
                 /** @var ClassMetadata $md */
                 list ($_, $doc, $md) = $docs[$k];
                 unset($docs[$k]);
-                $md->setFieldValue($doc, $md->getRidPropertyName(), $rid);
+                $md->reflFields[$md->identifier]->setValue($doc, $rid);
                 $data = $uow->getDocumentActualData($doc);
                 $uow->registerManaged($doc, $rid, $data);
             }
@@ -146,7 +146,7 @@ class SQLBatchPersister implements PersisterInterface
             $data    = $this->prepareData($md, $uow, $doc);
             $version = null;
             if ($md->version) {
-                $version = $md->getFieldValue($doc, $md->version);
+                $version = $md->reflFields[$md->version]->getValue($doc);
             }
             $queryWriter->addUpdateQuery($rid, $data, $id->toValue(), $version);
             $docs[] = [$id, $doc, $md];
@@ -189,7 +189,7 @@ class SQLBatchPersister implements PersisterInterface
                 /** @var ClassMetadata $md */
                 list ($_, $doc, $md) = $docs[$k];
                 unset($docs[$k]);
-                $md->setFieldValue($doc, $md->version, $val->value);
+                $md->reflFields[$md->version]->setValue($doc, $val->value);
             }
         }
 

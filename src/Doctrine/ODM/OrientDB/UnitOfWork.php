@@ -464,7 +464,7 @@ class UnitOfWork implements PropertyChangedListener
                 continue;
             }
 
-            $relatedDocuments = $class->getFieldValue($document, $fieldName);
+            $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
 
             if ($relatedDocuments instanceof Collection || is_array($relatedDocuments)) {
                 if ($relatedDocuments instanceof PersistentCollection) {
@@ -658,7 +658,7 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function cascadeRemove($document, array &$visited) {
         $class = $this->dm->getClassMetadata(get_class($document));
-        foreach ($class->associationMappings as $mapping) {
+        foreach ($class->associationMappings as $fieldName => $mapping) {
             if (!$mapping['isCascadeRemove']) {
                 continue;
             }
@@ -666,7 +666,7 @@ class UnitOfWork implements PropertyChangedListener
                 $document->__load();
             }
             if (isset($mapping['embedded'])) {
-                $relatedDocuments = $class->getFieldValue($document, $mapping['fieldName']);
+                $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
                 if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
                     // If its a PersistentCollection initialization is intended! No unwrap!
                     foreach ($relatedDocuments as $relatedDocument) {
@@ -676,7 +676,7 @@ class UnitOfWork implements PropertyChangedListener
                     $this->cascadeRemove($relatedDocuments, $visited);
                 }
             } elseif (isset($mapping['reference'])) {
-                $relatedDocuments = $class->getFieldValue($document, $mapping['fieldName']);
+                $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
                 if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
                     // If its a PersistentCollection initialization is intended! No unwrap!
                     foreach ($relatedDocuments as $relatedDocument) {
@@ -698,9 +698,9 @@ class UnitOfWork implements PropertyChangedListener
     private function cascadePreRemove(ClassMetadata $class, $document) {
         $hasPreRemoveListeners = $this->evm->hasListeners(Events::preRemove);
 
-        foreach ($class->associationMappings as $mapping) {
+        foreach ($class->associationMappings as $fieldName => $mapping) {
             if (isset($mapping['embedded'])) {
-                $value = $class->getFieldValue($document, $mapping['fieldName']);
+                $value = $class->reflFields[$fieldName]->getValue($document);
                 if ($value === null) {
                     continue;
                 }
@@ -730,9 +730,9 @@ class UnitOfWork implements PropertyChangedListener
     private function cascadePostRemove(ClassMetadata $class, $document) {
         $hasPostRemoveListeners = $this->evm->hasListeners(Events::postRemove);
 
-        foreach ($class->associationMappings as $mapping) {
+        foreach ($class->associationMappings as $fieldName => $mapping) {
             if (isset($mapping['embedded'])) {
-                $value = $class->getFieldValue($document, $mapping['fieldName']);
+                $value = $class->reflFields[$fieldName]->getValue($document);
                 if ($value === null) {
                     continue;
                 }
@@ -839,7 +839,7 @@ class UnitOfWork implements PropertyChangedListener
                 continue;
             }
             if (isset($mapping['embedded'])) {
-                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
                 if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
                     if ($relatedDocuments instanceof PersistentCollection) {
                         // Unwrap so that foreach() does not initialize
@@ -852,7 +852,7 @@ class UnitOfWork implements PropertyChangedListener
                     $this->cascadeRefresh($relatedDocuments, $visited);
                 }
             } elseif (isset($mapping['reference'])) {
-                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
                 if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
                     if ($relatedDocuments instanceof PersistentCollection) {
                         // Unwrap so that foreach() does not initialize
@@ -881,7 +881,7 @@ class UnitOfWork implements PropertyChangedListener
                 continue;
             }
             if (isset($mapping['embedded'])) {
-                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
                 if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
                     if ($relatedDocuments instanceof PersistentCollection) {
                         // Unwrap so that foreach() does not initialize
@@ -894,7 +894,7 @@ class UnitOfWork implements PropertyChangedListener
                     $this->cascadeDetach($relatedDocuments, $visited);
                 }
             } elseif (isset($mapping['reference'])) {
-                $relatedDocuments = $class->getFieldValue($document, $fieldName);
+                $relatedDocuments = $class->reflFields[$fieldName]->getValue($document);
                 if (($relatedDocuments instanceof Collection || is_array($relatedDocuments))) {
                     if ($relatedDocuments instanceof PersistentCollection) {
                         // Unwrap so that foreach() does not initialize
@@ -940,7 +940,8 @@ class UnitOfWork implements PropertyChangedListener
             if (isset($mapping['notSaved'])) {
                 continue;
             }
-            $value = $class->getFieldValue($document, $fieldName);
+            $rp = $class->reflFields[$fieldName];
+            $value = $rp->getValue($document);
 
             if ((isset($mapping['association']) && $mapping['association'] & ClassMetadata::TO_MANY)
                 && $value !== null && !($value instanceof PersistentCollection)
@@ -954,7 +955,7 @@ class UnitOfWork implements PropertyChangedListener
                 $coll = new PersistentCollection($value, $this->dm, $this);
                 $coll->setOwner($document, $mapping);
                 $coll->setDirty(!$value->isEmpty());
-                $class->setFieldValue($document, $fieldName, $coll);
+                $rp->setValue($document, $coll);
                 $value = $coll;
             }
 
@@ -1192,7 +1193,7 @@ class UnitOfWork implements PropertyChangedListener
                         }
                         $newValue = clone $actualValue;
                         $newValue->setOwner($document, $field);
-                        $class->setFieldValue($document, $propName, $newValue);
+                        $class->reflFields[$propName]->setValue($document, $newValue);
                     }
                 }
 
@@ -1227,8 +1228,8 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         // Look for changes in associations of the document
-        foreach ($class->associationMappings as $mapping) {
-            $value = $class->getFieldValue($document, $mapping['fieldName']);
+        foreach ($class->associationMappings as $fieldName => $mapping) {
+            $value = $class->reflFields[$fieldName]->getValue($document);
             if ($value !== null) {
                 $this->computeAssociationChanges($document, $mapping, $value);
                 if (isset($mapping['reference'])) {

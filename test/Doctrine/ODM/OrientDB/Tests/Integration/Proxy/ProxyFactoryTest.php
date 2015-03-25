@@ -2,6 +2,7 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration\Proxy;
 
+use Doctrine\Common\Persistence\Proxy;
 use PHPUnit\TestCase;
 
 /**
@@ -40,7 +41,7 @@ class ProxyFactoryTest extends TestCase
         $manager = $this->createDocumentManager();
         $rid     = '#' . $this->getClassId('City') . ':0';
         $proxy   = $manager->findByRid($rid);
-        $this->assertTrue($proxy->__isInitialized());
+        $this->assertNotInstanceOf(Proxy::class, $proxy);
         $this->assertEquals($rid, $proxy->getRid());
         $this->assertEquals('Rome', $proxy->name);
     }
@@ -49,9 +50,7 @@ class ProxyFactoryTest extends TestCase
         $manager = $this->createDocumentManager();
         $rid     = '#' . $this->getClassId('City') . ':0';
         $proxy   = $manager->getReference($rid);
-
         $clone = clone $proxy;
-        $this->assertFalse($proxy->__isInitialized());
         $this->assertTrue($clone->__isInitialized());
 
         $this->assertEquals($rid, $clone->getRid());
