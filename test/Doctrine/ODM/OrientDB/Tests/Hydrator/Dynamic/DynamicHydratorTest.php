@@ -7,11 +7,11 @@ use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydrator;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub;
 use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Binding\BindingResultInterface;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use PHPUnit\TestCase;
 use Prophecy\Argument as Arg;
+use Prophecy\Prophecy\ObjectProphecy;
 
 /**
  * @group functional
@@ -33,9 +33,34 @@ class DynamicHydratorTest extends TestCase
     private $uow;
 
     /**
+     * @param $json
+     *
+     * @return HttpBindingResultInterface|ObjectProphecy
+     */
+    private function newBindingStub($json, $useGetResult = false) {
+        $data = json_decode($json);
+        /** @var HttpBindingResultInterface|ObjectProphecy $stub */
+        $stub = $this->prophesize(HttpBindingResultInterface::class);
+
+        if ($useGetResult) {
+            $stub->getResult()
+                 ->willReturn($data);
+
+        } else {
+            $stub->isValid()
+                 ->willReturn(true);
+            $stub->getData()
+                 ->willReturn($data);
+        }
+
+        return $stub;
+    }
+
+    /**
      * @before
      */
     public function before() {
+        /** @var HttpBindingInterface|ObjectProphecy $binding */
         $binding = $this->prophesize(HttpBindingInterface::class);
         $binding->getDatabaseName()
                 ->willReturn("ODM");
@@ -49,75 +74,33 @@ class DynamicHydratorTest extends TestCase
     ]
 }
 JSON;
-        $data = json_decode($data);
-
-        $stub = $this->prophesize(BindingResultInterface::class);
-        $stub->getData()
-             ->willReturn($data);
 
         $binding->getDatabase()
-                ->willReturn($stub->reveal());
+                ->willReturn($this->newBindingStub($data)->reveal());
 
-        $rawResult = json_decode('[{
+        $rawResult = '{
             "@type": "d", "@rid": "#2:1", "@version": 1, "@class": "LinkedEmailAddress",
             "type": "work",
-            "email": "syd@gmail.com"
-        }]');
+            "email": "syd@gmail.com",
+            "contact": "#1:1"
+        }';
+        $binding->getDocument(Arg::is("#2:1"), Arg::any())
+                ->willReturn($this->newBindingStub($rawResult)->reveal());
 
-        $result = $this->prophesize(BindingResultInterface::class);
-        $result->getResult()
-               ->willReturn($rawResult);
+        $rawResult = '[{
+            "@type": "d", "@rid": "#3:1", "@version": 1, "@class": "LinkedPhone",
+            "type": "work",
+            "phoneNumber": "4805551920",
+            "primary": true
+        },{
+            "@type": "d", "@rid": "#3:2", "@version": 1, "@class": "LinkedPhone",
+            "type": "home",
+            "phoneNumber": "5552094878",
+            "primary": false
+        }]';
 
-//        $binding->execute(Arg::that(function (Query $q) {
-//            /** @var Select $cmd */
-//            $cmd = $q->getCommand();
-//            $val = $cmd->getTokenValue('Target');
-//
-//            return $val[0] === '#2:1';
-//        }), Arg::any())
-//                ->willReturn($result->reveal());
-
-        $self = $this;
         $binding->execute(Arg::any(), Arg::any())
-                ->will(function ($args) use ($self) {
-                    /** @var Query $qry */
-                    list ($qry) = $args;
-                    $cmd = $qry->getCommand();
-                    $val = $cmd->getTokenValue('Target');
-
-                    $result = $self->prophesize(BindingResultInterface::class);
-
-                    switch ($val) {
-                        case ["#2:1"]:
-                            $rawResult = json_decode('[{
-                                "@type": "d", "@rid": "#2:1", "@version": 1, "@class": "LinkedEmailAddress",
-                                "type": "work",
-                                "email": "syd@gmail.com",
-                                "contact": "#1:1"
-                            }]');
-                            break;
-                        case ["#3:1", "#3:2"]:
-                            $rawResult = json_decode('[{
-                                "@type": "d", "@rid": "#3:1", "@version": 1, "@class": "LinkedPhone",
-                                "type": "work",
-                                "phoneNumber": "4805551920",
-                                "primary": true
-                            },{
-                                "@type": "d", "@rid": "#3:2", "@version": 1, "@class": "LinkedPhone",
-                                "type": "home",
-                                "phoneNumber": "5552094878",
-                                "primary": false
-                            }]');
-                            break;
-                    }
-
-                    $result->getResult()
-                           ->willReturn($rawResult);
-
-
-                    return $result->reveal();
-
-                });
+                ->willReturn($this->newBindingStub($rawResult, true)->reveal());
 
         $this->manager         = $this->createDocumentManagerWithBinding($binding->reveal(), [], ['test/Doctrine/ODM/OrientDB/Tests/Document/Stub']);
         $this->uow             = $this->manager->getUnitOfWork();

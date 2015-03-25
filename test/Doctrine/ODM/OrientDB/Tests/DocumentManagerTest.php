@@ -18,29 +18,33 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact\Address;
 use Doctrine\OrientDB\Binding\BindingResultInterface;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use PHPUnit\TestCase;
+use Prophecy\Argument as Arg;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class DocumentManagerTest extends TestCase
 {
     protected function createTestManager() {
-        $rawResult = json_decode('[{
+        $rawResult = json_decode('{
             "@type": "d", "@rid": "#19:0", "@version": 2, "@class": "ContactAddress",
             "name": "Luca",
             "surname": "Garulli",
             "out": ["#20:1"]
-        }]');
+        }');
 
-        $result = $this->getMock(BindingResultInterface::class);
-        $result->expects($this->any())
-               ->method('getResult')
-               ->will($this->returnValue($rawResult));
+        /** @var HttpBindingResultInterface|ObjectProphecy $result */
+        $result = $this->prophesize(HttpBindingResultInterface::class);
+        $result->isValid()
+               ->willReturn(true);
+        $result->getData()
+               ->willReturn($rawResult);
 
-        /** @var HttpBindingInterface $binding */
-        $binding = $this->getMock(HttpBindingInterface::class);
-        $binding->expects($this->any())
-                ->method('execute')
-                ->will($this->returnValue($result));
+
+        /** @var HttpBindingInterface|ObjectProphecy $binding */
+        $binding = $this->prophesize(HttpBindingInterface::class);
+        $binding->getDocument(Arg::any(), Arg::any())
+                ->willReturn($result->reveal());
 
         $data = <<<JSON
 {
@@ -51,19 +55,20 @@ class DocumentManagerTest extends TestCase
 JSON;
         $data = json_decode($data);
 
-        $stub = $this->getMock(BindingResultInterface::class);
-        $stub->expects($this->any())
-             ->method('getData')
+        /** @var HttpBindingResultInterface|ObjectProphecy $stub */
+        $stub = $this->prophesize(HttpBindingResultInterface::class);
+        $stub->getData()
              ->willReturn($data);
 
+        $binding->getDatabase(Arg::any())
+                ->willReturn($stub->reveal());
 
-        $binding->expects($this->any())
-                ->method('getDatabase')
-                ->willReturn($stub);
+        $binding->getDatabaseName()
+            ->willReturn('dummy');
 
         $configuration = $this->getConfiguration();
         $configuration->setMetadataDriverImpl($configuration->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Tests/Document/Stub']));
-        $manager = new DocumentManager($binding, $configuration);
+        $manager = new DocumentManager($binding->reveal(), $configuration);
 
         return $manager;
     }
@@ -73,15 +78,6 @@ JSON;
         $metadata = $manager->getClassMetadata(Address::class);
 
         $this->assertInstanceOf(ClassMetadata::class, $metadata);
-    }
-
-    public function testManagerActsAsAProxyForExecutingQueries() {
-        $query   = new Query(['ContactAddress']);
-        $manager = $this->createTestManager();
-        $results = $manager->execute($query);
-
-        $this->isInstanceOf(static::COLLECTION_CLASS, $results);
-        $this->assertInstanceOf('Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact\Address', $results[0]);
     }
 
     public function testFindingADocument() {

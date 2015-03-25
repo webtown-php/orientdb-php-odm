@@ -30,7 +30,7 @@ interface QueryInterface
      * @param   string $attribute
      * @param   string $value
      *
-     * @return  Alter
+     * @return  Command\OClass\Alter
      */
     public function alter($class, $attribute, $value);
 

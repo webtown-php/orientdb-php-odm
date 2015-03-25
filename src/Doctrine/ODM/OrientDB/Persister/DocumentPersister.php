@@ -78,12 +78,9 @@ class DocumentPersister
      * @return mixed
      */
     public function load($rid, $fetchPlan = '*:0', $document = null) {
-        $query   = new Query([$rid]);
-        $results = $this->binding->execute($query, $fetchPlan)->getResult();
-        if (isset($results) && count($results)) {
-            $record = is_array($results) ? array_shift($results) : $results;
-
-            return $this->createDocument($record, $document);
+        $result = $this->binding->getDocument($rid, $fetchPlan);
+        if ($result->isValid()) {
+            return $this->createDocument($result->getData(), $document);
         }
 
         return null;

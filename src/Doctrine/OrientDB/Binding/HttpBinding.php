@@ -291,7 +291,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function getDocument($rid, $database = null, $fetchPlan = null) {
+    public function getDocument($rid, $fetchPlan = null, $database = null) {
         $location = $this->getDocumentLocation($database ?: $this->database, $rid, $fetchPlan);
 
         return $this->adapter->request('GET', $location);

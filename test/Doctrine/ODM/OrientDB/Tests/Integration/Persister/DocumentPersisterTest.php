@@ -38,6 +38,19 @@ class DocumentPersisterTest extends TestCase
     /**
      * @test
      */
+    public function load_existing_document() {
+        $dm  = $this->createDocumentManager();
+        $dp  = $dm->getUnitOfWork()->getDocumentPersister(Post::class);
+        $rid = "#{$this->postId}:0";
+        /** @var Post $res */
+        $res = $dp->load($rid);
+        $this->assertInstanceOf(Post::class, $res);
+        $this->assertEquals($rid, $res->getRid());
+    }
+
+    /**
+     * @test
+     */
     public function exists_returns_false() {
         $dm        = $this->createDocumentManager();
         $dp        = $dm->getUnitOfWork()->getDocumentPersister(Post::class);

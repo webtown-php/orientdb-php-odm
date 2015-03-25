@@ -175,12 +175,13 @@ interface HttpBindingInterface extends BindingInterface
      * @api
      *
      * @param string $rid
-     * @param string $database
      * @param string $fetchPlan
      *
-     * @return BindingResultInterface
+     * @param string $database
+     *
+     * @return HttpBindingResultInterface
      */
-    public function getDocument($rid, $database = null, $fetchPlan = null);
+    public function getDocument($rid, $fetchPlan = null, $database = null);
 
     /**
      * Determines if a document exists for the specified $rid
@@ -200,7 +201,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param string $document
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function postDocument($document, $database = null);
 

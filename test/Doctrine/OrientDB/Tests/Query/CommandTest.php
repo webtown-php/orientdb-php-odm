@@ -45,7 +45,7 @@ class Command extends TestCase
     }
 
     /**
-     * @expectedException Doctrine\OrientDB\Exception
+     * @expectedException \Doctrine\OrientDB\Exception
      */
     public function testAnExceptionIsRaisedIfYouDontExplicitHowToFormatAToken() {
         $this->command = new StubExceptionedCommand();
@@ -53,7 +53,7 @@ class Command extends TestCase
     }
 
     /**
-     * @expectedException Doctrine\OrientDB\LogicException
+     * @expectedException \Doctrine\OrientDB\LogicException
      */
     public function testAnExceptionIsRaisedIfYouMakeAWhereWithDifferentParamsAndValues() {
         $this->command = new StubCommand();
@@ -120,7 +120,7 @@ class Command extends TestCase
     }
 
     /**
-     * @expectedException Doctrine\OrientDB\Query\TokenNotFoundException
+     * @expectedException \Doctrine\OrientDB\Query\TokenNotFoundException
      */
     public function testCheckAnExceptionRaisedWhenRequestingInvalidToken() {
         $command = new StubCommand();
