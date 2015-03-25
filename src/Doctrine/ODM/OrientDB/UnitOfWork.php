@@ -128,14 +128,14 @@ class UnitOfWork implements PropertyChangedListener
     /**
      * All pending collection deletions.
      *
-     * @var array
+     * @var PersistentCollection[]
      */
     private $collectionDeletions = [];
 
     /**
      * All pending collection updates.
      *
-     * @var array
+     * @var PersistentCollection[]
      */
     private $collectionUpdates = [];
 
@@ -529,7 +529,7 @@ class UnitOfWork implements PropertyChangedListener
             foreach ($this->identityMap as $className => $documents) {
                 if ($className === $class) {
                     foreach ($documents as $document) {
-                        $this->doDetach($document, $visited, true);
+                        $this->doDetach($document, $visited);
                     }
                 }
             }
@@ -783,9 +783,14 @@ class UnitOfWork implements PropertyChangedListener
         switch ($this->getDocumentState($document, self::STATE_DETACHED)) {
             case self::STATE_MANAGED:
                 $this->removeFromIdentityMap($document);
-                unset($this->documentInsertions[$oid], $this->documentUpdates[$oid],
-                    $this->documentDeletions[$oid], $this->documentIdentifiers[$oid],
-                    $this->documentStates[$oid], $this->originalDocumentData[$oid]);
+                unset(
+                    $this->documentInsertions[$oid],
+                    $this->documentUpdates[$oid],
+                    $this->documentDeletions[$oid],
+                    $this->documentIdentifiers[$oid],
+                    $this->documentStates[$oid],
+                    $this->originalDocumentData[$oid]
+                );
                 break;
             case self::STATE_NEW:
             case self::STATE_DETACHED:
@@ -1594,7 +1599,7 @@ class UnitOfWork implements PropertyChangedListener
          * the state may "change" between NEW/DETACHED without the UoW being
          * aware of it.
          */
-        $rid = $class->getIdentifierValues($document);
+        $rid = $class->getIdentifierValue($document);
 
         if ($rid === null) {
             return self::STATE_NEW;
@@ -1730,10 +1735,10 @@ class UnitOfWork implements PropertyChangedListener
      * Helper method to initialize a lazy loading proxy or persistent collection.
      *
      * @param object
+     *
      * @return void
      */
-    public function initializeObject($obj)
-    {
+    public function initializeObject($obj) {
         if ($obj instanceof Proxy) {
             $obj->__load();
         } elseif ($obj instanceof PersistentCollection) {
