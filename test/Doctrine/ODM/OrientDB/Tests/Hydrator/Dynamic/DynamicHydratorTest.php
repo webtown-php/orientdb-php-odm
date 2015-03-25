@@ -33,7 +33,8 @@ class DynamicHydratorTest extends TestCase
     private $uow;
 
     /**
-     * @param $json
+     * @param string $json
+     * @param bool   $useGetResult
      *
      * @return HttpBindingResultInterface|ObjectProphecy
      */
@@ -111,9 +112,9 @@ JSON;
      * @test
      */
     public function hydrate_contact_with_no_embedded_data() {
-        $md = $this->manager->getClassMetadata(\Doctrine\ODM\OrientDB\Tests\Document\Stub\Simple\Contact::class);
+        $md = $this->manager->getClassMetadata(Stub\Simple\Contact::class);
         $dh = new DynamicHydrator($this->manager, $this->manager->getUnitOfWork(), $md);
-        $c  = new \Doctrine\ODM\OrientDB\Tests\Document\Stub\Simple\Contact();
+        $c  = new Stub\Simple\Contact();
         $d  = json_decode(<<<JSON
 {
     "@rid": "#1:1",
@@ -147,9 +148,9 @@ JSON
      * @test
      */
     public function hydrate_contact_with_embedded() {
-        $md = $this->manager->getClassMetadata(\Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded\Contact::class);
+        $md = $this->manager->getClassMetadata(Stub\Embedded\Contact::class);
         $dh = new DynamicHydrator($this->manager, $this->manager->getUnitOfWork(), $md);
-        $c  = new \Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded\Contact();
+        $c  = new Stub\Embedded\Contact();
         $d  = json_decode(<<<JSON
 {
     "@rid": "#1:1",
@@ -182,9 +183,9 @@ JSON
      * @test
      */
     public function hydrate_contact_with_embedded_list() {
-        $md = $this->manager->getClassMetadata(\Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded\Contact::class);
+        $md = $this->manager->getClassMetadata(Stub\Embedded\Contact::class);
         $dh = new DynamicHydrator($this->manager, $this->manager->getUnitOfWork(), $md);
-        $c  = new \Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded\Contact();
+        $c  = new Stub\Embedded\Contact();
         $d  = json_decode(<<<JSON
 {
     "@rid": "#1:1",
@@ -212,7 +213,7 @@ JSON
         $hd = $dh->hydrate($c, $d);
         $this->assertEquals(['rid', 'name', 'phones'], array_keys($hd));
 
-        /** @var \Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded\Phone[] $phones */
+        /** @var Stub\Embedded\Phone[] $phones */
         $phones = $c->phones->toArray();
         $this->assertCount(2, $phones);
 
@@ -231,8 +232,8 @@ JSON
      * @test
      */
     public function hydrate_contact_with_link() {
-        $c  = new \Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked\Contact();
-        $md = $this->manager->getClassMetadata(\Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked\Contact::class);
+        $c  = new Stub\Linked\Contact();
+        $md = $this->manager->getClassMetadata(Stub\Linked\Contact::class);
         $dh = new DynamicHydrator($this->manager, $this->manager->getUnitOfWork(), $md);
 
         $d = json_decode(<<<JSON
@@ -280,9 +281,9 @@ JSON
      * @test
      */
     public function hydrate_contact_with_link_list() {
-        $md = $this->manager->getClassMetadata(\Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked\Contact::class);
+        $md = $this->manager->getClassMetadata(Stub\Linked\Contact::class);
         $dh = new DynamicHydrator($this->manager, $this->manager->getUnitOfWork(), $md);
-        $c  = new \Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked\Contact();
+        $c  = new Stub\Linked\Contact();
         $d  = json_decode(<<<JSON
 {
     "@rid": "#1:1",
@@ -298,7 +299,7 @@ JSON
         $this->assertEquals('#1:1', $hd['rid']);
         $this->assertEquals('Sydney', $hd['name']);
 
-        /** @var \Doctrine\ODM\OrientDB\Tests\Document\Stub\Linked\Phone[] $phones */
+        /** @var Stub\Linked\Phone[] $phones */
         $phones = $c->getPhones()->toArray();
         $this->assertCount(2, $phones);
 
