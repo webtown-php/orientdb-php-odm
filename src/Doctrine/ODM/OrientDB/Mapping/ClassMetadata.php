@@ -836,12 +836,12 @@ class ClassMetadata implements DoctrineMetadata
 
     public function mapVertexLink($mapping, $direction) {
         $mapping = array_merge([
-                'name'        => $direction,
-                'type'        => 'object',
-                'nullable'    => false,
-                'association' => self::LINK,
-                'reference'   => true,
-            ],
+            'name'        => $direction,
+            'type'        => 'object',
+            'nullable'    => false,
+            'association' => self::LINK,
+            'reference'   => true,
+        ],
             $mapping
         );
 

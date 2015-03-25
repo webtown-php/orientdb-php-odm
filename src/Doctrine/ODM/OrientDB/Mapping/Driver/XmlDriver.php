@@ -158,7 +158,7 @@ class XmlDriver extends FileDriver
 
     private function addEmbedMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
         $attributes = $embed->attributes();
-        $mapping = [];
+        $mapping    = [];
         $this->_copyCommonPropertyAttributesToMapping($attributes, $mapping);
 
         switch ($type) {
@@ -182,7 +182,7 @@ class XmlDriver extends FileDriver
     private function addLinkMapping(ClassMetadata $class, \SimpleXMLElement $embed, $type) {
         $attributes = $embed->attributes();
         $mapping    = [
-            'cascade'   => isset($embed->cascade) ? $this->_getCascadeMappings($embed->cascade) : [],
+            'cascade' => isset($embed->cascade) ? $this->_getCascadeMappings($embed->cascade) : [],
         ];
 
         $this->_copyCommonPropertyAttributesToMapping($attributes, $mapping);
@@ -219,7 +219,7 @@ class XmlDriver extends FileDriver
     private function addRelatedToMapping(ClassMetadata $class, \SimpleXMLElement $embed, $indirect = true) {
         $attributes = $embed->attributes();
         $mapping    = [
-            'indirect'  => $indirect,
+            'indirect' => $indirect,
         ];
         $this->_copyCommonPropertyAttributesToMapping($attributes, $mapping);
         if (isset($attributes['oclass'])) {

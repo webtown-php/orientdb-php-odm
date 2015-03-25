@@ -230,7 +230,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
     }
 
     private function mergeLink(LinkPropertyBase $link, array &$mapping) {
-        $mapping['cascade']       = $link->cascade;
+        $mapping['cascade'] = $link->cascade;
         if (isset($link->targetDoc)) {
             $mapping['targetDoc'] = $link->targetDoc;
         }

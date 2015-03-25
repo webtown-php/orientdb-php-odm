@@ -6,7 +6,6 @@ use Doctrine\Common\EventManager;
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
-use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Query\Query;

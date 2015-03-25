@@ -47,8 +47,7 @@ class OrientDBInvalidArgumentException extends \InvalidArgumentException
      *
      * @return self
      */
-    static public function documentNotManaged($document)
-    {
+    static public function documentNotManaged($document) {
         return new self("document " . self::objToStr($document) . " is not managed. A document is managed if it is fetched " .
             "from the database or registered as new through DocumentManager#persist");
     }
