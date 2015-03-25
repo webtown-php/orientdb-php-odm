@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <doctrine-orientdb-mapping
-        xmlns="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping"
         xsi:schemaLocation="
             http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping
             http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping.xsd">

@@ -34,7 +34,7 @@ class UnitOfWorkLinkedDocumentTest extends TestCase
      * @test
      */
     public function computeChangeSet_generates_for_all_owning_associations() {
-        $c = new Contact();
+        $c       = new Contact();
         $c->name = "Sydney";
 
         $em        = new EmailAddress();

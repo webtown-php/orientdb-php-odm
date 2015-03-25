@@ -145,7 +145,7 @@ JSON
         $hd = $dh->hydrate($c, $d);
 
         $expected = [
-            'rid'     => '#1:1',
+            'rid'      => '#1:1',
             'name'     => 'Sydney',
             'height'   => 122,
             'birthday' => new \DateTime("2004-04-09T02:33:00Z"),
@@ -283,7 +283,9 @@ JSON
 
     /**
      * @test
+     *
      * @param $args
+     *
      * @depends hydrate_contact_with_link
      */
     public function hydrated_contact_on_email_is_same($args) {

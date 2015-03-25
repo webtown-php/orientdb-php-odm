@@ -37,17 +37,17 @@ class UnitOfWorkGraphDocumentTest extends TestCase
     public function computeChangeSet_generates_insert_for_relationship() {
         $uow = $this->manager->getUnitOfWork();
 
-        $c = new Contact();
-        $c->rid = "#1:0";
+        $c       = new Contact();
+        $c->rid  = "#1:0";
         $c->name = "Sydney";
         $uow->registerManaged($c, $c->rid, $uow->getDocumentActualData($c));
 
-        $p = new Post();
-        $p->rid = "#2:0";
+        $p        = new Post();
+        $p->rid   = "#2:0";
         $p->title = "The title";
         $uow->registerManaged($p, $p->rid, $uow->getDocumentActualData($p));
 
-        $e = new LikedE();
+        $e      = new LikedE();
         $e->out = $c;
         $e->in  = $p;
 

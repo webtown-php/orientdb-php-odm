@@ -5,7 +5,7 @@ namespace Doctrine\ODM\OrientDB\Tests\Integration\Proxy;
 use PHPUnit\TestCase;
 
 /**
- * @group integration
+ * @group   integration
  *
  * Class ProxyFactoryTest
  *

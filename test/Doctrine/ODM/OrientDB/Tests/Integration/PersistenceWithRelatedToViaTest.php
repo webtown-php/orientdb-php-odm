@@ -69,10 +69,10 @@ class PersistenceWithRelatedToViaTest extends TestCase
         /** @var PostV $p */
         $p = $this->manager->findByRid($rids[3]);
 
-        $e = new LikedE();
+        $e              = new LikedE();
         $e->description = "d1";
-        $e->out = $j;
-        $e->in  = $p;
+        $e->out         = $j;
+        $e->in          = $p;
 
         $p->liked->add($e);
         $this->manager->flush();

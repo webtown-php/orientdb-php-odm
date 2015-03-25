@@ -223,7 +223,7 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function clear_linked_list_document($rid) {
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d    = $this->manager->findByRid($rid);
         $erid = $d->emails->first()->rid;
         $this->manager->clear();
 
