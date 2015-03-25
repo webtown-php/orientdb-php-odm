@@ -4,6 +4,7 @@ namespace Doctrine\ODM\OrientDB\Tests;
 
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Persister\DocumentPersister;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub\Simple\Contact;
 use PHPUnit\TestCase;
 
@@ -75,5 +76,49 @@ class UnitOfWorkSimpleDocumentTest extends TestCase
         $cs = $uow->getDocumentChangeSet($c);
         $this->assertEquals(['height'], array_keys($cs));
         $this->assertEquals([null, 5], $cs['height']);
+    }
+
+    /**
+     * @test
+     */
+    public function detach_will_remove_existing_managed_document() {
+        $uow     = $this->manager->getUnitOfWork();
+        $c       = new Contact();
+        $c->rid  = "#1:1";
+        $c->name = "Sydney";
+        $uow->registerManaged($c, $c->rid, $uow->getDocumentActualData($c));
+        $this->assertTrue($uow->isInIdentityMap($c));
+
+        $this->assertEquals($uow::STATE_MANAGED, $uow->getDocumentState($c));
+
+        $dp = $this->prophesize(DocumentPersister::class);
+        $dp->exists($c)
+           ->willReturn(true);
+        $uow->setDocumentPersister(Contact::class, $dp->reveal());
+
+        $uow->detach($c);
+        $this->assertFalse($uow->isInIdentityMap($c));
+
+        $this->assertEquals($uow::STATE_DETACHED, $uow->getDocumentState($c));
+    }
+
+    /**
+     * @depends detach_will_remove_existing_managed_document
+     * @test
+     */
+    public function getDocumentState_returns_STATE_DETACHED_for_existing_document() {
+        $uow     = $this->manager->getUnitOfWork();
+        $c       = new Contact();
+        $c->rid  = "#1:1";
+        $c->name = "Sydney";
+        $uow->registerManaged($c, $c->rid, $uow->getDocumentActualData($c));
+
+        $dp = $this->prophesize(DocumentPersister::class);
+        $dp->exists($c)
+           ->willReturn(true);
+        $uow->setDocumentPersister(Contact::class, $dp->reveal());
+
+        $uow->detach($c);
+        $this->assertEquals($uow::STATE_DETACHED, $uow->getDocumentState($c));
     }
 }
