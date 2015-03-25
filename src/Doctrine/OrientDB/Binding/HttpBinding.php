@@ -77,10 +77,12 @@ class HttpBinding implements HttpBindingInterface
      * @param int    $limit
      * @param string $fetchPlan
      *
+     * @param string $language
+     *
      * @return string
      */
     protected function getQueryLocation($database, $query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS) {
-        $arguments = array($language, $query);
+        $arguments = [$language, $query];
 
         if (isset($limit)) {
             $arguments[] = $limit;
@@ -104,7 +106,7 @@ class HttpBinding implements HttpBindingInterface
      */
     protected function getDocumentLocation($database, $rid = null, $fetchPlan = null) {
         $this->ensureDatabase($database);
-        $arguments = array($rid);
+        $arguments = [$rid];
 
         if ($fetchPlan) {
             $arguments[] = $fetchPlan;
@@ -294,6 +296,21 @@ class HttpBinding implements HttpBindingInterface
 
         return $this->adapter->request('GET', $location);
     }
+
+    /**
+     * Determines if a document exists for the specified $rid
+     *
+     * @param string $rid
+     * @param string $database
+     *
+     * @return bool
+     */
+    public function documentExists($rid, $database = null) {
+        $location = $this->getDocumentLocation($database ?: $this->database, $rid);
+
+        return $this->adapter->request('HEAD', $location)->getInnerResponse()->getStatusCode() === 204;
+    }
+
 
     /**
      * {@inheritdoc}

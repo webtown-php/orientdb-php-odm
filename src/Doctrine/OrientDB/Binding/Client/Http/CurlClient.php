@@ -81,7 +81,7 @@ class CurlClient
      * @param  String $location
      *
      * @return CurlClientResponse
-     * @throws Inconsistent
+     * @throws EmptyResponseException
      */
     public function execute($method, $location) {
         curl_setopt_array($this->curl, array(
@@ -120,6 +120,12 @@ class CurlClient
         }
 
         return $this->execute('DELETE', $location);
+    }
+
+    public function head($location) {
+        curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'HEAD');
+
+        return $this->execute('HEAD', $location);
     }
 
     /**

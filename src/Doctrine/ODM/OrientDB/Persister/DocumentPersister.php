@@ -20,7 +20,7 @@ class DocumentPersister
     private $dm;
 
     /**
-     * @var \Doctrine\OrientDB\Binding\BindingInterface
+     * @var \Doctrine\OrientDB\Binding\HttpBindingInterface
      */
     private $binding;
 
@@ -65,11 +65,8 @@ class DocumentPersister
      */
     public function exists($document) {
         $rid = $this->class->getIdentifierValue($document);
-        $q   = new Query([$rid]);
-        $q->select(['@rid']);
-        $results = $this->binding->execute($q)->getResult();
 
-        return isset($results) && count($results) === 1;
+        return $this->binding->documentExists($rid);
     }
 
     /**

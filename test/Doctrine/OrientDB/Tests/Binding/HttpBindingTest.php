@@ -151,7 +151,7 @@ class HttpBindingTest extends TestCase
     }
 
     /**
-     * @expectedException Doctrine\OrientDB\Exception
+     * @expectedException \Doctrine\OrientDB\Exception
      */
     public function testResolveDatabase() {
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
@@ -188,6 +188,19 @@ class HttpBindingTest extends TestCase
 
     /**
      * @depends testCreateDocument
+     * @param $rid
+     */
+    public function testDocumentExists($rid) {
+        $binding = $this->createHttpBinding();
+
+        $binding->getAdapter()->getClient()->restart();
+
+        $res = $binding->documentExists($rid);
+        $this->assertTrue($res);
+    }
+
+    /**
+     * @depends testCreateDocument
      */
     public function testUpdateAnExistingRecord($rid) {
         $binding = $this->createHttpBinding();
@@ -217,6 +230,19 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(404, $binding->deleteDocument('999:1'), 'Deletes a non existing document');
         $this->assertHttpStatus(500, $binding->deleteDocument('9991'), 'Deletes an invalid document');
 
+    }
+
+    /**
+     * @depends testDeleteADocument
+     * @param $rid
+     */
+    public function testDocumentDoesNotExist($rid) {
+        $binding = $this->createHttpBinding();
+
+        $binding->getAdapter()->getClient()->restart();
+
+        $res = $binding->documentExists($rid);
+        $this->assertFalse($res);
     }
 
     public function testGetDatabaseName() {

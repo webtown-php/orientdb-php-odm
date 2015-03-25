@@ -183,6 +183,16 @@ interface HttpBindingInterface extends BindingInterface
     public function getDocument($rid, $database = null, $fetchPlan = null);
 
     /**
+     * Determines if a document exists for the specified $rid
+     *
+     * @param string $rid
+     * @param string $database
+     *
+     * @return bool
+     */
+    public function documentExists($rid, $database = null);
+
+    /**
      * Stores a new document in the database.
      *
      * @api
