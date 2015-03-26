@@ -13,7 +13,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration\Mapping\DataType;
 
 use Doctrine\OrientDB\Query\Command;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Query\QueryBuilder;
 use PHPUnit\TestCase;
 
 /**
@@ -25,9 +25,8 @@ class LongTest extends TestCase
 
         $manager = $this->createDocumentManager();
 
-        $query = new Query();
-        $query->update('Profile')
-              ->set(array('hash' => 2937480))
+        $query = QueryBuilder::update('Profile');
+        $query->set(array('hash' => 2937480))
               ->where('@rid = ?', '#' . $this->getClassId('Profile') . ':0')
               ->returns(Command::RETURN_AFTER);
 

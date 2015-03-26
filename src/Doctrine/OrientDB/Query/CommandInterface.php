@@ -23,6 +23,14 @@ namespace Doctrine\OrientDB\Query;
 interface CommandInterface
 {
     /**
+     * Returns whether this query, when executed, should have the collection hydrated.
+     * The default is true
+     *
+     * @return boolean
+     */
+    public function canHydrate();
+
+    /**
      * Sets a where token using the AND operator.
      * If the $condition contains a "?", it will be replaced by the $value.
      *

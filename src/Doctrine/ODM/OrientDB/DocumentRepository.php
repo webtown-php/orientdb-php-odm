@@ -26,7 +26,7 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Util\Inflector;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\Exception;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Query\QueryBuilder;
 use RuntimeException;
 
 class DocumentRepository implements ObjectRepository
@@ -88,7 +88,7 @@ class DocumentRepository implements ObjectRepository
             }
         }
 
-        return $this->$method(array($property => $arguments[0]));
+        return $this->$method([$property => $arguments[0]]);
     }
 
     /**
@@ -158,36 +158,30 @@ class DocumentRepository implements ObjectRepository
      * @throws Exception
      */
     public function findBy(array $criteria, array $orderBy = [], $limit = null, $offset = null, $fetchPlan = '*:0') {
-        $results = array();
+        $select = QueryBuilder::select([$this->metadata->getOrientClass()]);
 
-        foreach ($this->getOrientClasses() as $mappedClass) {
-            $query = new Query([$mappedClass]);
-
-            foreach ($criteria as $key => $value) {
-                $query->andWhere("$key = ?", $value);
-            }
-
-            foreach ($orderBy as $key => $order) {
-                $query->orderBy("$key $order");
-            }
-
-            if ($limit) {
-                $query->limit($limit);
-            }
-
-            $collection = $this->dm->execute($query, $fetchPlan);
-
-            if (!$collection instanceof ArrayCollection) {
-                throw new Exception(
-                    "Problems executing the query \"{$query->getRaw()}\". " .
-                    "The server returned $collection instead of ArrayCollection."
-                );
-            }
-
-            $results = array_merge($results, $collection->toArray());
+        foreach ($criteria as $key => $value) {
+            $select->andWhere("$key = ?", $value);
         }
 
-        return new ArrayCollection($results);
+        foreach ($orderBy as $key => $order) {
+            $select->orderBy("$key $order");
+        }
+
+        if ($limit) {
+            $select->limit($limit);
+        }
+
+        $collection = $this->dm->execute($select, $fetchPlan);
+
+        if (!$collection instanceof ArrayCollection) {
+            throw new Exception(
+                "Problems executing the query \"{$select->getRaw()}\". " .
+                "The server returned $collection instead of ArrayCollection."
+            );
+        }
+
+        return $collection;
     }
 
     /**
@@ -198,7 +192,7 @@ class DocumentRepository implements ObjectRepository
      * @return object The object.
      */
     public function findOneBy(array $criteria) {
-        $documents = $this->findBy($criteria, array(), 1);
+        $documents = $this->findBy($criteria, [], 1);
 
         if ($documents instanceof ArrayCollection && count($documents)) {
             return $documents->first();
@@ -225,16 +219,6 @@ class DocumentRepository implements ObjectRepository
      */
     protected function contains($document) {
         return $this->metadata->name === ClassUtils::getClass($document);
-    }
-
-    /**
-     * Returns the OrientDB classes which are mapper by the
-     * Repository's $className.
-     *
-     * @return array
-     */
-    protected function getOrientClasses() {
-        return explode(',', $this->metadata->getOrientClass());
     }
 
     /**

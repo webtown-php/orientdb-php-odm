@@ -24,7 +24,7 @@ use Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
 use Doctrine\OrientDB\Exception as OrientException;
 use Doctrine\OrientDB\Query\Command\Select;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Query\CommandInterface;
 
 class HttpBinding implements HttpBindingInterface
 {
@@ -259,12 +259,12 @@ class HttpBinding implements HttpBindingInterface
     /**
      * {@inheritdoc}
      */
-    public function execute(Query $query, $fetchPlan = null) {
-        if ($query->getCommand() instanceof Select) {
-            return $this->query($query->getRaw(), -1, $fetchPlan);
+    public function execute(CommandInterface $cmd, $fetchPlan = null) {
+        if ($cmd instanceof Select) {
+            return $this->query($cmd->getRaw(), -1, $fetchPlan);
         }
 
-        return $this->command($query->getRaw());
+        return $this->command($cmd->getRaw());
     }
 
     /**

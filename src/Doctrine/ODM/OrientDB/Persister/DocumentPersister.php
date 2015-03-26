@@ -8,7 +8,7 @@ use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Query\QueryBuilder;
 
 class DocumentPersister
 {
@@ -148,11 +148,11 @@ class DocumentPersister
         $mapping = $collection->getMapping();
         $useKey  = boolval($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
         if (is_string(reset($rows))) {
-            $query = new Query(array_values($rows));
+            $cmd = QueryBuilder::select(array_values($rows));
             if ($useKey) {
                 $keys = array_flip($rows);
             }
-            $results = $this->binding->execute($query)->getResult();
+            $results = $this->binding->execute($cmd)->getResult();
         } else {
             // data was already loaded
             $results = $rows;
@@ -207,14 +207,14 @@ class DocumentPersister
 
         // load edges and their immediate children (*:1)
         if ($edgeRids) {
-            $query   = new Query($edgeRids);
-            $loaded  = $this->binding->execute($query, '*:1')->getResult();
+            $cmd     = QueryBuilder::select($edgeRids);
+            $loaded  = $this->binding->execute($cmd, '*:1')->getResult();
             $results = array_merge($results, self::extractVertexes($loaded, $prop));
         }
 
         if ($rids) {
-            $query  = new Query(array_keys($rids));
-            $loaded = $this->binding->execute($query)->getResult();
+            $cmd    = QueryBuilder::select(array_keys($rids));
+            $loaded = $this->binding->execute($cmd)->getResult();
             foreach ($loaded as $row) {
                 $rid = $row->{'@rid'};
                 foreach ($rids[$rid] as $edge) {

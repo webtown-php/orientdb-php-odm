@@ -17,7 +17,7 @@ use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Types\Type;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Query\CommandInterface;
 
 class UnitOfWork implements PropertyChangedListener
 {
@@ -297,11 +297,17 @@ class UnitOfWork implements PropertyChangedListener
         return $this->documentDeletions;
     }
 
-    public function execute(Query $query, $fetchPlan = null) {
+    /**
+     * @param CommandInterface $cmd
+     * @param null             $fetchPlan
+     *
+     * @return bool|ArrayCollection
+     */
+    public function execute(CommandInterface $cmd, $fetchPlan = null) {
         $binding = $this->dm->getBinding();
-        $results = $binding->execute($query, $fetchPlan)->getResult();
+        $results = $binding->execute($cmd, $fetchPlan)->getResult();
 
-        if (is_array($results) && $query->canHydrate()) {
+        if (is_array($results) && $cmd->canHydrate()) {
             $documents = [];
             foreach ($results as $data) {
                 $documents [] = $this->getOrCreateDocument($data);

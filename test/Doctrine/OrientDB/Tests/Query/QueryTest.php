@@ -18,12 +18,13 @@ use PHPUnit\TestCase;
 
 class QueryTest extends TestCase
 {
+    /**
+     * @var Query
+     */
+    private $query;
+
     public function setup() {
         $this->query = new Query();
-    }
-
-    public function testQueryImplementsAGenericInterface() {
-        $this->assertInstanceOf("Doctrine\OrientDB\Query\QueryInterface", $this->query);
     }
 
     public function testDataFiltering() {
@@ -403,7 +404,7 @@ class QueryTest extends TestCase
     }
 
     /**
-     * @expectedException Doctrine\OrientDB\Exception
+     * @expectedException \Doctrine\OrientDB\Exception
      */
     public function testAnExceptionIsRaisedWhenTryingToAccessANonExistingMethod() {
         $query           = $this->getMock('Doctrine\OrientDB\Query\Query', array('aMethodCallingABadCommand'));

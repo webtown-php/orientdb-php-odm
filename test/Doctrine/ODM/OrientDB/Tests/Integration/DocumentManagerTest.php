@@ -11,7 +11,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
-use Doctrine\OrientDB\Query\Query;
+use Doctrine\OrientDB\Query\QueryBuilder;
 use Integration\Document\Address;
 use Integration\Document\Profile;
 use PHPUnit\TestCase;
@@ -58,7 +58,7 @@ class DocumentManagerTest extends TestCase
     public function testExecutionOfASelect() {
         $manager = $this->createDocumentManager();
 
-        $query     = new Query(array('Address'));
+        $query     = QueryBuilder::select(array('Address'));
         $addresses = $manager->execute($query);
 
         $this->assertEquals(40, count($addresses));
@@ -71,7 +71,7 @@ class DocumentManagerTest extends TestCase
     public function testFindingARecordWithAnExecuteReturnsAnArrayHowever() {
         $manager = $this->createDocumentManager();
 
-        $query     = new Query(array($this->addressId . ':0'));
+        $query     = QueryBuilder::select([$this->addressId . ':0']);
         $addresses = $manager->execute($query);
 
         $this->assertEquals(1, count($addresses));
@@ -84,8 +84,8 @@ class DocumentManagerTest extends TestCase
     public function testExecutionOfAnUpdate() {
         $manager = $this->createDocumentManager();
 
-        $query = new Query(array('Address'));
-        $query->update('Address')->set(array('my' => 'yours'))->where('@rid = ?', $this->addressId . ':30');
+        $query = QueryBuilder::update('Address');
+        $query->set(['my' => 'yours'])->where('@rid = ?', $this->addressId . ':30');
         $result = $manager->execute($query);
 
         $this->assertInternalType('boolean', $result);
@@ -99,8 +99,8 @@ class DocumentManagerTest extends TestCase
     public function testAnExceptionGetsRaisedWhenExecutingAWrongQuery() {
         $manager = $this->createDocumentManager();
 
-        $query = new Query(array('Address'));
-        $query->update('Address')->set(array())->where('@rid = ?', '1:10000');
+        $query = QueryBuilder::update('Address');
+        $query->set([])->where('@rid = ?', '1:10000');
 
         $manager->execute($query);
     }
@@ -119,9 +119,9 @@ class DocumentManagerTest extends TestCase
      * @group integration
      */
     public function testFindingARecordWithAFetchPlan() {
-        $manager = $this->createDocumentManager(array(
+        $manager = $this->createDocumentManager([
             'mismatches_tolerance' => true,
-        ));
+        ]);
 
         $post = $manager->findByRid($this->postId . ':0', '*:-1');
 
@@ -145,9 +145,9 @@ class DocumentManagerTest extends TestCase
      * @group integration
      */
     public function testGettingARelatedCollection() {
-        $manager = $this->createDocumentManager(array(
+        $manager = $this->createDocumentManager([
             'mismatches_tolerance' => true,
-        ));
+        ]);
 
         $post     = $manager->findByRid($this->postId . ':0');
         $comments = $post->getComments();
@@ -182,7 +182,7 @@ class DocumentManagerTest extends TestCase
     public function testExecutingASelectOfASingleRecordReturnsAnArrayWithOneRecord() {
         $manager = $this->createDocumentManager();
 
-        $query = new Query(array('Address'));
+        $query = QueryBuilder::select(['Address']);
         $query->where('@rid = ?', $this->addressId . ':0');
 
         $results = $manager->execute($query);
@@ -197,8 +197,8 @@ class DocumentManagerTest extends TestCase
     public function testExecutionWithNoOutput() {
         $manager = $this->createDocumentManager();
 
-        $query = new Query();
-        $query->update('Address')->set(array('type' => 'Residence'));
+        $query = QueryBuilder::update('Address');
+        $query->set(['type' => 'Residence']);
 
         $results = $manager->execute($query);
 

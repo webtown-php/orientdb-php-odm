@@ -27,7 +27,7 @@ use Doctrine\OrientDB\Query\Command\Update;
 use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 use Doctrine\OrientDB\Query\Validator\ValidationException;
 
-class Query implements QueryInterface
+class Query
 {
     protected $command = null;
     protected $commands = [
