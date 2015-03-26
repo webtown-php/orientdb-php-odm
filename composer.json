@@ -19,6 +19,11 @@
             "name": "Daniele Alessandri",
             "email": "suppakilla@gmail.com",
             "homepage": "http://clorophilla.net"
+        },
+        {
+            "name": "Stuart Carnie",
+            "email": "stuart.carnie@gmail.com",
+            "homepage": "http://stuartcarnie.com"
         }
     ],
     "repositories": [
@@ -39,11 +44,10 @@
         "doctrine/common": "2.x",
         "doctrine/annotations": "1.x",
         "symfony/finder": "2.x",
-        "symfony/class-loader": "2.x",
-        "guzzle/guzzle": "*"
+        "symfony/class-loader": "2.x"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.1.*"
+        "phpunit/phpunit": "4.x"
         ,"athletic/athletic": "2.x"
         ,"phpspec/prophecy": "dev-master"
     },
