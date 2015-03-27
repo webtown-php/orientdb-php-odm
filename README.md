@@ -1,6 +1,6 @@
 # OrientDB PHP Library
 
-[![Build Status](https://secure.travis-ci.org/stuartcarnie/orientdb-odm.png?branch=master)](http://secure.travis-ci.org/stuartcarnie/orientdb-odm)
+[![Build Status](https://secure.travis-ci.org/orienttechnologies/orientdb-php-odm.png?branch=master)](http://secure.travis-ci.org/orienttechnologies/orientdb-php-odm)
 [![Total Downloads](https://poser.pugx.org/orienttechnologies/orientdb-php-odm/downloads.png)](https://packagist.org/packages/orienttechnologies/orientdb-php-odm)
 [![Latest Stable Version](https://poser.pugx.org/orienttechnologies/orientdb-php-odm/v/stable.png)](https://packagist.org/packages/orienttechnologies/orientdb-php-odm)
 
