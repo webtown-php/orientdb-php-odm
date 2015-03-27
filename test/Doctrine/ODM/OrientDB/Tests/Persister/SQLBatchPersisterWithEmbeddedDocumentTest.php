@@ -59,11 +59,13 @@ class SQLBatchPersisterWithEmbeddedDocumentTest extends TestCase
             ->willReturn([]);
         $uow->registerManaged($c, '#1:0', [])
             ->shouldBeCalled();
+        $uow->raisePostPersist(Arg::any(), $c)
+            ->shouldBeCalled();
 
         $res = json_decode(<<<JSON
 {
     "result":[{
-        "d0":"#1:0"
+        "n0":"#1:0"
     }]
 }
 JSON

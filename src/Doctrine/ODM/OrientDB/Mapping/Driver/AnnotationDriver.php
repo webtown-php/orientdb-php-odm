@@ -6,11 +6,14 @@ use Doctrine\Common\Annotations\Annotation;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
+use Doctrine\Common\Persistence\Mapping\ClassMetadata as BaseClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver as AbstractAnnotationDriver;
+use Doctrine\ODM\OrientDB\Events;
+use Doctrine\ODM\OrientDB\Mapping\Annotations;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\AbstractDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\ChangeTrackingPolicy;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Document;
+use Doctrine\ODM\OrientDB\Mapping\Annotations\DocumentListeners;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Embedded;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedDocument;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\EmbeddedList;
@@ -33,6 +36,8 @@ use Doctrine\ODM\OrientDB\Mapping\Annotations\RID;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Version;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\Vertex;
 use Doctrine\ODM\OrientDB\Mapping\Annotations\VertexLink;
+use Doctrine\ODM\OrientDB\Mapping\Builder\DocumentListenerBuilder;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
 class AnnotationDriver extends AbstractAnnotationDriver
@@ -57,13 +62,13 @@ class AnnotationDriver extends AbstractAnnotationDriver
     /**
      * Loads the metadata for the specified class into the provided container.
      *
-     * @param string        $className
-     * @param ClassMetadata $metadata
+     * @param string            $className
+     * @param BaseClassMetadata $metadata
      *
      * @throws MappingException
      */
-    public function loadMetadataForClass($className, ClassMetadata $metadata) {
-        /** @var \Doctrine\ODM\OrientDB\Mapping\ClassMetadata $metadata */
+    public function loadMetadataForClass($className, BaseClassMetadata $metadata) {
+        /** @var ClassMetadata $metadata */
         $classAnnotations = $this->reader->getClassAnnotations($metadata->getReflectionClass());
         if (count($classAnnotations) === 0) {
             throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
@@ -83,6 +88,12 @@ class AnnotationDriver extends AbstractAnnotationDriver
             switch (true) {
                 case $annot instanceof ChangeTrackingPolicy:
                     $metadata->setChangeTrackingPolicy(constant('Doctrine\\ODM\\OrientDB\\Mapping\\ClassMetadata::CHANGETRACKING_' . $annot->value));
+                    continue;
+
+                case $annot instanceof DocumentListeners:
+                    // handle listeners
+                    $this->mapDocumentListeners($className, $metadata, $annot);
+                    continue;
             }
         }
 
@@ -216,6 +227,72 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 }
             }
         }
+    }
+
+    /**
+     * @param string            $className
+     * @param ClassMetadata     $metadata
+     * @param DocumentListeners $annot
+     *
+     * @throws MappingException
+     */
+    private function mapDocumentListeners($className, ClassMetadata $metadata, DocumentListeners $annot) {
+        foreach ($annot->value as $item) {
+            $listenerClassName = $metadata->fullyQualifiedClassName($item);
+
+            if (!class_exists($listenerClassName)) {
+                throw MappingException::documentListenerClassNotFound($listenerClassName, $className);
+            }
+
+            $hasMapping    = false;
+            $listenerClass = new \ReflectionClass($listenerClassName);
+            /* @var $method \ReflectionMethod */
+            foreach ($listenerClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                // find method callbacks.
+                $callbacks  = $this->getMethodCallbacks($method);
+                $hasMapping = $hasMapping ?: (!empty($callbacks));
+
+                foreach ($callbacks as $value) {
+                    $metadata->addDocumentListener($value[1], $listenerClassName, $value[0]);
+                }
+            }
+            // Evaluate the listener using naming convention.
+            if (!$hasMapping) {
+                DocumentListenerBuilder::bindDocumentListener($metadata, $listenerClassName);
+            }
+        }
+    }
+
+    private static $METHOD_CALLBACKS = [
+        Annotations\PrePersist::class  => Events::prePersist,
+        Annotations\PostPersist::class => Events::postPersist,
+        Annotations\PreUpdate::class   => Events::preUpdate,
+        Annotations\PostUpdate::class  => Events::postUpdate,
+        Annotations\PreRemove::class   => Events::preRemove,
+        Annotations\PostRemove::class  => Events::postRemove,
+        Annotations\PostLoad::class    => Events::postLoad,
+        Annotations\PreFlush::class    => Events::preFlush,
+    ];
+
+    /**
+     * Parses the given method.
+     *
+     * @param \ReflectionMethod $method
+     *
+     * @return array
+     */
+    private function getMethodCallbacks(\ReflectionMethod $method) {
+        $callbacks   = [];
+        $annotations = $this->reader->getMethodAnnotations($method);
+
+        foreach ($annotations as $annot) {
+            $class = get_class($annot);
+            if (isset(self::$METHOD_CALLBACKS[$class])) {
+                $callbacks[] = [$method->name, self::$METHOD_CALLBACKS[$class]];
+            }
+        }
+
+        return $callbacks;
     }
 
     public function &propertyToArray($fieldName, Property $prop) {

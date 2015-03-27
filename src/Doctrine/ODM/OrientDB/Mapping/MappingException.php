@@ -36,6 +36,38 @@ class MappingException extends \Exception
                 $oclass, $new, $existing));
     }
 
+    /**
+     * @param string $listenerName
+     * @param string $className
+     *
+     * @return self
+     */
+    public static function documentListenerClassNotFound($listenerName, $className) {
+        return new self(sprintf('document listener "%s" declared on "%s" not found.', $listenerName, $className));
+    }
+
+    /**
+     * @param string $listenerName
+     * @param string $methodName
+     * @param string $className
+     *
+     * @return self
+     */
+    public static function documentListenerMethodNotFound($listenerName, $methodName, $className) {
+        return new self(sprintf('document listener "%s" declared on "%s" has no method "%s".', $listenerName, $className, $methodName));
+    }
+
+    /**
+     * @param string $listenerName
+     * @param string $methodName
+     * @param string $className
+     *
+     * @return self
+     */
+    public static function duplicateDocumentListener($listenerName, $methodName, $className) {
+        return new self(sprintf('document listener "%s#%s()" in "%s" was already declared, but it must be declared only once.', $listenerName, $methodName, $className));
+    }
+
     public static function relatedToRequiresDirection($class, $fieldName) {
         return new self(sprintf('direction is required for %s::%s', $class, $fieldName));
     }

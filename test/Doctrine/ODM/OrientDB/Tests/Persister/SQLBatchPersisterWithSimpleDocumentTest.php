@@ -99,7 +99,7 @@ JSON
         $res = json_decode(<<<JSON
 {
     "result":[{
-        "d1": "#1:0"
+        "n1": "#1:0"
     }]
 }
 JSON
@@ -141,11 +141,13 @@ JSON
             ->willReturn([]);
         $uow->registerManaged($c, '#1:0', [])
             ->shouldBeCalled();
+        $uow->raisePostPersist(Arg::any(), $c)
+            ->shouldBeCalled();
 
         $res = json_decode(<<<JSON
 {
     "result":[{
-        "d0": "#1:0"
+        "n0": "#1:0"
     }]
 }
 JSON

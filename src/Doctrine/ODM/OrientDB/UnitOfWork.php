@@ -11,6 +11,8 @@ use Doctrine\Common\PropertyChangedListener;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 use Doctrine\ODM\OrientDB\Event\LifecycleEventArgs;
+use Doctrine\ODM\OrientDB\Event\ListenersInvoker;
+use Doctrine\ODM\OrientDB\Event\PreFlushEventArgs;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
@@ -55,6 +57,11 @@ class UnitOfWork implements PropertyChangedListener
      * @var EventManager
      */
     private $evm;
+
+    /**
+     * @var ListenersInvoker
+     */
+    private $listenersInvoker;
 
     /**
      * The identity map holds references to all managed documents.
@@ -171,9 +178,49 @@ class UnitOfWork implements PropertyChangedListener
 
 
     public function __construct(DocumentManager $manager, EventManager $evm, HydratorFactoryInterface $hydratorFactory) {
-        $this->dm              = $manager;
-        $this->evm             = $evm;
-        $this->hydratorFactory = $hydratorFactory;
+        $this->dm               = $manager;
+        $this->evm              = $evm;
+        $this->listenersInvoker = new ListenersInvoker($manager->getEventManager(), $manager->getConfiguration()->getListenerResolver());
+        $this->hydratorFactory  = $hydratorFactory;
+    }
+
+    /**
+     * @internal
+     *
+     * @param ClassMetadata $class
+     * @param object        $doc
+     */
+    public function raisePostPersist(ClassMetadata $class, $doc) {
+        $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::postPersist);
+        if ($invoke) {
+            $this->listenersInvoker->invoke($class, Events::postPersist, $doc, new LifecycleEventArgs($doc, $this->dm), $invoke);
+        }
+    }
+
+    /**
+     * @internal
+     *
+     * @param ClassMetadata $class
+     * @param object        $doc
+     */
+    public function raisePostUpdate(ClassMetadata $class, $doc) {
+        $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::postUpdate);
+        if ($invoke) {
+            $this->listenersInvoker->invoke($class, Events::postUpdate, $doc, new LifecycleEventArgs($doc, $this->dm), $invoke);
+        }
+    }
+
+    /**
+     * @internal
+     *
+     * @param ClassMetadata $class
+     * @param object        $doc
+     */
+    public function raisePostRemove(ClassMetadata $class, $doc) {
+        $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::postRemove);
+        if ($invoke) {
+            $this->listenersInvoker->invoke($class, Events::postRemove, $doc, new LifecycleEventArgs($doc, $this->dm), $invoke);
+        }
     }
 
     /**
@@ -253,6 +300,9 @@ class UnitOfWork implements PropertyChangedListener
 
         $p = $this->createPersister();
         $p->process($this);
+
+        // process events
+
 
         // Take new snapshots from visited collections
         foreach ($this->visitedCollections as $coll) {
@@ -493,11 +543,10 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function persistNew(ClassMetadata $class, $document) {
         $oid = spl_object_hash($document);
-//        if ( ! empty($class->lifecycleCallbacks[Events::prePersist])) {
-//            $class->invokeLifecycleCallbacks(Events::prePersist, $document);
-//        }
-        if ($this->evm->hasListeners(Events::prePersist)) {
-            $this->evm->dispatchEvent(Events::prePersist, new LifecycleEventArgs($document, $this->dm));
+
+        $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::prePersist);
+        if ($invoke !== ListenersInvoker::INVOKE_NONE) {
+            $this->listenersInvoker->invoke($class, Events::prePersist, $document, new LifecycleEventArgs($document, $this->dm), $invoke);
         }
 
         if (!$class->isEmbeddedDocument()) {
@@ -539,6 +588,10 @@ class UnitOfWork implements PropertyChangedListener
                     }
                 }
             }
+        }
+
+        if ($this->evm->hasListeners(Events::onClear)) {
+            $this->evm->dispatchEvent(Events::onClear, new Event\OnClearEventArgs($this->dm, $class));
         }
     }
 
@@ -640,14 +693,12 @@ class UnitOfWork implements PropertyChangedListener
                 // nothing to do
                 break;
             case self::STATE_MANAGED:
-//                if ( ! empty($class->lifecycleCallbacks[Events::preRemove])) {
-//                    $class->invokeLifecycleCallbacks(Events::preRemove, $document);
-//                }
-                if ($this->evm->hasListeners(Events::preRemove)) {
-                    $this->evm->dispatchEvent(Events::preRemove, new LifecycleEventArgs($document, $this->dm));
+                $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::preRemove);
+                if ($invoke !== ListenersInvoker::INVOKE_NONE) {
+                    $this->listenersInvoker->invoke($class, Events::preRemove, $document, new LifecycleEventArgs($document, $this->dm), $invoke);
                 }
+
                 $this->scheduleForDelete($document);
-                $this->cascadePreRemove($class, $document);
                 break;
             case self::STATE_DETACHED:
                 throw OrientDBException::detachedDocumentCannotBeRemoved();
@@ -690,70 +741,6 @@ class UnitOfWork implements PropertyChangedListener
                     }
                 } elseif ($relatedDocuments !== null) {
                     $this->doRemove($relatedDocuments, $visited);
-                }
-            }
-        }
-    }
-
-    /**
-     * Cascades the preRemove event to embedded documents.
-     *
-     * @param ClassMetadata $class
-     * @param object        $document
-     */
-    private function cascadePreRemove(ClassMetadata $class, $document) {
-        $hasPreRemoveListeners = $this->evm->hasListeners(Events::preRemove);
-
-        foreach ($class->associationMappings as $fieldName => $mapping) {
-            if (isset($mapping['embedded'])) {
-                $value = $class->reflFields[$fieldName]->getValue($document);
-                if ($value === null) {
-                    continue;
-                }
-                if ($mapping['association'] & ClassMetadata::TO_ONE) {
-                    $value = [$value];
-                }
-                foreach ($value as $entry) {
-                    $entryClass = $this->dm->getClassMetadata(get_class($entry));
-//                    if ( ! empty($entryClass->lifecycleCallbacks[Events::preRemove])) {
-//                        $entryClass->invokeLifecycleCallbacks(Events::preRemove, $entry);
-//                    }
-                    if ($hasPreRemoveListeners) {
-                        $this->evm->dispatchEvent(Events::preRemove, new LifecycleEventArgs($entry, $this->dm));
-                    }
-                    $this->cascadePreRemove($entryClass, $entry);
-                }
-            }
-        }
-    }
-
-    /**
-     * Cascades the postRemove event to embedded documents.
-     *
-     * @param ClassMetadata $class
-     * @param object        $document
-     */
-    private function cascadePostRemove(ClassMetadata $class, $document) {
-        $hasPostRemoveListeners = $this->evm->hasListeners(Events::postRemove);
-
-        foreach ($class->associationMappings as $fieldName => $mapping) {
-            if (isset($mapping['embedded'])) {
-                $value = $class->reflFields[$fieldName]->getValue($document);
-                if ($value === null) {
-                    continue;
-                }
-                if ($mapping['type'] & ClassMetadata::TO_ONE) {
-                    $value = [$value];
-                }
-                foreach ($value as $entry) {
-                    $entryClass = $this->dm->getClassMetadata(get_class($entry));
-//                    if ( ! empty($entryClass->lifecycleCallbacks[Events::postRemove])) {
-//                        $entryClass->invokeLifecycleCallbacks(Events::postRemove, $entry);
-//                    }
-                    if ($hasPostRemoveListeners) {
-                        $this->evm->dispatchEvent(Events::postRemove, new LifecycleEventArgs($entry, $this->dm));
-                    }
-                    $this->cascadePostRemove($entryClass, $entry);
                 }
             }
         }
@@ -946,7 +933,7 @@ class UnitOfWork implements PropertyChangedListener
             if (isset($mapping['notSaved'])) {
                 continue;
             }
-            $rp = $class->reflFields[$fieldName];
+            $rp    = $class->reflFields[$fieldName];
             $value = $rp->getValue($document);
 
             if ((isset($mapping['association']) && $mapping['association'] & ClassMetadata::TO_MANY)
@@ -997,10 +984,10 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function computeChangeSet(ClassMetadata $class, $document) {
 
-        // Fire PreFlush lifecycle callbacks
-//        if ( ! empty($class->lifecycleCallbacks[Events::preFlush])) {
-//            $class->invokeLifecycleCallbacks(Events::preFlush, $document);
-//        }
+        $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::preFlush) & ~ListenersInvoker::INVOKE_MANAGER;
+        if ($invoke !== ListenersInvoker::INVOKE_NONE) {
+            $this->listenersInvoker->invoke($class, Events::preFlush, $document, new PreFlushEventArgs($this->dm), $invoke);
+        }
 
         $this->computeOrRecomputeChangeSet($class, $document);
     }

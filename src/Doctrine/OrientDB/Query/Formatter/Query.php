@@ -53,16 +53,17 @@ class Query implements QueryInterface
      * @return  string
      */
     public static function stripNonSQLCharacters($string, $nonFilter = null) {
-        return preg_replace("/[^\w|:|@|#|$nonFilter]/", '', $string);
+        return preg_replace("/[^\\w|:|@|#|$nonFilter]/", '', $string);
     }
 
     /**
      * Strips non-SQL charactes from the strings contained in the the array leaving intact
      * regular characters a-z and integers.
      *
-     * @param   array $strings
+     * @param array $strings
+     * @param null    $nonFilter
      *
-     * @return  array
+     * @return array
      */
     protected static function stripNonSQLCharactersArray(array $strings, $nonFilter = null) {
         return array_map(function ($string) use ($nonFilter) {
@@ -84,9 +85,10 @@ class Query implements QueryInterface
     /**
      * Implodes the $values in a string regularly formatted.
      *
-     * @param   array $values
+     * @param array $values
+     * @param null  $nonFilter
      *
-     * @return  string
+     * @return string
      */
     protected static function implodeRegular(array $values, $nonFilter = null) {
         $values         = self::stripNonSQLCharactersArray($values, $nonFilter);

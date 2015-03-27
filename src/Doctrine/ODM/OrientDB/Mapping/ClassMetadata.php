@@ -251,6 +251,20 @@ class ClassMetadata implements DoctrineMetadata
     public $reflFields;
 
     /**
+     * READ-ONLY: The registered lifecycle callbacks for entities of this class.
+     *
+     * @var array
+     */
+    public $lifecycleCallbacks = [];
+
+    /**
+     * READ-ONLY: The registered entity listeners.
+     *
+     * @var array
+     */
+    public $documentListeners = [];
+
+    /**
      * READ-ONLY
      *
      * @var array
@@ -265,16 +279,6 @@ class ClassMetadata implements DoctrineMetadata
     public $associationMappings = [];
 
     /**
-     * @var callable
-     */
-    protected $setter;
-
-    /**
-     * @var callable
-     */
-    protected $getter;
-
-    /**
      * @var Instantiator
      */
     private $instantiator;
@@ -286,13 +290,6 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function __construct($className) {
         $this->name   = $className;
-        $this->setter = function ($document, $property, $value) {
-            $document->$property = $value;
-        };
-        $this->getter = function ($document, $property) {
-            return $document->$property;
-        };
-
         $this->instantiator = new Instantiator();
     }
 
@@ -591,6 +588,24 @@ class ClassMetadata implements DoctrineMetadata
         }
 
         return $this->associationMappings[$assocName]['targetDoc'];
+    }
+
+    /**
+     * @param  string|null $className
+     *
+     * @return string|null null if the input value is null
+     */
+    public function fullyQualifiedClassName($className) {
+        if (empty($className) || strpos($className, '\\') !== false) {
+            return $className;
+        }
+
+        $namespace = $this->reflClass->getNamespaceName();
+        if (!empty($namespace)) {
+            return $namespace . '\\' . $className;
+        }
+
+        return $className;
     }
 
     /**
@@ -978,6 +993,37 @@ class ClassMetadata implements DoctrineMetadata
     }
 
     /**
+     * Adds a document listener for documents of this class.
+     *
+     * @param string $eventName The document lifecycle event.
+     * @param string $class     The listener class.
+     * @param string $method    The listener callback method.
+     *
+     * @throws MappingException
+     */
+    public function addDocumentListener($eventName, $class, $method) {
+        $class    = $this->fullyQualifiedClassName($class);
+        $listener = [
+            'class'  => $class,
+            'method' => $method
+        ];
+
+        if (!class_exists($class)) {
+            throw MappingException::documentListenerClassNotFound($class, $this->name);
+        }
+
+        if (!method_exists($class, $method)) {
+            throw MappingException::documentListenerMethodNotFound($class, $method, $this->name);
+        }
+
+        if (isset($this->documentListeners[$eventName]) && in_array($listener, $this->documentListeners[$eventName])) {
+            throw MappingException::duplicateDocumentListener($class, $method, $this->name);
+        }
+
+        $this->documentListeners[$eventName][] = $listener;
+    }
+
+    /**
      * Sets the parent class names.
      * Assumes that the class names in the passed array are in the order:
      * directParent -> directParentParent -> directParentParentParent ... -> root.
@@ -991,6 +1037,64 @@ class ClassMetadata implements DoctrineMetadata
         if (count($classNames) > 0) {
             $this->rootDocumentName = array_pop($classNames);
         }
+    }
+
+    /**
+     * Creates a string representation of this instance.
+     *
+     * @return string The string representation of this instance.
+     *
+     * @todo Construct meaningful string representation.
+     */
+    public function __toString()
+    {
+        return __CLASS__ . '@' . spl_object_hash($this);
+    }
+
+    /**
+     * Determines which fields get serialized.
+     *
+     * It is only serialized what is necessary for best unserialization performance.
+     * That means any metadata properties that are not set or empty or simply have
+     * their default value are NOT serialized.
+     *
+     * Parts that are also NOT serialized because they can not be properly unserialized:
+     *      - reflClass (ReflectionClass)
+     *      - reflFields (ReflectionProperty array)
+     *
+     * @return array The names of all the fields that should be serialized.
+     */
+    public function __sleep()
+    {
+        // This metadata is always serialized/cached.
+        $serialized = [
+            'fieldMappings',
+            'associationMappings',
+            'attributes',
+            'identifier',
+            'version',
+            'name',
+            'rootDocumentName',
+        ];
+
+        // The rest of the metadata is only serialized if necessary.
+        if ($this->changeTrackingPolicy !== self::CHANGETRACKING_DEFERRED_IMPLICIT) {
+            $serialized[] = 'changeTrackingPolicy';
+        }
+
+        if ($this->customRepositoryClassName) {
+            $serialized[] = 'customRepositoryClassName';
+        }
+
+        if ($this->lifecycleCallbacks) {
+            $serialized[] = 'lifecycleCallbacks';
+        }
+
+        if ($this->documentListeners) {
+            $serialized[] = 'documentListeners';
+        }
+
+        return $serialized;
     }
 
     /**
@@ -1029,9 +1133,8 @@ class ClassMetadata implements DoctrineMetadata
             $mapping['name'] = $fieldName;
         }
 
-        $namespace = $this->reflClass->getNamespaceName();
-        if (isset($mapping['targetDoc']) && strpos($mapping['targetDoc'], '\\') === false && strlen($namespace)) {
-            $mapping['targetDoc'] = $namespace . '\\' . $mapping['targetDoc'];
+        if (isset($mapping['targetDoc'])) {
+            $mapping['targetDoc'] = $this->fullyQualifiedClassName($mapping['targetDoc']);
         }
 
         // If targetDoc is unqualified, assume it is in the same namespace as

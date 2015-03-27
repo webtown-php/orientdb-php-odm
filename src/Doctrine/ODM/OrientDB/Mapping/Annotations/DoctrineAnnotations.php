@@ -6,6 +6,7 @@ require_once __DIR__ . '/Document.php';
 require_once __DIR__ . '/EmbeddedDocument.php';
 require_once __DIR__ . '/MappedSuperclass.php';
 require_once __DIR__ . '/Vertex.php';
+require_once __DIR__ . '/DocumentListeners.php';
 
 require_once __DIR__ . '/ChangeTrackingPolicy.php';
 
@@ -31,3 +32,12 @@ require_once __DIR__ . '/RelatedToVia.php';
 require_once __DIR__ . '/Relationship.php';
 require_once __DIR__ . '/In.php';
 require_once __DIR__ . '/Out.php';
+
+require_once __DIR__ . '/PostLoad.php';
+require_once __DIR__ . '/PostPersist.php';
+require_once __DIR__ . '/PostRemove.php';
+require_once __DIR__ . '/PostUpdate.php';
+require_once __DIR__ . '/PreFlush.php';
+require_once __DIR__ . '/PrePersist.php';
+require_once __DIR__ . '/PreRemove.php';
+require_once __DIR__ . '/PreUpdate.php';

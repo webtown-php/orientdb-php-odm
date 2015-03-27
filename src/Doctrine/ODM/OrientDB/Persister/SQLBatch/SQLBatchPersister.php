@@ -31,11 +31,6 @@ class SQLBatchPersister implements PersisterInterface
     private $references;
 
     /**
-     * @var QueryWriter
-     */
-    private $writer;
-
-    /**
      * @var int
      */
     private $varId = 0;
@@ -49,54 +44,66 @@ class SQLBatchPersister implements PersisterInterface
      * @inheritdoc
      */
     public function process(UnitOfWork $uow) {
-        $this->executeInserts($uow);
-        $this->executeUpdateDeletes($uow);
+        $co  = CommitOrderCalculator::getCommitOrderFromMetadata($this->metadataFactory);
+        $set = self::prepareCommitOrderArray($co);
+
+        $this->executeInserts($uow, $set);
+        $this->executeUpdateDeletes($uow, $set);
     }
 
-    private function executeInserts(UnitOfWork $uow) {
+    private function executeInserts(UnitOfWork $uow, array &$set) {
         $this->references = [];
-        $this->writer     = $queryWriter = new QueryWriter();
+        $queryWriter      = new QueryWriter();
 
-        $co      = CommitOrderCalculator::getCommitOrderFromMetadata($this->metadataFactory);
-        $ordered = self::orderByType($uow->getDocumentInsertions(), $co);
+        $ordered = self::orderByType($uow->getDocumentInsertions(), $set);
+        if (empty($ordered)) {
+            return;
+        }
 
         $docs = [];
-        foreach ($ordered as $oid => $doc) {
+        foreach ($ordered as $class => $inserts) {
             /** @var ClassMetadata $md */
-            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
+            $md = $this->metadataFactory->getMetadataFor($class);
             if ($md->isEmbeddedDocument()) {
                 continue;
             }
 
-            $id   = $this->createDocVarReference($doc);
-            $data = $this->prepareData($md, $uow, $doc);
-
             switch (true) {
                 case $md->isVertex():
-                    $queryWriter->addCreateVertexQuery($id->toValue(), $md->getOrientClass(), $data);
-                    break;
+                    foreach ($inserts as $oid => $doc) {
+                        $id   = $this->createDocVarReference($doc);
+                        $data = $this->prepareData($md, $uow, $doc);
+                        $queryWriter->addCreateVertexQuery($id->toValue(), $md->getOrientClass(), $data);
+                        $docs[] = [$id, $doc, $md];
+                    }
+                    continue;
 
                 case $md->isEdge():
-                    // no way to fetch the returned RID of the created edge
-                    if (!property_exists($data, 'in')) {
+                    foreach ($inserts as $oid => $doc) {
+                        $id   = $this->createDocVarReference($doc);
+                        $data = $this->prepareData($md, $uow, $doc);
+                        if (!property_exists($data, 'in')) {
+                        }
 
+                        if (!property_exists($data, 'out')) {
+                        }
+                        $in  = $data->in;
+                        $out = $data->out;
+                        unset($data->in, $data->out);
+                        $queryWriter->addCreateEdgeQuery($id->toValue(), $md->getOrientClass(), $out, $in, $data);
+                        $docs[] = [$id, $doc, $md];
                     }
-
-                    if (!property_exists($data, 'out')) {
-
-                    }
-                    $in  = $data->in;
-                    $out = $data->out;
-                    unset($data->in, $data->out);
-                    $queryWriter->addCreateEdgeQuery($id->toValue(), $md->getOrientClass(), $out, $in, $data);
-                    break;
+                    continue;
 
                 default:
-                    $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
-                    break;
-
+                    foreach ($inserts as $oid => $doc) {
+                        $id   = $this->createDocVarReference($doc);
+                        $data = $this->prepareData($md, $uow, $doc);
+                        $queryWriter->addInsertQuery($id->toValue(), $md->getOrientClass(), $data);
+                        $docs[] = [$id, $doc, $md];
+                    }
+                    continue;
             }
-            $docs[] = [$id, $doc, $md];
         }
 
         $queries = $queryWriter->getQueries();
@@ -107,7 +114,7 @@ class SQLBatchPersister implements PersisterInterface
 
         $parts = [];
         foreach ($docs as $k => list ($v)) {
-            $parts [] = sprintf('d%s : %s', $k, $v);
+            $parts [] = sprintf('n%s : %s', $k, $v);
         }
         $queries [] = sprintf('return { %s }', implode(', ', $parts));
         $rids       = $this->executeQueries($queries);
@@ -119,6 +126,7 @@ class SQLBatchPersister implements PersisterInterface
                 $md->reflFields[$md->identifier]->setValue($doc, $rid);
                 $data = $uow->getDocumentActualData($doc);
                 $uow->registerManaged($doc, $rid, $data);
+                $uow->raisePostPersist($md, $doc);
             }
         }
 
@@ -130,44 +138,13 @@ class SQLBatchPersister implements PersisterInterface
         $this->references = [];
     }
 
-    private function executeUpdateDeletes(UnitOfWork $uow) {
+    private function executeUpdateDeletes(UnitOfWork $uow, array &$set) {
         $queryWriter = new QueryWriter();
 
-        $docs = [];
-        foreach ($uow->getDocumentUpdates() as $oid => $doc) {
-            /** @var ClassMetadata $md */
-            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument()) {
-                continue;
-            }
-
-            $id      = $this->createDocVarReference($doc);
-            $rid     = $uow->getDocumentRid($doc);
-            $data    = $this->prepareData($md, $uow, $doc);
-            $version = null;
-            if ($md->version) {
-                $version = $md->reflFields[$md->version]->getValue($doc);
-            }
-            $queryWriter->addUpdateQuery($rid, $data, $id->toValue(), $version);
-            $docs[] = [$id, $doc, $md];
-        }
-
+        $updatedDocs = $this->processDocumentUpdates($queryWriter, $uow, $set);
         $this->processCollectionDeletions($queryWriter, $uow);
         $this->processCollectionUpdates($queryWriter, $uow);
-
-        foreach ($uow->getDocumentDeletions() as $oid => $doc) {
-            /** @var ClassMetadata $md */
-            $md = $this->metadataFactory->getMetadataFor(get_class($doc));
-            if ($md->isEmbeddedDocument()) {
-                continue;
-            }
-
-            if ($md->isVertex()) {
-                $queryWriter->addDeleteVertexQuery($uow->getDocumentRid($doc));
-            } else {
-                $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
-            }
-        }
+        $removedDocs = $this->processDocumentDeletions($queryWriter, $uow, $set);
 
         $queries = $queryWriter->getQueries();
         if (!$queries) {
@@ -175,30 +152,106 @@ class SQLBatchPersister implements PersisterInterface
             return;
         }
 
-        if (!empty($docs)) {
+        if (!empty($updatedDocs)) {
             $parts = [];
-            foreach ($docs as $k => list ($v)) {
-                $parts [] = sprintf('d%s : %s', $k, $v);
+            foreach ($updatedDocs as $k => list ($v)) {
+                $parts [] = sprintf('n%s : %s', $k, $v);
             }
             $queries [] = sprintf('return { %s }', implode(', ', $parts));
         }
 
-        $updates = $this->executeQueries($queries);
-        foreach ($updates as $k => $val) {
-            if (isset($docs[$k]) && $val instanceof \stdClass) {
+        $updated = $this->executeQueries($queries);
+        foreach ($updated as $k => $val) {
+            if (isset($updatedDocs[$k]) && $val instanceof \stdClass) {
                 /** @var ClassMetadata $md */
-                list ($_, $doc, $md) = $docs[$k];
-                unset($docs[$k]);
+                list ($_, $doc, $md) = $updatedDocs[$k];
+                unset($updatedDocs[$k]);
                 $md->reflFields[$md->version]->setValue($doc, $val->value);
+                $uow->raisePostUpdate($md, $doc);
             }
         }
 
-        if (!empty($docs)) {
-            // we didn't receive info for all inserted documents
+        if (!empty($updatedDocs)) {
+            // we didn't receive info for all updated documents
             throw LockException::lockFailed(array_map(function ($arg) {
                 return $arg[1];
-            }, $docs));
+            }, $updatedDocs));
         }
+
+        /**
+         * @var object        $doc
+         * @var ClassMetadata $md
+         */
+        foreach ($removedDocs as list($doc, $md)) {
+            $uow->raisePostRemove($md, $doc);
+        }
+    }
+
+    /**
+     * @param QueryWriter $queryWriter
+     * @param UnitOfWork  $uow
+     * @param array       $set
+     *
+     * @return array
+     */
+    private function &processDocumentUpdates(QueryWriter $queryWriter, UnitOfWork $uow, array &$set) {
+        $docs    = [];
+        $ordered = self::orderByType($uow->getDocumentUpdates(), $set);
+        if (empty($ordered)) {
+            return $docs;
+        }
+
+        foreach ($ordered as $class => $updates) {
+            /** @var ClassMetadata $md */
+            $md = $this->metadataFactory->getMetadataFor($class);
+            if ($md->isEmbeddedDocument()) {
+                continue;
+            }
+
+            foreach ($updates as $oid => $doc) {
+                $id      = $this->createDocVarReference($doc);
+                $rid     = $uow->getDocumentRid($doc);
+                $data    = $this->prepareData($md, $uow, $doc);
+                $version = null;
+                if ($md->version) {
+                    $version = $md->reflFields[$md->version]->getValue($doc);
+                }
+                $queryWriter->addUpdateQuery($rid, $data, $id->toValue(), $version);
+                $docs[] = [$id, $doc, $md];
+            }
+        }
+
+        return $docs;
+    }
+
+    private function &processDocumentDeletions(QueryWriter $queryWriter, UnitOfWork $uow, array &$set) {
+        $ordered = self::orderByType($uow->getDocumentDeletions(), $set);
+        if (empty($ordered)) {
+            return self::$EMPTY;
+        }
+
+        $docs = [];
+        foreach ($ordered as $class => $deletes) {
+            /** @var ClassMetadata $md */
+            $md = $this->metadataFactory->getMetadataFor($class);
+            if ($md->isEmbeddedDocument()) {
+                continue;
+            }
+
+            if ($md->isVertex()) {
+                foreach ($deletes as $doc) {
+                    $queryWriter->addDeleteVertexQuery($uow->getDocumentRid($doc));
+                    $docs[] = [$doc, $md];
+                }
+            } else {
+                foreach ($deletes as $doc) {
+                    $queryWriter->addDeleteQuery($uow->getDocumentRid($doc));
+                    $docs[] = [$doc, $md];
+                }
+            }
+        }
+
+        return $docs;
     }
 
     private function processCollectionDeletions(QueryWriter $queryWriter, UnitOfWork $uow) {
@@ -318,8 +371,8 @@ class SQLBatchPersister implements PersisterInterface
         }
 
         $res = [];
-        foreach (get_object_vars($results[0]) as $k => $v) {
-            if ($k[0] === 'd') {
+        foreach ($results[0] as $k => $v) {
+            if ($k[0] === 'n') {
                 $res[substr($k, 1)] = $v;
             }
         }
@@ -327,30 +380,36 @@ class SQLBatchPersister implements PersisterInterface
         return $res;
     }
 
+    public static function &prepareCommitOrderArray(array $co) {
+        $set = [];
+        foreach ($co as $class) {
+            $set[$class] = [];
+        }
+
+        return $set;
+    }
+
+    private static $EMPTY = [];
+
     /**
      * @param array $docs
      * @param array $co
      *
      * @return array
      */
-    private static function orderByType(array $docs, array $co) {
-        if (count($docs) < 2) {
-            return $docs;
+    public static function &orderByType(array $docs, array $co) {
+        if (empty($docs)) {
+            return self::$EMPTY;
         }
 
-        $groups = [];
         foreach ($docs as $oid => $doc) {
-            $class              = ClassUtils::getClass($doc);
-            $pos                = array_search($class, $co);
-            $groups[$pos][$oid] = $doc;
+            $class            = ClassUtils::getClass($doc);
+            $co[$class][$oid] = $doc;
         }
 
-        ksort($groups);
-
-        $res = [];
-        foreach ($groups as $group) {
-            $res = array_merge($res, $group);
-        }
+        $res = array_filter($co, function (&$v) {
+            return !empty($v);
+        });
 
         return $res;
     }
@@ -365,7 +424,7 @@ class SQLBatchPersister implements PersisterInterface
      * @return \stdClass $insertData
      * @throws OrientDBException
      */
-    public function prepareData(ClassMetadata $class, UnitOfWork $uow, $document, $isInsert = false) {
+    public function prepareData(ClassMetadata $class, UnitOfWork $uow, $document) {
         $insertData = new \stdClass();
 
         if ($class->isEmbeddedDocument()) {

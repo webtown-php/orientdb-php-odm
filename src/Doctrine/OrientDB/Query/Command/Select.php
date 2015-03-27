@@ -19,7 +19,6 @@
 
 namespace Doctrine\OrientDB\Query\Command;
 
-use Doctrine\OrientDB\Exception\Query\Command as CommandException;
 use Doctrine\OrientDB\Query\Command;
 
 class Select extends Command implements SelectInterface

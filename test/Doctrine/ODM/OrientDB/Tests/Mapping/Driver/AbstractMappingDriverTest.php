@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Mapping\Driver;
 
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\ODM\OrientDB\Events;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use PHPUnit\TestCase;
 
@@ -76,6 +77,35 @@ abstract class AbstractMappingDriverTest extends TestCase
         return $class;
     }
 
+    #region document listeners
+
+    /**
+     * @depends can_load_mapping_for_class
+     * @test
+     *
+     * @param ClassMetadata $md
+     */
+    public function document_has_listeners(ClassMetadata $md) {
+        $this->assertArrayHasKey(Events::prePersist, $md->documentListeners);
+        $this->assertArrayHasKey(Events::postPersist, $md->documentListeners);
+        $this->assertArrayHasKey(Events::preUpdate, $md->documentListeners);
+        $this->assertArrayHasKey(Events::postUpdate, $md->documentListeners);
+        $this->assertArrayHasKey(Events::preRemove, $md->documentListeners);
+        $this->assertArrayHasKey(Events::postRemove, $md->documentListeners);
+        $this->assertArrayHasKey(Events::postLoad, $md->documentListeners);
+        $this->assertArrayHasKey(Events::preFlush, $md->documentListeners);
+
+        $this->assertCount(2, $md->documentListeners[Events::prePersist]);
+        $this->assertCount(2, $md->documentListeners[Events::postPersist]);
+        $this->assertCount(2, $md->documentListeners[Events::preUpdate]);
+        $this->assertCount(2, $md->documentListeners[Events::postUpdate]);
+        $this->assertCount(2, $md->documentListeners[Events::preRemove]);
+        $this->assertCount(2, $md->documentListeners[Events::postRemove]);
+        $this->assertCount(2, $md->documentListeners[Events::postLoad]);
+        $this->assertCount(2, $md->documentListeners[Events::preFlush]);
+    }
+
+    #endregion
 
     /**
      * @depends can_load_mapping_for_class
@@ -403,6 +433,7 @@ abstract class AbstractMappingDriverTest extends TestCase
 }
 
 /**
+ * @DocumentListeners({"ListenerOne", "ListenerTwo"})
  * @ChangeTrackingPolicy("NOTIFY")
  * @Document(oclass="OUser")
  */
@@ -486,6 +517,84 @@ class User
 
     public static function loadMetadata(ClassMetadata $metadata) {
 
+    }
+}
+
+class ListenerOne
+{
+    public function postLoad() {
+    }
+
+    public function postPersist() {
+    }
+
+    public function postRemove() {
+    }
+
+    public function postUpdate() {
+    }
+
+    public function preFlush() {
+    }
+
+    public function prePersist() {
+    }
+
+    public function preRemove() {
+    }
+
+    public function preUpdate() {
+    }
+}
+
+class ListenerTwo
+{
+    /**
+     * @PostLoad
+     */
+    public function afterLoad() {
+    }
+
+    /**
+     * @PostPersist
+     */
+    public function afterPersist() {
+    }
+
+    /**
+     * @PostRemove
+     */
+    public function afterRemove() {
+    }
+
+    /**
+     * @PostUpdate
+     */
+    public function afterUpdate() {
+    }
+
+    /**
+     * @PreFlush
+     */
+    public function beforeFlush() {
+    }
+
+    /**
+     * @PrePersist
+     */
+    public function beforePersist() {
+    }
+
+    /**
+     * @PreRemove
+     */
+    public function beforeRemove() {
+    }
+
+    /**
+     * @PreUpdate
+     */
+    public function beforeUpdate() {
     }
 }
 

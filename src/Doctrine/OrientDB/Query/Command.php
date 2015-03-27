@@ -32,8 +32,8 @@ abstract class Command implements CommandInterface
     protected $ridValidator;
     protected $escapeValidator;
     protected $formatter;
-    protected $formatters = array();
-    protected $tokens = array();
+    protected $formatters = [];
+    protected $tokens = [];
 
     /**
      * These are the valid return types for commands
@@ -77,6 +77,8 @@ abstract class Command implements CommandInterface
      *
      * @param array   $target
      * @param boolean $append
+     *
+     * @return $this|Command
      */
     public function from(array $target, $append = true) {
         $this->setTokenvalues('Target', $target, $append);
@@ -100,11 +102,11 @@ abstract class Command implements CommandInterface
      * @return array
      */
     public function getTokens() {
-        preg_match_all("/(\:\w+)/", $this->getSchema(), $matches);
-        $tokens = array();
+        preg_match_all("/(\\:\\w+)/", $this->getSchema(), $matches);
+        $tokens = [];
 
         foreach ($matches[0] as $match) {
-            $tokens[$match] = array();
+            $tokens[$match] = [];
         }
 
         return $tokens;
@@ -161,13 +163,15 @@ abstract class Command implements CommandInterface
      * @param mixed   $value
      * @param boolean $append
      * @param string  $clause
+     *
+     * @return $this
      */
     public function where($condition, $value = null, $append = false, $clause = "WHERE") {
         if (is_array($value)) {
             $condition = $this->formatWhereConditionWithMultipleTokens($condition, $value, $this->escapeValidator);
         } else {
             if ($value === null) {
-                $condition = preg_replace("/=\s*\?/", "IS ?", $condition, 1);
+                $condition = preg_replace("/=\\s*\\?/", "IS ?", $condition, 1);
                 $value     = 'NULL';
             } else if (is_bool($value)) {
                 $value = $value ? 'TRUE' : 'FALSE';
@@ -185,16 +189,13 @@ abstract class Command implements CommandInterface
             $clause = 'WHERE';
         }
 
-        $this->setTokenValues('Where', array("{$clause} $condition"), $append, false, false);
+        $this->setTokenValues('Where', ["{$clause} $condition"], $append, false);
 
         return $this;
     }
 
     /**
-     * Returns whether this query, when executed, should have the collection hydrated.
-     * The default is true
-     *
-     * @return boolean
+     * @inheritdoc
      */
     public function canHydrate() {
         return true;
@@ -203,7 +204,9 @@ abstract class Command implements CommandInterface
     /**
      * Sets the Returns token
      *
-     * @param string $return
+     * @param string $returns
+     *
+     * @throws LogicException
      */
     public function returns($returns) {
         //check if the Return clause is even supported
@@ -226,7 +229,7 @@ abstract class Command implements CommandInterface
      * @return array()
      */
     public function getValidReturnTypes() {
-        return array();
+        return [];
     }
 
     /**
@@ -296,7 +299,7 @@ abstract class Command implements CommandInterface
     protected function clearToken($token) {
         $token = $this->tokenize($token);
         $this->checkToken($token);
-        $this->tokens[$token] = array();
+        $this->tokens[$token] = [];
     }
 
     /**
@@ -312,17 +315,17 @@ abstract class Command implements CommandInterface
     /**
      * Returns the formatters for this query's tokens.
      *
-     * @return Array
+     * @return array
      */
     protected function getTokenFormatters() {
-        return array(
-            'Target'   => "Doctrine\OrientDB\Query\Formatter\Query\Target",
-            'Where'    => "Doctrine\OrientDB\Query\Formatter\Query\Where",
-            'Class'    => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Property' => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Type'     => "Doctrine\OrientDB\Query\Formatter\Query\Regular",
-            'Rid'      => "Doctrine\OrientDB\Query\Formatter\Query\Rid"
-        );
+        return [
+            'Target'   => \Doctrine\OrientDB\Query\Formatter\Query\Target::class,
+            'Where'    => \Doctrine\OrientDB\Query\Formatter\Query\Where::class,
+            'Class'    => \Doctrine\OrientDB\Query\Formatter\Query\Regular::class,
+            'Property' => \Doctrine\OrientDB\Query\Formatter\Query\Regular::class,
+            'Type'     => \Doctrine\OrientDB\Query\Formatter\Query\Regular::class,
+            'Rid'      => \Doctrine\OrientDB\Query\Formatter\Query\Rid::class
+        ];
     }
 
     /**
@@ -330,7 +333,7 @@ abstract class Command implements CommandInterface
      *
      * @param  string $token
      *
-     * @return Array
+     * @return array
      * @throws string
      */
     protected function getTokenFormatter($token) {
@@ -388,7 +391,7 @@ abstract class Command implements CommandInterface
      */
     protected function formatWhereConditionWithMultipleTokens(
         $condition,
-        Array $values,
+        array $values,
         EscapeValidator $validator
     ) {
         if (count($values) !== substr_count($condition, '?')) {
@@ -396,7 +399,7 @@ abstract class Command implements CommandInterface
         }
 
         foreach ($values as $replacement) {
-            $condition = preg_replace("/\?/", '"' . $validator->check($replacement, 1) . '"', $condition, 1);
+            $condition = preg_replace("/\\?/", '"' . $validator->check($replacement, 1) . '"', $condition, 1);
         }
 
         return $condition;
@@ -437,7 +440,6 @@ abstract class Command implements CommandInterface
      * @param  array   $tokenValues
      * @param  boolean $append
      * @param  boolean $first
-     * @param  boolean $filter
      *
      * @return true
      */

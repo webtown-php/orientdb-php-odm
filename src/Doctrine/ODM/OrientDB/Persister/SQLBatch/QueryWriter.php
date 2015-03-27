@@ -102,6 +102,7 @@ class QueryWriter
     /**
      * @param string    $rid
      * @param \stdClass $fields
+     * @param null      $var
      * @param int|null  $version
      * @param string    $lock
      */

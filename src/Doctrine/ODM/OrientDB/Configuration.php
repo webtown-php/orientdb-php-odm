@@ -15,6 +15,8 @@ use Doctrine\ODM\OrientDB\Cache\NullCache;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\Driver\AnnotationDriver;
+use Doctrine\ODM\OrientDB\Mapping\ListenerResolver;
+use Doctrine\ODM\OrientDB\Mapping\ListenerResolverInterface;
 
 /**
  * Class Configuration
@@ -35,6 +37,7 @@ class Configuration
             'proxy_autogenerate_policy' => AbstractProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS,
             'hydratorFactoryImpl'       => null,
             'metadataCacheImpl'         => new NullCache(),
+            'listener_resolver'         => new ListenerResolver(),
         ];
 
         $this->_attributes = array_merge($defaults, $options);
@@ -64,6 +67,13 @@ class Configuration
         }
 
         return trim($this->_attributes['documentNamespaces'][$documentNamespaceAlias], '\\');
+    }
+
+    /**
+     * @return ListenerResolverInterface
+     */
+    public function getListenerResolver() {
+        return $this->_attributes['listener_resolver'];
     }
 
     /**
