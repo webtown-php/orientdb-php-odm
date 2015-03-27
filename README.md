@@ -1,14 +1,15 @@
 # OrientDB PHP Library
 
 [![Build Status](https://secure.travis-ci.org/stuartcarnie/orientdb-odm.png?branch=master)](http://secure.travis-ci.org/stuartcarnie/orientdb-odm)
-[![Total Downloads](https://poser.pugx.org/stuartcarnie/orientdb-odm/downloads.png)](https://packagist.org/packages/stuartcarnie/orientdb-odm)
-[![Latest Stable Version](https://poser.pugx.org/stuartcarnie/orientdb-odm/v/stable.png)](https://packagist.org/packages/stuartcarnie/orientdb-odm)
+[![Total Downloads](https://poser.pugx.org/orienttechnologies/orientdb-php-odm/downloads.png)](https://packagist.org/packages/orienttechnologies/orientdb-php-odm)
+[![Latest Stable Version](https://poser.pugx.org/orienttechnologies/orientdb-php-odm/v/stable.png)](https://packagist.org/packages/orienttechnologies/orientdb-php-odm)
 
-## What's OrientDB?
+## What is orientdb-php-odm?
 
-A set of tools to use and manage any OrientDB instance from PHP.
+orientdb-php-odm is an object-document mapper for PHP, similar to object-relational 
+mappers for relational databases.
 
-Orient includes:
+orientdb-php-odm includes:
 
 * the HTTP protocol binding
 * the query builder
@@ -43,12 +44,12 @@ These are the requirements in order to use the library:
 * PHP >= 5.5.x
 * OrientDB >= 2.x
 
-In order to launch the test suite PHPUnit 3.6 is required.
+In order to launch the test suite PHPUnit 4.x is required.
 
 
 ## Tracker & software lifecycle
 
-See: https://github.com/stuartcarnie/orientdb-odm/issues
+See: https://github.com/orienttechnologies/orientdb-php-odm/issues
 
 
 ## Further documentation

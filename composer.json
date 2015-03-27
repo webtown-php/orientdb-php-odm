@@ -1,10 +1,15 @@
 {
-    "name": "doctrine/orientdb-odm",
+    "name": "orienttechnologies/orientdb-php-odm",
     "type": "library",
-    "description": "A set of PHP libraries in order to use OrientDB from PHP.",
-    "keywords": ["orientdb"],
+    "description": "An object-document mapper for PHP and OrientDB",
+    "keywords": ["orientdb", "ODM"],
     "license": "MIT",
     "authors": [
+        {
+            "name": "Stuart Carnie",
+            "email": "stuart.carnie@gmail.com",
+            "homepage": "http://stuartcarnie.com"
+        },
         {
             "name": "Alessandro Nadalin",
             "email": "alessandro.nadalin@gmail.com",
@@ -19,11 +24,6 @@
             "name": "Daniele Alessandri",
             "email": "suppakilla@gmail.com",
             "homepage": "http://clorophilla.net"
-        },
-        {
-            "name": "Stuart Carnie",
-            "email": "stuart.carnie@gmail.com",
-            "homepage": "http://stuartcarnie.com"
         }
     ],
     "repositories": [
