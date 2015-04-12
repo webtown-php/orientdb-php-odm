@@ -58,16 +58,14 @@ class QueryWriter
             case $value instanceof Value:
                 return $value->toValue();
 
-            case is_string($value):
-                return "'$value'";
+            case is_string($value): // need to verify if json_encode is good enough
+            case is_object($value):
+            case is_array($value):
+                // escaped string, embedded document, list, map or set
+                return json_encode($value);
 
             case is_null($value):
                 return 'null';
-
-            case is_object($value):
-            case is_array($value):
-                // embedded document, list, map or set
-                return json_encode($value);
 
             default:
                 return $value;

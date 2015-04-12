@@ -36,7 +36,7 @@ class Country
     public $version;
 
     /**
-     * @Property(name="name", type="string")
+     * @Property(name="name", type="string", nullable=true)
      */
     public $name;
 

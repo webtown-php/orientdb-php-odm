@@ -54,7 +54,7 @@ class PersistenceTest extends TestCase
      */
     public function update_single_document($rid) {
         $d       = $this->manager->findByRid($rid);
-        $d->name = 'SingleUpdateTest';
+        $d->name = "'updated'";
 
         unset($d);
         $this->manager->flush();
@@ -62,7 +62,7 @@ class PersistenceTest extends TestCase
 
         /** @var Country $d */
         $d = $this->manager->findByRid($rid);
-        $this->assertEquals('SingleUpdateTest', $d->name);
+        $this->assertEquals("'updated'", $d->name);
 
         return $rid;
     }
@@ -98,6 +98,37 @@ class PersistenceTest extends TestCase
         $this->manager->clear();
 
         $this->assertNull($this->manager->findByRid($rid));
+    }
+
+    /**
+     * @depends      delete_single_document
+     * @test
+     * @dataProvider string_data
+     */
+    public function persist_string_value($value) {
+        $d       = new Country();
+        $d->name = $value;
+
+        $this->manager->persist($d);
+        $this->manager->flush();
+        $this->manager->clear();
+        $this->assertNotNull($d->getRid());
+
+        /** @var Country $d */
+        $d = $this->manager->findByRid($d->getRid());
+        $this->assertEquals($value, $d->name);
+        $this->manager->remove($d);
+        $this->manager->flush();
+    }
+
+    public function string_data() {
+        return [
+            'basic string'       => ['basic string'],
+            'with double quote'  => ['"double quotes"'],
+            'with single quote'  => ["'single quotes'"],
+            'with newline quote' => ["one\ntwo"],
+            'null'               => [null],
+        ];
     }
 
     #endregion
