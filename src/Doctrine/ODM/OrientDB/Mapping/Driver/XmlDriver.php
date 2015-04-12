@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Mapping\Driver;
 
 use Doctrine\Common\Persistence\Mapping\Driver\FileDriver;
+use Doctrine\ODM\OrientDB\Mapping\Builder\DocumentListenerBuilder;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 use SimpleXMLElement;
@@ -143,6 +144,27 @@ class XmlDriver extends FileDriver
         if (isset($xmlRoot->{'related-to-via'})) {
             foreach ($xmlRoot->{'related-to-via'} as $node) {
                 $this->addRelatedToMapping($metadata, $node, false);
+            }
+        }
+
+        // Evaluate entity listener
+        if (isset($xmlRoot->{'document-listeners'})) {
+            /** @var SimpleXMLElement $listenerElement */
+            foreach ($xmlRoot->{'document-listeners'}->{'document-listener'} as $listenerElement) {
+                $className = (string) $listenerElement['class'];
+                // Evaluate the listener using naming convention.
+                if($listenerElement->count() === 0) {
+                    DocumentListenerBuilder::bindDocumentListener($metadata, $className);
+
+                    continue;
+                }
+
+                foreach ($listenerElement as $callbackElement) {
+                    $eventName   = (string) $callbackElement['type'];
+                    $methodName  = (string) $callbackElement['method'];
+
+                    $metadata->addDocumentListener($eventName, $className, $methodName);
+                }
             }
         }
     }

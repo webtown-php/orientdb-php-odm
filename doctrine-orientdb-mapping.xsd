@@ -34,6 +34,7 @@
 
     <xs:complexType name="document">
         <xs:sequence>
+            <xs:element name="document-listeners" type="odm:document-listeners" minOccurs="0" maxOccurs="1" />
             <xs:element name="rid" type="odm:meta-type" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Specifies the record ID property for this document</xs:documentation>
@@ -49,7 +50,7 @@
             <xs:element name="embed-many" type="odm:embedded-many" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="link-one" type="odm:link" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="link-many" type="odm:link-many" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>
+            <!--<xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>-->
             <xs:any minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string"/>
@@ -70,6 +71,7 @@
 
     <xs:complexType name="vertex">
         <xs:sequence>
+            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>
             <xs:element name="rid" type="odm:meta-type" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Specifies the record ID property for this document</xs:documentation>
@@ -89,7 +91,6 @@
             <xs:element name="link-one" type="odm:link" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="link-many" type="odm:link-many" minOccurs="0" maxOccurs="unbounded"/>
 
-            <xs:element name="lifecycle-callbacks" type="odm:lifecycle-callbacks" minOccurs="0" maxOccurs="1"/>
             <xs:any minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string"/>
@@ -247,6 +248,7 @@
             <xs:enumeration value="postRemove"/>
             <xs:enumeration value="preLoad"/>
             <xs:enumeration value="postLoad"/>
+            <xs:enumeration value="preFlush"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -261,4 +263,17 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="document-listener">
+        <xs:sequence>
+            <xs:element name="lifecycle-callback" type="odm:lifecycle-callback" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other"/>
+        </xs:sequence>
+        <xs:attribute name="class" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="document-listeners">
+        <xs:sequence>
+            <xs:element name="document-listener" type="odm:document-listener" minOccurs="1" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>

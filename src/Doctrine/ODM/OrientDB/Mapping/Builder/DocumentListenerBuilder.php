@@ -11,7 +11,7 @@ class DocumentListenerBuilder
     /**
      * @var array
      */
-    static private $events = array(
+    static private $events = [
         Events::preRemove   => true,
         Events::postRemove  => true,
         Events::prePersist  => true,
@@ -20,7 +20,7 @@ class DocumentListenerBuilder
         Events::postUpdate  => true,
         Events::postLoad    => true,
         Events::preFlush    => true
-    );
+    ];
 
     /**
      * Lookup the document class to find methods that match to event lifecycle names
