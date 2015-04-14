@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Types;
+namespace Doctrine\OrientDB\Types;
 
 use Doctrine\ODM\OrientDB\Mapping\MappingException;
 
@@ -33,23 +33,23 @@ abstract class Type
 
     /** The map of supported doctrine mapping types. */
     private static $typesMap = [
-        self::RID      => 'Doctrine\ODM\OrientDB\Types\RidType',
-        self::BOOLEAN  => 'Doctrine\ODM\OrientDB\Types\BooleanType',
+        self::RID      => 'Doctrine\OrientDB\Types\RidType',
+        self::BOOLEAN  => 'Doctrine\OrientDB\Types\BooleanType',
 
-        self::BYTE     => 'Doctrine\ODM\OrientDB\Types\ByteType',
-        self::SHORT    => 'Doctrine\ODM\OrientDB\Types\ShortType',
-        self::INTEGER  => 'Doctrine\ODM\OrientDB\Types\IntegerType',
-        self::LONG     => 'Doctrine\ODM\OrientDB\Types\LongType',
+        self::BYTE     => 'Doctrine\OrientDB\Types\ByteType',
+        self::SHORT    => 'Doctrine\OrientDB\Types\ShortType',
+        self::INTEGER  => 'Doctrine\OrientDB\Types\IntegerType',
+        self::LONG     => 'Doctrine\OrientDB\Types\LongType',
 
-        self::FLOAT    => 'Doctrine\ODM\OrientDB\Types\FloatType',
-        self::DOUBLE   => 'Doctrine\ODM\OrientDB\Types\DoubleType',
+        self::FLOAT    => 'Doctrine\OrientDB\Types\FloatType',
+        self::DOUBLE   => 'Doctrine\OrientDB\Types\DoubleType',
 
-        self::STRING   => 'Doctrine\ODM\OrientDB\Types\StringType',
+        self::STRING   => 'Doctrine\OrientDB\Types\StringType',
 
-        self::DATE     => 'Doctrine\ODM\OrientDB\Types\DateTimeType',
-        self::DATETIME => 'Doctrine\ODM\OrientDB\Types\DateTimeType',
+        self::DATE     => 'Doctrine\OrientDB\Types\DateTimeType',
+        self::DATETIME => 'Doctrine\OrientDB\Types\DateTimeType',
 
-        self::DECIMAL  => 'Doctrine\ODM\OrientDB\Types\DecimalType',
+        self::DECIMAL  => 'Doctrine\OrientDB\Types\DecimalType',
     ];
 
     /**
@@ -94,7 +94,7 @@ abstract class Type
      *
      * @param string $type The type name.
      *
-     * @return \Doctrine\ODM\OrientDB\Types\Type $type
+     * @return \Doctrine\OrientDB\Types\Type $type
      * @throws \InvalidArgumentException
      */
     final public static function getType($type) {

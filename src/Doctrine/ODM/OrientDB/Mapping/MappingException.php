@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Mapping;
 
 
-use Doctrine\ODM\OrientDB\Types\Rid;
+use Doctrine\OrientDB\Types\Rid;
 
 /**
  * Class MappingException

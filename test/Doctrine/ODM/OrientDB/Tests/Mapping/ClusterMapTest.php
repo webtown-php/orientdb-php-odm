@@ -4,8 +4,8 @@ namespace Doctrine\ODM\OrientDB\Tests\Mapping;
 
 
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
-use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Binding\BindingInterface;
+use Doctrine\OrientDB\Types\Rid;
 use PHPUnit\TestCase;
 
 class ClusterMapTest extends TestCase
@@ -48,20 +48,15 @@ class ClusterMapTest extends TestCase
     }
 
     protected function prepareGeneration($binding, $cache) {
-        $result          = $this->getMock('\Doctrine\OrientDB\Binding\BindingResultInterface');
         $data            = new \stdClass();
         $class           = new \stdClass();
         $class->clusters = array(1, 2);
         $class->name     = 'Test';
         $data->classes   = array($class);
 
-        $result->expects($this->once())
-               ->method('getData')
-               ->will($this->returnValue($data));
-
         $binding->expects($this->once())
                 ->method('getDatabase')
-                ->will($this->returnValue($result));
+                ->will($this->returnValue($data));
 
         $cache->expects($this->once())
               ->method('save')

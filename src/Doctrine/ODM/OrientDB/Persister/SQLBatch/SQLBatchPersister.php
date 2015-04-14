@@ -9,9 +9,9 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\OrientDBException;
 use Doctrine\ODM\OrientDB\Persister\CommitOrderCalculator;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
-use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\ODM\OrientDB\UnitOfWork;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
+use Doctrine\OrientDB\Types\Type;
 
 class SQLBatchPersister implements PersisterInterface
 {

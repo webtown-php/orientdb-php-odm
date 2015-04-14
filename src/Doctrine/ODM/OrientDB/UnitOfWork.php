@@ -18,8 +18,8 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
-use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\OrientDB\Query\CommandInterface;
+use Doctrine\OrientDB\Types\Type;
 
 class UnitOfWork implements PropertyChangedListener
 {

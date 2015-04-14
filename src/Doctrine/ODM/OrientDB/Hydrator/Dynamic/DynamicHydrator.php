@@ -8,8 +8,8 @@ use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorException;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\ODM\OrientDB\Types\Type;
 use Doctrine\ODM\OrientDB\UnitOfWork;
+use Doctrine\OrientDB\Types\Type;
 
 class DynamicHydrator implements HydratorInterface
 {

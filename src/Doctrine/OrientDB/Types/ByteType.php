@@ -1,18 +1,21 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Types;
+namespace Doctrine\OrientDB\Types;
 
-class LongType extends Type
+class ByteType extends Type
 {
+    const MIN = -128;
+    const MAX = 127;
+
     public function convertToDatabaseValue($value) {
         return $value !== null
-            ? max(min(intval($value), PHP_INT_MAX), -PHP_INT_MAX - 1)
+            ? max(min(intval($value), self::MAX), self::MIN)
             : $value;
     }
 
     public function convertToPHPValue($value) {
         return $value !== null
-            ? max(min(intval($value), PHP_INT_MAX), -PHP_INT_MAX - 1)
+            ? max(min(intval($value), self::MAX), self::MIN)
             : $value;
     }
 }

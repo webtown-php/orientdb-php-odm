@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Types;
+namespace Doctrine\OrientDB\Types;
 
 class DateTimeType extends Type
 {

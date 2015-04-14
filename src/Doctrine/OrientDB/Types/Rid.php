@@ -17,7 +17,7 @@
  * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
  */
 
-namespace Doctrine\ODM\OrientDB\Types;
+namespace Doctrine\OrientDB\Types;
 
 use Doctrine\OrientDB\Query\Validator\Rid as RidValidator;
 

@@ -16,15 +16,15 @@ use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
-use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Exception;
 use Doctrine\OrientDB\Query\CommandInterface;
+use Doctrine\OrientDB\Types\Rid;
 
 /**
  * Manager class.

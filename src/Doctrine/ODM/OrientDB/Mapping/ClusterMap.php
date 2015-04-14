@@ -5,8 +5,8 @@ namespace Doctrine\ODM\OrientDB\Mapping;
 
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
-use Doctrine\ODM\OrientDB\Types\Rid;
 use Doctrine\OrientDB\Binding\BindingInterface;
+use Doctrine\OrientDB\Types\Rid;
 
 /**
  * Class ClusterMap
@@ -74,12 +74,12 @@ class ClusterMap
      * Creates the mapping of classes to clusters,
      * it is public so it can be called forcibly
      * which will be handy if it's done in some
-     * cache-warmup task.
+     * cache warm-up task.
      *
      */
     public function generateMap() {
         $map      = [];
-        $database = $this->binding->getDatabase()->getData();
+        $database = $this->binding->getDatabase();
 
         foreach ($database->classes as $class) {
             $map[$class->name] = $class->clusters;
