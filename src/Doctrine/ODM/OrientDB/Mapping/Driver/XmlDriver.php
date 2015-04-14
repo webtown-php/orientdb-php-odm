@@ -73,6 +73,10 @@ class XmlDriver extends FileDriver
                 throw MappingException::classIsNotAValidEntityOrMappedSuperClass($className);
         }
 
+        if (isset($xmlRoot['repository-class'])) {
+            $metadata->setCustomRepositoryClass((string)$xmlRoot['repository-class']);
+        }
+
         if (isset($xmlRoot['oclass'])) {
             $metadata->setOrientClass((string)$xmlRoot['oclass']);
         }

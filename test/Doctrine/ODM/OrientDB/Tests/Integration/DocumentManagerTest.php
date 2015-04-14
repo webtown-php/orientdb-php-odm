@@ -55,59 +55,6 @@ class DocumentManagerTest extends TestCase
     /**
      * @group integration
      */
-    public function testExecutionOfASelect() {
-        $manager = $this->createDocumentManager();
-
-        $query     = QueryBuilder::select(array('Address'));
-        $addresses = $manager->execute($query);
-
-        $this->assertEquals(40, count($addresses));
-        $this->assertInstanceOf('Integration\Document\Address', $addresses[0]);
-    }
-
-    /**
-     * @group integration
-     */
-    public function testFindingARecordWithAnExecuteReturnsAnArrayHowever() {
-        $manager = $this->createDocumentManager();
-
-        $query     = QueryBuilder::select([$this->addressId . ':0']);
-        $addresses = $manager->execute($query);
-
-        $this->assertEquals(1, count($addresses));
-        $this->assertInstanceOf('Integration\Document\Address', $addresses[0]);
-    }
-
-    /**
-     * @group integration
-     */
-    public function testExecutionOfAnUpdate() {
-        $manager = $this->createDocumentManager();
-
-        $query = QueryBuilder::update('Address');
-        $query->set(['my' => 'yours'])->where('@rid = ?', $this->addressId . ':30');
-        $result = $manager->execute($query);
-
-        $this->assertInternalType('boolean', $result);
-        $this->assertTrue($result);
-    }
-
-    /**
-     * @group integration
-     * @expectedException \Doctrine\OrientDB\Binding\InvalidQueryException
-     */
-    public function testAnExceptionGetsRaisedWhenExecutingAWrongQuery() {
-        $manager = $this->createDocumentManager();
-
-        $query = QueryBuilder::update('Address');
-        $query->set([])->where('@rid = ?', '1:10000');
-
-        $manager->execute($query);
-    }
-
-    /**
-     * @group integration
-     */
     public function testFindingARecord() {
         $manager = $this->createDocumentManager();
         $address = $manager->findByRid($this->addressId . ':0');
@@ -175,35 +122,4 @@ class DocumentManagerTest extends TestCase
 
         $this->assertInternalType("null", $address);
     }
-
-    /**
-     * @group integration
-     */
-    public function testExecutingASelectOfASingleRecordReturnsAnArrayWithOneRecord() {
-        $manager = $this->createDocumentManager();
-
-        $query = QueryBuilder::select(['Address']);
-        $query->where('@rid = ?', $this->addressId . ':0');
-
-        $results = $manager->execute($query);
-
-        $this->assertInstanceOf(static::COLLECTION_CLASS, $results);
-        $this->assertSame(1, count($results));
-    }
-
-    /**
-     * @group integration
-     */
-    public function testExecutionWithNoOutput() {
-        $manager = $this->createDocumentManager();
-
-        $query = QueryBuilder::update('Address');
-        $query->set(['type' => 'Residence']);
-
-        $results = $manager->execute($query);
-
-        $this->assertInternalType('bool', $results);
-        $this->assertTrue($results);
-    }
-
 }

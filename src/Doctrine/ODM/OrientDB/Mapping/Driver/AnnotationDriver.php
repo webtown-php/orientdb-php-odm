@@ -126,6 +126,10 @@ class AnnotationDriver extends AbstractAnnotationDriver
                 break;
         }
 
+        if ($documentAnnot instanceof Annotations\AbstractPersistentDocument) {
+            $metadata->setCustomRepositoryClass($documentAnnot->repositoryClass);
+        }
+
         if ($isDocument) {
             if ($documentAnnot->abstract === true) {
                 $metadata->setIsAbstract();

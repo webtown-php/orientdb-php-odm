@@ -3,6 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Mapping\Driver;
 
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
+use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Events;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use PHPUnit\TestCase;
@@ -39,13 +40,9 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @test
      *
      * @param ClassMetadata $class
-     *
-     * @return ClassMetadata
      */
-    public function orientClass_is_set($class) {
-        $this->assertEquals('OUser', $class->orientClass);
-
-        return $class;
+    public function has_customer_repository($class) {
+        $this->assertEquals(UserRepository::class, $class->customRepositoryClassName);
     }
 
     /**
@@ -53,13 +50,19 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @test
      *
      * @param ClassMetadata $class
+     */
+    public function orientClass_is_set($class) {
+        $this->assertEquals('OUser', $class->orientClass);
+    }
+
+    /**
+     * @depends can_load_mapping_for_class
+     * @test
      *
-     * @return ClassMetadata
+     * @param ClassMetadata $class
      */
     public function is_document_mapping(ClassMetadata $class) {
         $this->assertTrue($class->isDocument());
-
-        return $class;
     }
 
     /**
@@ -435,7 +438,7 @@ abstract class AbstractMappingDriverTest extends TestCase
 /**
  * @DocumentListeners({"ListenerOne", "ListenerTwo"})
  * @ChangeTrackingPolicy("NOTIFY")
- * @Document(oclass="OUser")
+ * @Document(oclass="OUser", repositoryClass="UserRepository")
  */
 class User
 {
@@ -667,4 +670,9 @@ class LikedE
      * @var object
      */
     public $in;
+}
+
+class UserRepository extends DocumentRepository
+{
+
 }

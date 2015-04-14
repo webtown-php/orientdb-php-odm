@@ -19,7 +19,7 @@ class ListenersInvokerTest extends TestCase
      * @test
      * @dataProvider data_getSubscribedSystems
      */
-    public function getSubscribedSystems_returns_expected_result($event, $hasListeners, array $doc, array $lc, $expected) {
+    public function test_getSubscribedSystems($event, $hasListeners, array $doc, array $lc, $expected) {
         $md = new ClassMetadata('Test');
         $md->documentListeners = $doc;
         $md->lifecycleCallbacks = $lc;

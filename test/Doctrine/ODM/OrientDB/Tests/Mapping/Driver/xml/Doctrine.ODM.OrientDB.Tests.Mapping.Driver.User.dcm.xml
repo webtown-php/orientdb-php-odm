@@ -6,18 +6,19 @@
             http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping
             http://doctrine-project.org/schemas/odm/doctrine-orientdb-mapping.xsd">
 
-    <document name="Doctrine\ODM\OrientDB\Tests\Mapping\Driver\User" oclass="OUser" change-tracking-policy="NOTIFY">
+    <document name="Doctrine\ODM\OrientDB\Tests\Mapping\Driver\User" oclass="OUser"
+              change-tracking-policy="NOTIFY" repository-class="UserRepository">
         <document-listeners>
-            <document-listener class="ListenerOne" />
+            <document-listener class="ListenerOne"/>
             <document-listener class="ListenerTwo">
-                <lifecycle-callback type="postLoad" method="afterLoad" />
-                <lifecycle-callback type="postPersist" method="afterPersist" />
-                <lifecycle-callback type="postRemove" method="afterRemove" />
-                <lifecycle-callback type="postUpdate" method="afterUpdate" />
-                <lifecycle-callback type="preFlush" method="beforeFlush" />
-                <lifecycle-callback type="prePersist" method="beforePersist" />
-                <lifecycle-callback type="preRemove" method="beforeRemove" />
-                <lifecycle-callback type="preUpdate" method="beforeUpdate" />
+                <lifecycle-callback type="postLoad" method="afterLoad"/>
+                <lifecycle-callback type="postPersist" method="afterPersist"/>
+                <lifecycle-callback type="postRemove" method="afterRemove"/>
+                <lifecycle-callback type="postUpdate" method="afterUpdate"/>
+                <lifecycle-callback type="preFlush" method="beforeFlush"/>
+                <lifecycle-callback type="prePersist" method="beforePersist"/>
+                <lifecycle-callback type="preRemove" method="beforeRemove"/>
+                <lifecycle-callback type="preUpdate" method="beforeUpdate"/>
             </document-listener>
         </document-listeners>
 

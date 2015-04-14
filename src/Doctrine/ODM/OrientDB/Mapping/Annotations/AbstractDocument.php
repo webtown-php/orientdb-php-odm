@@ -2,7 +2,7 @@
 
 namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
 
-class AbstractDocument
+abstract class AbstractDocument
 {
     /**
      * Whether the mapping defines an abstract document

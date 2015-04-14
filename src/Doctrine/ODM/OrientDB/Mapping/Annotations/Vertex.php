@@ -6,7 +6,7 @@ namespace Doctrine\ODM\OrientDB\Mapping\Annotations;
  * @Annotation
  * @Target("CLASS")
  */
-class Vertex extends AbstractDocument
+class Vertex extends AbstractPersistentDocument
 {
     /**
      * @Required

@@ -26,21 +26,16 @@ class IntegerTest extends TestCase
     }
 
     public function testHydrationOfAnIntegerProperty() {
-        $manager = $this->createDocumentManager(array(
-            'mismatches_tolerance' => true,
-        ));
+        $manager = $this->createDocumentManager();
 
         $post = $manager->findByRid("#" . $this->postId . ":0");
         $this->assertInternalType('integer', $post->id);
     }
 
     public function testMismatchedAttributesAreConvertedIfTheMapperToleratesMismatches() {
-        $manager = $this->createDocumentManager(array(
-            'mismatches_tolerance' => true,
-        ));
+        $manager = $this->createDocumentManager();
 
         $post = $manager->findByRid("#" . $this->postId . ":0");
-
         $this->assertInternalType('integer', $post->title);
     }
 }
