@@ -11,7 +11,7 @@
 
 /**
  * Command class is a base class shared among all the command executable with
- * Doctrine\OrientDB's SQL synthax.
+ * Doctrine\OrientDB's SQL syntax.
  *
  * @package    Doctrine\OrientDB
  * @subpackage Query
@@ -383,8 +383,9 @@ abstract class Command implements CommandInterface
     /**
      * Substitutes multiple tokens ($values) in the WHERE $condition.
      *
-     * @param  string $condition
-     * @param  array  $values
+     * @param string          $condition
+     * @param array           $values
+     * @param EscapeValidator $validator
      *
      * @return string
      * @throws LogicException

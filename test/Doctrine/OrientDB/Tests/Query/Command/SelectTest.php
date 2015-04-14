@@ -16,6 +16,9 @@ use PHPUnit\TestCase;
 
 class SelectTest extends TestCase
 {
+    /** @var Select */
+    private $select;
+
     public function setup() {
         $this->select = new Select(array('myClass'));
     }

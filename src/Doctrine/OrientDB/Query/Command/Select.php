@@ -137,11 +137,11 @@ class Select extends Command implements SelectInterface
      */
     protected function getTokenFormatters() {
         return array_merge(parent::getTokenFormatters(), array(
-            'Projections' => "Doctrine\OrientDB\Query\Formatter\Query\Select",
-            'OrderBy'     => "Doctrine\OrientDB\Query\Formatter\Query\OrderBy",
-            'Limit'       => "Doctrine\OrientDB\Query\Formatter\Query\Limit",
-            'Skip'        => "Doctrine\OrientDB\Query\Formatter\Query\Skip",
-            'Between'     => "Doctrine\OrientDB\Query\Formatter\Query\Between",
+            'Projections' => \Doctrine\OrientDB\Query\Formatter\Query\Select::class,
+            'OrderBy'     => \Doctrine\OrientDB\Query\Formatter\Query\OrderBy::class,
+            'Limit'       => \Doctrine\OrientDB\Query\Formatter\Query\Limit::class,
+            'Skip'        => \Doctrine\OrientDB\Query\Formatter\Query\Skip::class,
+            'Between'     => \Doctrine\OrientDB\Query\Formatter\Query\Between::class,
         ));
     }
 }

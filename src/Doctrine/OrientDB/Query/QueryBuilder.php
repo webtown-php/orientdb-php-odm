@@ -3,7 +3,6 @@
 namespace Doctrine\OrientDB\Query;
 
 use Doctrine\OrientDB\Query\Command\Select;
-use Doctrine\OrientDB\Query\Command\Update;
 
 final class QueryBuilder
 {
@@ -14,14 +13,5 @@ final class QueryBuilder
      */
     public static function select(array $target = []) {
         return new Select($target);
-    }
-
-    /**
-     * @param string $class
-     *
-     * @return Update
-     */
-    public static function update($class) {
-        return new Update($class);
     }
 }
