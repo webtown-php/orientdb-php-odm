@@ -22,9 +22,9 @@
 
 namespace Doctrine\OrientDB\Query;
 
-use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\OrientDBException;
 
-class TokenNotFoundException extends Exception
+class TokenNotFoundException extends OrientDBException
 {
     const MESSAGE =
         "The token %s is not contained in the %s command schema\n

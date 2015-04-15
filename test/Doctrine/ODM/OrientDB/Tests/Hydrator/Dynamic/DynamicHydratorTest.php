@@ -77,7 +77,7 @@ class DynamicHydratorTest extends TestCase
 JSON;
 
         $binding->getDatabase()
-                ->willReturn($this->newBindingStub($data)->reveal());
+                ->willReturn(json_decode($data));
 
         $rawResult = '{
             "@type": "d", "@rid": "#2:1", "@version": 1, "@class": "LinkedEmailAddress",

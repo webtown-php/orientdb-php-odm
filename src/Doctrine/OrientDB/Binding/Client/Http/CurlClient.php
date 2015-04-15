@@ -20,6 +20,8 @@
 
 namespace Doctrine\OrientDB\Binding\Client\Http;
 
+use Doctrine\OrientDB\Binding\Exception\ConnectionFailedException;
+
 class CurlClient
 {
     protected $curl;
@@ -81,7 +83,7 @@ class CurlClient
      * @param  String $location
      *
      * @return CurlClientResponse
-     * @throws EmptyResponseException
+     * @throws ConnectionFailedException
      */
     public function execute($method, $location) {
         curl_setopt_array($this->curl, array(
@@ -91,8 +93,10 @@ class CurlClient
         ));
 
         if (!$response = curl_exec($this->curl)) {
+            $err = curl_error($this->curl);
+            $msg = sprintf("unable to communicate with server at '%s'; %s", $location, $err);
             $this->restart();
-            throw new EmptyResponseException($this, $location);
+            throw new ConnectionFailedException($msg);
         }
 
         $response      = new CurlClientResponse($response);

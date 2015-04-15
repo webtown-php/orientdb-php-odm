@@ -20,9 +20,9 @@
 
 namespace Doctrine\OrientDB\Binding;
 
-use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\OrientDBException;
 
-class InvalidQueryException extends Exception
+class InvalidQueryException extends OrientDBException
 {
     protected $result;
 

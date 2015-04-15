@@ -18,7 +18,7 @@
  */
 namespace Doctrine\OrientDB;
 
-class LogicException extends Exception
+class LogicException extends OrientDBException
 {
     public function __construct($message) {
         $this->message = $message;

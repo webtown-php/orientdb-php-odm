@@ -14,7 +14,6 @@ namespace Doctrine\OrientDB\Tests\Binding;
 
 use Doctrine\OrientDB\Binding\BindingParameters;
 use Doctrine\OrientDB\Binding\HttpBinding;
-use Doctrine\OrientDB\Client\Http\CurlClient;
 use PHPUnit\TestCase;
 
 /**
@@ -77,34 +76,67 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(200, $binding->getServer());
     }
 
-    public function testDatabaseMethod() {
+    /**
+     * @test
+     */
+    public function can_get_existing_database() {
         $binding = $this->createHttpBinding();
 
-        $this->assertHttpStatus(200, $binding->getDatabase(TEST_ODB_DATABASE), 'Get informations about an existing database');
-        $this->assertHttpStatus(401, $binding->getDatabase('INVALID_DB'), 'Get informations about a non-existing database');
+        $this->assertInstanceOf('\stdClass', $res = $binding->getDatabase(TEST_ODB_DATABASE), 'Get information about an existing database');
+    }
+
+    /**
+     * @test
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
+     */
+    public function will_throw_exception_for_invalid_database() {
+        $binding = $this->createHttpBinding();
+        $binding->getDatabase('INVALID_DB');
     }
 
     public function testListDatabasesMethod() {
         $binding = $this->createHttpBinding();
-        $this->assertHttpStatus(200, $response = $binding->listDatabases(), 'List existing databases');
-        $this->assertInternalType('array', $response->getData()->databases);
-    }
-
-    public function testCreateDatabaseMethod() {
-        $binding = $this->createHttpBinding();
-
-        $this->assertHttpStatus(200, $binding->createDatabase(TEST_ODB_DATABASE . '_temporary'), 'Create a new database');
-        $this->assertHttpStatus(500, $binding->createDatabase(TEST_ODB_DATABASE . '_temporary'), 'Create an already existing database');
+        $this->assertInternalType('array', $binding->listDatabases());
     }
 
     /**
-     * @depends testCreateDatabaseMethod
+     * @test
      */
-    public function testDeleteDatabaseMethod() {
+    public function can_create_database() {
         $binding = $this->createHttpBinding();
 
-        $this->assertHttpStatus(204, $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary'), 'Delete a existing database');
-        $this->assertHttpStatus(500, $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary'), 'Delete a non-existing database');
+        $db = $binding->createDatabase(TEST_ODB_DATABASE . '_temporary');
+        $this->assertInstanceOf('\stdClass', $db, 'Create new database');
+        $this->assertObjectHasAttribute('currentUser', $db);
+    }
+
+    /**
+     * @test
+     * @depends can_create_database
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
+     */
+    public function will_throw_exception_for_existing_database() {
+        $binding = $this->createHttpBinding();
+        $binding->createDatabase(TEST_ODB_DATABASE . '_temporary');
+    }
+
+    /**
+     * @test
+     * @depends can_create_database
+     */
+    public function can_delete_existing_database() {
+        $binding = $this->createHttpBinding();
+        $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
+    }
+
+    /**
+     * @test
+     * @depends can_delete_existing_database
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
+     */
+    public function will_throw_exception_for_nonexistent_database() {
+        $binding = $this->createHttpBinding();
+        $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
     }
 
     public function testCommandMethod() {
@@ -151,7 +183,7 @@ class HttpBindingTest extends TestCase
     }
 
     /**
-     * @expectedException \Doctrine\OrientDB\Exception
+     * @expectedException \Doctrine\OrientDB\OrientDBException
      */
     public function testResolveDatabase() {
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');

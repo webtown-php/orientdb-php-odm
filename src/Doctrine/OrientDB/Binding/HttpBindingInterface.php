@@ -96,59 +96,6 @@ interface HttpBindingInterface extends BindingInterface
     public function disconnect();
 
     /**
-     * Gets the current server.
-     *
-     * @api
-     * @return BindingResultInterface
-     */
-    public function getServer();
-
-    /**
-     * Creates a new database.
-     *
-     * @api
-     *
-     * @param string $database
-     * @param string $storage
-     * @param string $type
-     *
-     * @return BindingResultInterface
-     */
-    public function createDatabase($database, $storage = 'memory', $type = 'document');
-
-    /**
-     * Lists all the existing databases.
-     *
-     * @api
-     * @return BindingResultInterface
-     */
-    public function listDatabases();
-
-    /**
-     * Deletes an existing database.
-     *
-     * @api
-     *
-     * @param string $database
-     *
-     * @return BindingResultInterface
-     */
-    public function deleteDatabase($database);
-
-    /**
-     * Executes a raw command on the given database.
-     *
-     * @api
-     *
-     * @param string $query
-     * @param string $language
-     * @param string $database
-     *
-     * @return BindingResultInterface
-     */
-    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null);
-
-    /**
      * Executes a raw query on the given database.
      *
      * Results can be limited with the $limit parameter and a fetch plan can be used to

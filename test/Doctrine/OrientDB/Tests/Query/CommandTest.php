@@ -45,7 +45,7 @@ class Command extends TestCase
     }
 
     /**
-     * @expectedException \Doctrine\OrientDB\Exception
+     * @expectedException \Doctrine\OrientDB\OrientDBException
      */
     public function testAnExceptionIsRaisedIfYouDontExplicitHowToFormatAToken() {
         $this->command = new StubExceptionedCommand();

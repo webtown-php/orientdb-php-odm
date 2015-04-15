@@ -22,7 +22,7 @@ use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
-use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\OrientDBException;
 use Doctrine\OrientDB\Query\CommandInterface;
 use Doctrine\OrientDB\Types\Rid;
 
@@ -181,7 +181,7 @@ class DocumentManager implements ObjectManager
      * @param string $fetchPlan
      *
      * @return mixed|null
-     * @throws Exception
+     * @throws OrientDBException
      */
     public function findWithPlan($className, $id, $fetchPlan = '*:0') {
         return $this->getRepository($className)->findWithPlan($id, $fetchPlan);
@@ -203,7 +203,7 @@ class DocumentManager implements ObjectManager
      * @param  string $fetchPlan
      *
      * @return Proxy|object
-     * @throws OClassNotFoundException|Exception
+     * @throws OClassNotFoundException|OrientDBException
      */
     public function findByRid($rid, $fetchPlan = '*:0') {
         $class = $this->clusterMap->identifyClass(new Rid($rid));

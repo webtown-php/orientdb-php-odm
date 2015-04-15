@@ -19,9 +19,9 @@
 
 namespace Doctrine\OrientDB\Query\Validator;
 
-use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\OrientDBException;
 
-class ValidationException extends Exception
+class ValidationException extends OrientDBException
 {
     public function __construct($value, $class) {
         if (is_array($value)) {

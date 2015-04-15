@@ -20,7 +20,7 @@
 
 namespace Doctrine\OrientDB\Query;
 
-use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\OrientDBException;
 use Doctrine\OrientDB\LogicException;
 use Doctrine\OrientDB\Query\Formatter\Query as Formatter;
 use Doctrine\OrientDB\Query\Formatter\QueryInterface as QueryFormatterInterface;
@@ -343,7 +343,7 @@ abstract class Command implements CommandInterface
             $message = "The class %s does not know how to format the %s token\n" .
                 "Have you added it in the getTokenFormatters() method?";
 
-            throw new Exception(sprintf($message, get_called_class(), $token));
+            throw new OrientDBException(sprintf($message, get_called_class(), $token));
         }
 
         return $formatters[$token];

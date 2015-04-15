@@ -22,7 +22,9 @@ namespace Doctrine\OrientDB\Binding;
 use Doctrine\OrientDB\Binding\Adapter\CurlClientAdapter;
 use Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
-use Doctrine\OrientDB\Exception as OrientException;
+use Doctrine\OrientDB\Binding\Exception\BindingException;
+use Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException;
+use Doctrine\OrientDB\OrientDBException as OrientException;
 use Doctrine\OrientDB\Query\Command\Select;
 use Doctrine\OrientDB\Query\CommandInterface;
 
@@ -226,25 +228,35 @@ class HttpBinding implements HttpBindingInterface
     public function getDatabase($database = null) {
         $location = $this->getDatabaseLocation($database ?: $this->database);
 
-        return $this->adapter->request('GET', $location);
+        $result = $this->adapter->request('GET', $location);
+        $res    = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 200:
+                return $result->getData();
+
+            case 401:
+                throw new InvalidDatabaseException($res->getBody());
+
+            default:
+                throw new BindingException(sprintf("an unknown error occurred; %s", $res->getBody()));
+        }
     }
 
     /**
      * {@inheritdoc}
      */
     public function createDatabase($database, $storage = 'memory', $type = 'document') {
-        $location = $this->getLocation('database', $database, array($storage, $type));
+        $location = $this->getLocation('database', $database, [$storage, $type]);
 
-        return $this->adapter->request('POST', $location);
-    }
+        $result = $this->adapter->request('POST', $location);
+        $res    = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 200:
+                return $result->getData();
 
-    /**
-     * {@inheritdoc}
-     */
-    public function listDatabases() {
-        $location = $this->getLocation('listDatabases');
-
-        return $this->adapter->request('GET', $location);
+            default:
+                throw new BindingException(sprintf("an unknown error occurred; %s", $res->getBody()));
+        }
     }
 
     /**
@@ -253,7 +265,24 @@ class HttpBinding implements HttpBindingInterface
     public function deleteDatabase($database) {
         $location = $this->getLocation('database', $database);
 
-        return $this->adapter->request('DELETE', $location);
+        $result = $this->adapter->request('DELETE', $location);
+        $res    = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 204:
+                return;
+
+            default:
+                throw new InvalidDatabaseException(sprintf("the database '%s' does not exist; %s", $database, $res->getBody()));
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listDatabases() {
+        $location = $this->getLocation('listDatabases');
+
+        return $this->adapter->request('GET', $location)->getData()->databases;
     }
 
     /**

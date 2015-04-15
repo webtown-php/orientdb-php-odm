@@ -55,13 +55,8 @@ class DocumentManagerTest extends TestCase
 JSON;
         $data = json_decode($data);
 
-        /** @var HttpBindingResultInterface|ObjectProphecy $stub */
-        $stub = $this->prophesize(HttpBindingResultInterface::class);
-        $stub->getData()
-             ->willReturn($data);
-
         $binding->getDatabase(Arg::any())
-                ->willReturn($stub->reveal());
+                ->willReturn($data);
 
         $binding->getDatabaseName()
             ->willReturn('dummy');

@@ -25,7 +25,7 @@ use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Util\Inflector;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Doctrine\OrientDB\Exception;
+use Doctrine\OrientDB\OrientDBException;
 use Doctrine\OrientDB\Query\QueryBuilder;
 use RuntimeException;
 
@@ -97,7 +97,7 @@ class DocumentRepository implements ObjectRepository
      * @param string $rid The identifier.
      *
      * @return object The object.
-     * @throws Exception
+     * @throws OrientDBException
      * @throws OClassNotFoundException
      * @throws \Exception
      */
@@ -110,7 +110,7 @@ class DocumentRepository implements ObjectRepository
      * @param string $fetchPlan
      *
      * @return mixed|null
-     * @throws Exception
+     * @throws OrientDBException
      */
     public function findWithPlan($rid, $fetchPlan = '*:0') {
         if (empty($rid)) {
@@ -123,7 +123,7 @@ class DocumentRepository implements ObjectRepository
         }
 
         if ($document && !$this->contains($document)) {
-            throw new Exception(
+            throw new OrientDBException(
                 "You are asking to find record $rid through the repository {$this->getClassName()} " .
                 "but the document belongs to another repository (" . get_class($document) . ")"
             );
@@ -155,7 +155,7 @@ class DocumentRepository implements ObjectRepository
      * @param string     $fetchPlan
      *
      * @return ArrayCollection The objects.
-     * @throws Exception
+     * @throws OrientDBException
      */
     public function findBy(array $criteria, array $orderBy = [], $limit = null, $offset = null, $fetchPlan = '*:0') {
         $select = QueryBuilder::select([$this->metadata->getOrientClass()]);
@@ -175,7 +175,7 @@ class DocumentRepository implements ObjectRepository
         $collection = $this->dm->execute($select, $fetchPlan);
 
         if (!$collection instanceof ArrayCollection) {
-            throw new Exception(
+            throw new OrientDBException(
                 "Problems executing the query \"{$select->getRaw()}\". " .
                 "The server returned $collection instead of ArrayCollection."
             );
