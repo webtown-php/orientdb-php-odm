@@ -30,7 +30,7 @@ class Property extends PropertyBase
     /**
      * @var string
      */
-    public $type;
+    public $type = 'string';
 
     /**
      * @var bool
