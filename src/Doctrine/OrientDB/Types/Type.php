@@ -22,34 +22,50 @@ abstract class Type
     const DATETIME = 'datetime';
     const DECIMAL = 'decimal';
 
-    const EMBEDDED_SET = 'embedded_set';
-    const LINK_SET = 'link_set';
-    const LINK_LIST = 'link_list';
-    const LINK_MAP = 'link_map';
-    const LINK_BAG = 'link_bag';
+    const EMBEDDED = 'embedded';
+    const EMBEDDED_SET = 'embeddedset';
+    const EMBEDDED_LIST = 'embeddedlist';
+    const EMBEDDED_MAP = 'embeddedmap';
+
+    const LINK = 'link';
+    const LINK_SET = 'linkset';
+    const LINK_LIST = 'linklist';
+    const LINK_MAP = 'linkmap';
+    const LINK_BAG = 'linkbag';
 
     /** Map of already instantiated type objects. One instance per type (flyweight). */
     private static $typeObjects = [];
 
     /** The map of supported doctrine mapping types. */
     private static $typesMap = [
-        self::RID      => 'Doctrine\OrientDB\Types\RidType',
-        self::BOOLEAN  => 'Doctrine\OrientDB\Types\BooleanType',
+        self::RID           => 'Doctrine\OrientDB\Types\RidType',
+        self::BOOLEAN       => 'Doctrine\OrientDB\Types\BooleanType',
 
-        self::BYTE     => 'Doctrine\OrientDB\Types\ByteType',
-        self::SHORT    => 'Doctrine\OrientDB\Types\ShortType',
-        self::INTEGER  => 'Doctrine\OrientDB\Types\IntegerType',
-        self::LONG     => 'Doctrine\OrientDB\Types\LongType',
+        self::BYTE          => 'Doctrine\OrientDB\Types\ByteType',
+        self::SHORT         => 'Doctrine\OrientDB\Types\ShortType',
+        self::INTEGER       => 'Doctrine\OrientDB\Types\IntegerType',
+        self::LONG          => 'Doctrine\OrientDB\Types\LongType',
 
-        self::FLOAT    => 'Doctrine\OrientDB\Types\FloatType',
-        self::DOUBLE   => 'Doctrine\OrientDB\Types\DoubleType',
+        self::FLOAT         => 'Doctrine\OrientDB\Types\FloatType',
+        self::DOUBLE        => 'Doctrine\OrientDB\Types\DoubleType',
 
-        self::STRING   => 'Doctrine\OrientDB\Types\StringType',
+        self::STRING        => 'Doctrine\OrientDB\Types\StringType',
 
-        self::DATE     => 'Doctrine\OrientDB\Types\DateTimeType',
-        self::DATETIME => 'Doctrine\OrientDB\Types\DateTimeType',
+        self::DATE          => 'Doctrine\OrientDB\Types\DateType',
+        self::DATETIME      => 'Doctrine\OrientDB\Types\DateTimeType',
 
-        self::DECIMAL  => 'Doctrine\OrientDB\Types\DecimalType',
+        self::DECIMAL       => 'Doctrine\OrientDB\Types\DecimalType',
+
+        self::EMBEDDED      => 'Doctrine\OrientDB\Types\EmbeddedType',
+        self::EMBEDDED_SET  => 'Doctrine\OrientDB\Types\EmbeddedSetType',
+        self::EMBEDDED_LIST => 'Doctrine\OrientDB\Types\EmbeddedListType',
+        self::EMBEDDED_MAP  => 'Doctrine\OrientDB\Types\EmbeddedMapType',
+
+        self::LINK          => 'Doctrine\OrientDB\Types\LinkType',
+        self::LINK_SET      => 'Doctrine\OrientDB\Types\LinkSetType',
+        self::LINK_LIST     => 'Doctrine\OrientDB\Types\LinkListType',
+        self::LINK_MAP      => 'Doctrine\OrientDB\Types\LinkMapType',
+        self::LINK_BAG      => 'Doctrine\OrientDB\Types\LinkBagType',
     ];
 
     /**
@@ -213,6 +229,13 @@ abstract class Type
      */
     public function equalsPHP($left, $right) {
         return $left == $right;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName() {
+        return $this->__toString();
     }
 
     public function __toString() {
