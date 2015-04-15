@@ -309,6 +309,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
             'readonly'  => $prop->readonly,
             'min'       => $prop->min,
             'max'       => $prop->max,
+            'regexp'    => $prop->regexp,
         ];
 
         return $mapping;

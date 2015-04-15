@@ -291,6 +291,7 @@ class XmlDriver extends FileDriver
                 'readonly'  => false,
                 'min'       => null,
                 'max'       => null,
+                'regexp'    => null,
             ];
 
             foreach ($field->attributes() as $key => $value) {

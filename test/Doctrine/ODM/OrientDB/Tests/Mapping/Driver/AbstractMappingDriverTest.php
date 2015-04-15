@@ -119,17 +119,18 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @return ClassMetadata
      */
     public function all_fields_are_mapped($class) {
-        $this->assertEquals(11, count($class->fieldMappings));
-        $this->assertTrue(isset($class->fieldMappings['id']));
-        $this->assertTrue(isset($class->fieldMappings['version']));
-        $this->assertTrue(isset($class->fieldMappings['name']));
-        $this->assertTrue(isset($class->fieldMappings['email']));
+        $this->assertEquals(12, count($class->fieldMappings));
+        $this->assertArrayHasKey('id', $class->fieldMappings);
+        $this->assertArrayHasKey('version', $class->fieldMappings);
+        $this->assertArrayHasKey('name', $class->fieldMappings);
+        $this->assertArrayHasKey('email', $class->fieldMappings);
+        $this->assertArrayHasKey('gender', $class->fieldMappings);
 
         return $class;
     }
 
     /**
-     * @depends can_load_mapping_for_class
+     * @depends all_fields_are_mapped
      * @test
      *
      * @param ClassMetadata $class
@@ -147,6 +148,20 @@ abstract class AbstractMappingDriverTest extends TestCase
         $this->assertEquals(5, $mapping['min']);
         $this->assertEquals(10, $mapping['max']);
     }
+
+    /**
+     * @depends all_fields_are_mapped
+     * @test
+     *
+     * @param ClassMetadata $class
+     */
+    public function gender_field_has_regexp($class) {
+        $mapping = $class->fieldMappings['gender'];
+        $this->assertArrayHasKey('regexp', $mapping);
+
+        $this->assertEquals("[MF]", $mapping['regexp']);
+    }
+
 
     /**
      * @depends can_load_mapping_for_class
@@ -478,6 +493,11 @@ class User
      * @Property(name="username", type="string", mandatory=true, min=5, max=10)
      */
     public $name;
+
+    /**
+     * @Property(regexp="[MF]")
+     */
+    public $gender;
 
     /**
      * @Property(type="string", nullable=true)

@@ -56,4 +56,9 @@ class Property extends PropertyBase
      * @var bool
      */
     public $readonly = false;
+
+    /**
+     * @var string
+     */
+    public $regexp;
 }
