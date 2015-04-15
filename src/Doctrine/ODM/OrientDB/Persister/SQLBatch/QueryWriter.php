@@ -97,6 +97,10 @@ class QueryWriter
         $this->queries[] = sprintf($query, $class, $rids[0], $rids[1]);
     }
 
+    private static function getLock($lock) {
+        return strcasecmp($lock, 'record') === 0 ? ' LOCK RECORD' : '';
+    }
+
     /**
      * @param string    $rid
      * @param \stdClass $fields
@@ -104,8 +108,8 @@ class QueryWriter
      * @param int|null  $version
      * @param string    $lock
      */
-    public function addUpdateQuery($rid, \stdClass $fields, $var = null, $version = null, $lock = 'DEFAULT') {
-        $query = "%sUPDATE %s SET %s %s %s LOCK %s";
+    public function addUpdateQuery($rid, \stdClass $fields, $var = null, $version = null, $lock = null) {
+        $query = "%sUPDATE %s SET %s %s %s%s";
         if ($version !== null) {
             $let    = "let $var = ";
             $where  = "WHERE @version = $version";
@@ -113,46 +117,48 @@ class QueryWriter
         } else {
             $let = $where = $return = "";
         }
-        $this->queries[] = sprintf($query, $let, $rid, $this->flattenFields($fields), $return, $where, $lock);
+        $this->queries[] = sprintf($query,
+            $let, $rid, $this->flattenFields($fields), $return, $where, self::getLock($lock)
+        );
     }
 
-    public function addCollectionAddQuery($rid, $fieldName, $value, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s ADD %s = [%s] LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $fieldName, $value, $lock);
+    public function addCollectionAddQuery($rid, $fieldName, $value, $lock = null) {
+        $query           = "UPDATE %s ADD %s = [%s]%s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, $value, self::getLock($lock));
     }
 
-    public function addCollectionDelQuery($rid, $fieldName, $value, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s REMOVE %s = [%s] LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $fieldName, $value, $lock);
+    public function addCollectionDelQuery($rid, $fieldName, $value, $lock = null) {
+        $query           = "UPDATE %s REMOVE %s = [%s]%s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, $value, self::getLock($lock));
     }
 
-    public function addCollectionClearQuery($rid, $fieldName, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s SET %s = [] LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $fieldName, $lock);
+    public function addCollectionClearQuery($rid, $fieldName, $lock = null) {
+        $query           = "UPDATE %s SET %s = []%s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, self::getLock($lock));
     }
 
-    public function addCollectionMapPutQuery($rid, $fieldName, $key, $value, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s PUT %s = '%s', %s LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $fieldName, $key, $value, $lock);
+    public function addCollectionMapPutQuery($rid, $fieldName, $key, $value, $lock = null) {
+        $query           = "UPDATE %s PUT %s = '%s', %s%s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, $key, $value, self::getLock($lock));
     }
 
-    public function addCollectionMapDelQuery($rid, $fieldName, $key, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s REMOVE %s = '%s' LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $fieldName, $key, $lock);
+    public function addCollectionMapDelQuery($rid, $fieldName, $key, $lock = null) {
+        $query           = "UPDATE %s REMOVE %s = '%s'%s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, $key, self::getLock($lock));
     }
 
-    public function addCollectionMapClearQuery($rid, $fieldName, $lock = 'DEFAULT') {
-        $query           = "UPDATE %s SET %s = {} LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $fieldName, $lock);
+    public function addCollectionMapClearQuery($rid, $fieldName, $lock = null) {
+        $query           = "UPDATE %s SET %s = {}%s";
+        $this->queries[] = sprintf($query, $rid, $fieldName, self::getLock($lock));
     }
 
     /**
      * @param string $rid
      * @param string $lock
      */
-    public function addDeleteQuery($rid, $lock = 'DEFAULT') {
-        $query           = "DELETE FROM %s LOCK %s";
-        $this->queries[] = sprintf($query, $rid, $lock);
+    public function addDeleteQuery($rid, $lock = null) {
+        $query           = "DELETE FROM %s%s";
+        $this->queries[] = sprintf($query, $rid, self::getLock($lock));
     }
 
     /**
