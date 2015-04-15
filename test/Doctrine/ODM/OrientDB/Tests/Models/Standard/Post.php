@@ -18,9 +18,7 @@
  * @author      David Funaro <ing.davidino@gmail.com>
  */
 
-namespace Integration\Document;
-
-use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
  * @Document(oclass="Post")

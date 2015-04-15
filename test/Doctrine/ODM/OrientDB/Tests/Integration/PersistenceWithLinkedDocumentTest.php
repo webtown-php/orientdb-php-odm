@@ -3,9 +3,9 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Integration\Document\EmailAddressLink as EmailAddress;
-use Integration\Document\PersonLink as Person;
-use Integration\Document\PhoneLink as Phone;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\EmailAddressLink as EmailAddress;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\PersonLink as Person;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\PhoneLink as Phone;
 use PHPUnit\TestCase;
 
 /**

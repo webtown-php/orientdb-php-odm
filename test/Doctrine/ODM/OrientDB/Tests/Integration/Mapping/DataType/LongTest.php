@@ -12,8 +12,8 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration\Mapping\DataType;
 
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Profile;
 use Doctrine\OrientDB\Query\Command;
-use Integration\Document\Profile;
 use PHPUnit\TestCase;
 
 /**

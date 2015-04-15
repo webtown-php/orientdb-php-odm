@@ -18,7 +18,7 @@ class ProxyFactoryTest extends TestCase
 
     public function testGenerate() {
         $manager      = $this->createDocumentManager();
-        $metadata     = $manager->getClassMetadata('Integration\Document\Country');
+        $metadata     = $manager->getClassMetadata('Doctrine\ODM\OrientDB\Tests\Models\Standard\Country');
         $proxyFactory = $manager->getProxyFactory();
         $proxyFactory->generateProxyClasses(array($metadata));
 

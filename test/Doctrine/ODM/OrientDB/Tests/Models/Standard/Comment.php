@@ -10,7 +10,7 @@
  */
 
 /**
- * Class Address
+ * Class Comment
  *
  * @package
  * @subpackage
@@ -18,12 +18,12 @@
  * @author      David Funaro <ing.davidino@gmail.com>
  */
 
-namespace Integration\Document;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
- * @Document(oclass="Address")
+ * @Document(oclass="Comment")
  */
-class Address
+class Comment
 {
     /**
      * @RID
@@ -36,20 +36,8 @@ class Address
     public $version;
 
     /**
-     * @Link(targetDoc="City")
+     * @Property(type="string")
+     * @var string
      */
-    protected $city;
-
-    protected $about;
-
-    /**
-     * @return City
-     */
-    public function getCity() {
-        return $this->city;
-    }
-
-    public function setCity($city) {
-        $this->city = $city;
-    }
+    public $body;
 }

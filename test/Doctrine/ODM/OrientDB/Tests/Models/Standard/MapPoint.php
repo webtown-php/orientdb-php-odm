@@ -10,7 +10,7 @@
  */
 
 /**
- * Class Address
+ * Class MapPoint
  *
  * @package
  * @subpackage
@@ -18,17 +18,17 @@
  * @author      David Funaro <ing.davidino@gmail.com>
  */
 
-namespace Integration\Document;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
- * @Document(oclass="Country")
+ * @Document(oclass="MapPoint")
  */
-class Country
+class MapPoint
 {
     /**
      * @RID
      */
-    protected $rid;
+    public $rid;
 
     /**
      * @Version
@@ -36,14 +36,7 @@ class Country
     public $version;
 
     /**
-     * @Property(name="name", type="string", nullable=true)
+     * @Property(type="double")
      */
-    public $name;
-
-    /**
-     * @return mixed
-     */
-    public function getRid() {
-        return $this->rid;
-    }
+    public $y;
 }

@@ -11,9 +11,9 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
-use Doctrine\OrientDB\Query\QueryBuilder;
-use Integration\Document\Address;
-use Integration\Document\Profile;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Address;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Comment;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Profile;
 use PHPUnit\TestCase;
 
 /**
@@ -42,7 +42,7 @@ class DocumentManagerTest extends TestCase
         $post     = $manager->findByRid($this->postId . ':0', '*:0');
         $comments = $post->getComments();
 
-        $this->assertInstanceOf('Integration\Document\Comment', $comments[0]);
+        $this->assertInstanceOf(Comment::class, $comments[0]);
     }
 
     public function testFind() {
@@ -59,7 +59,7 @@ class DocumentManagerTest extends TestCase
         $manager = $this->createDocumentManager();
         $address = $manager->findByRid($this->addressId . ':0');
 
-        $this->assertInstanceOf('Integration\Document\Address', $address);
+        $this->assertInstanceOf('Doctrine\ODM\OrientDB\Tests\Models\Standard\Address', $address);
     }
 
     /**
@@ -80,11 +80,11 @@ class DocumentManagerTest extends TestCase
      */
     public function testGettingARelatedRecord() {
         $manager = $this->createDocumentManager();
-        /** @var Address $address */
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Standard\Address $address */
         $address = $manager->findByRid($this->addressId . ':0');
 
         $city = $address->getCity();
-        $this->assertInstanceOf('Integration\Document\Country', $city);
+        $this->assertInstanceOf('Doctrine\ODM\OrientDB\Tests\Models\Standard\Country', $city);
         $this->assertEquals('Rome', $city->name);
     }
 
@@ -99,7 +99,7 @@ class DocumentManagerTest extends TestCase
         $post     = $manager->findByRid($this->postId . ':0');
         $comments = $post->getComments();
 
-        $this->assertInstanceOf('Integration\Document\Comment', $comments[0]);
+        $this->assertInstanceOf(Comment::class, $comments[0]);
     }
 
     /**

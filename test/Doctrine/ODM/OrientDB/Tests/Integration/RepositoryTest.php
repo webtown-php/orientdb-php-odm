@@ -11,7 +11,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
-use Integration\Document\Post;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Post;
 use PHPUnit\TestCase;
 
 /**
@@ -43,17 +43,17 @@ class RepositoryTest extends TestCase
     }
 
     public function testFindingADocumentOfTheRepo() {
-        $class      = 'Integration\Document\Post';
+        $class      = 'Doctrine\ODM\OrientDB\Tests\Models\Standard\Post';
         $repository = $this->createRepository($class);
 
         $this->assertInstanceOf($class, $repository->find($this->postId . ':0'));
     }
 
     public function testYouCanSpecifyFetchplansWithTheRepo() {
-        $class      = 'Integration\Document\Post';
+        $class      = 'Doctrine\ODM\OrientDB\Tests\Models\Standard\Post';
         $repository = $this->createRepository($class);
 
-        /** @var Post $post */
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Blog\Post $post */
         $post = $repository->findWithPlan($this->postId . ':0', '*:0');
         $this->assertInstanceOf(PersistentCollection::class, $post->getComments());
 
@@ -62,28 +62,28 @@ class RepositoryTest extends TestCase
     }
 
     /**
-     * @expectedException \Doctrine\OrientDB\Exception
+     * @expectedException \Doctrine\OrientDB\OrientDBException
      */
     public function testFindingADocumentOfAnotherRepoRaisesAnException() {
-        $repository = $this->createRepository('Integration\Document\Post');
+        $repository = $this->createRepository('Doctrine\ODM\OrientDB\Tests\Models\Standard\Post');
         $repository->find($this->addressId . ':0');
     }
 
     public function testFindingANonExistingDocument() {
-        $repository = $this->createRepository('Integration\Document\Post');
+        $repository = $this->createRepository('Doctrine\ODM\OrientDB\Tests\Models\Standard\Post');
 
         $this->assertNull($repository->find('18:985023989'));
     }
 
     public function testRetrievingAllTheRepo() {
-        $repository = $this->createRepository('Integration\Document\Post');
+        $repository = $this->createRepository('Doctrine\ODM\OrientDB\Tests\Models\Standard\Post');
         $posts      = $repository->findAll();
 
         $this->assertEquals(7, count($posts));
     }
 
     public function testRetrievingByCriteria() {
-        $repository = $this->createRepository('Integration\Document\Post');
+        $repository = $this->createRepository('Doctrine\ODM\OrientDB\Tests\Models\Standard\Post');
 
         $posts = $repository->findBy(array('title' => 'aaaa'), array('@rid' => 'DESC'));
         $this->assertCount(0, $posts);
@@ -101,9 +101,9 @@ class RepositoryTest extends TestCase
     }
 
     public function testRetrievingARecordByCriteria() {
-        $repository = $this->createRepository('Integration\Document\Post');
+        $repository = $this->createRepository('Doctrine\ODM\OrientDB\Tests\Models\Standard\Post');
 
         $post = $repository->findOneBy(array('title' => 0), array('@rid' => 'DESC'));
-        $this->assertInstanceOf('Integration\Document\Post', $post);
+        $this->assertInstanceOf('Doctrine\ODM\OrientDB\Tests\Models\Standard\Post', $post);
     }
 }

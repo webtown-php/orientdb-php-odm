@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\Document;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
  * @Relationship(oclass="LikedE")

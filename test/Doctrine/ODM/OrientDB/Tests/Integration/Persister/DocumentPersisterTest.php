@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration\Persister;
 
 
-use Integration\Document\Post;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Post;
 use PHPUnit\TestCase;
 
 /**

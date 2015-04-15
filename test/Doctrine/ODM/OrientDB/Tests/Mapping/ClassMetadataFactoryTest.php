@@ -5,7 +5,7 @@ namespace Doctrine\ODM\OrientDB\Tests\Mapping;
 use Doctrine\ODM\OrientDB\Event\LoadClassMetadataEventArgs;
 use Doctrine\ODM\OrientDB\Events;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
-use Integration\Document\Address;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Address;
 use PHPUnit\TestCase;
 
 class ClassMetadataFactoryTest extends TestCase

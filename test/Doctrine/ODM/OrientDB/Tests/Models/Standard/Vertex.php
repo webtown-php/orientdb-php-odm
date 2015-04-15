@@ -1,6 +1,6 @@
 <?php
 
-namespace Integration\Document;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
  * @Vertex(oclass="V")

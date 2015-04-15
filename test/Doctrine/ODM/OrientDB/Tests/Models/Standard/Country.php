@@ -10,7 +10,7 @@
  */
 
 /**
- * Class Comment
+ * Class Address
  *
  * @package
  * @subpackage
@@ -18,17 +18,17 @@
  * @author      David Funaro <ing.davidino@gmail.com>
  */
 
-namespace Integration\Document;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
- * @Document(oclass="Comment")
+ * @Document(oclass="Country")
  */
-class Comment
+class Country
 {
     /**
      * @RID
      */
-    public $rid;
+    protected $rid;
 
     /**
      * @Version
@@ -36,8 +36,14 @@ class Comment
     public $version;
 
     /**
-     * @Property(type="string")
-     * @var string
+     * @Property(name="name", type="string", nullable=true)
      */
-    public $body;
+    public $name;
+
+    /**
+     * @return mixed
+     */
+    public function getRid() {
+        return $this->rid;
+    }
 }

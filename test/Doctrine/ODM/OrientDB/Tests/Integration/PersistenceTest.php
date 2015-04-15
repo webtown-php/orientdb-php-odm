@@ -4,10 +4,10 @@ namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Integration\Document\Country;
-use Integration\Document\EmailAddress;
-use Integration\Document\Person;
-use Integration\Document\Phone;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Country;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\EmailAddress;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Person;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\Phone;
 use PHPUnit\TestCase;
 
 /**

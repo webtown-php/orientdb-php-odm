@@ -3,8 +3,8 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 use Doctrine\ODM\OrientDB\DocumentManager;
-use Integration\Document\PersonV;
-use Integration\Document\PostV;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\PersonV;
+use Doctrine\ODM\OrientDB\Tests\Models\Standard\PostV;
 use PHPUnit\TestCase;
 
 /**

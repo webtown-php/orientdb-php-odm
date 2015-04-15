@@ -18,7 +18,7 @@
  * @author      David Funaro <ing.davidino@gmail.com>
  */
 
-namespace Integration\Document;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
 /**
  * @Document(oclass="ORole")

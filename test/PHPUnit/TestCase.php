@@ -110,7 +110,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function createDocumentManagerWithBinding(HttpBindingInterface $binding, array $opts = [], $paths = []) {
         $config = $this->getConfiguration($opts);
         if (empty($paths)) {
-            $paths = [__DIR__ . '/../Integration/Document'];
+            $paths = [__DIR__ . '/../Doctrine/ODM/OrientDB/Tests/Models/Standard'];
         }
         $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver($paths));
         $config->setMetadataCacheImpl(new ArrayCache());
