@@ -305,6 +305,10 @@ class AnnotationDriver extends AbstractAnnotationDriver
             'name'      => $prop->name,
             'type'      => $prop->type,
             'nullable'  => $prop->nullable,
+            'mandatory' => $prop->mandatory,
+            'readonly'  => $prop->readonly,
+            'min'       => $prop->min,
+            'max'       => $prop->max,
         ];
 
         return $mapping;

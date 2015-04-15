@@ -36,4 +36,24 @@ class Property extends PropertyBase
      * @var bool
      */
     public $nullable = false;
+
+    /**
+     * @var int
+     */
+    public $min;
+
+    /**
+     * @var int
+     */
+    public $max;
+
+    /**
+     * @var bool
+     */
+    public $mandatory = false;
+
+    /**
+     * @var bool
+     */
+    public $readonly = false;
 }

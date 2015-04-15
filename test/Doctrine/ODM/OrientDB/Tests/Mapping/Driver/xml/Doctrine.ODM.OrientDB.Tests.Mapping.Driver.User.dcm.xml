@@ -24,7 +24,7 @@
 
         <rid fieldName="id"/>
         <version fieldName="version"/>
-        <field fieldName="name" name="username" type="string"/>
+        <field fieldName="name" name="username" type="string" mandatory="true" min="5" max="10"/>
         <field fieldName="email" type="string"/>
         <field fieldName="mysqlProfileId" type="integer"/>
         <field fieldName="createdAt" type="date"/>

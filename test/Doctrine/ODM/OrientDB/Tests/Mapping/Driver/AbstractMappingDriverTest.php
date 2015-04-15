@@ -133,6 +133,26 @@ abstract class AbstractMappingDriverTest extends TestCase
      * @test
      *
      * @param ClassMetadata $class
+     */
+    public function name_field_has_all_attributes($class) {
+        $mapping = $class->fieldMappings['name'];
+        $this->assertArrayHasKey('nullable', $mapping);
+        $this->assertArrayHasKey('mandatory', $mapping);
+        $this->assertArrayHasKey('min', $mapping);
+        $this->assertArrayHasKey('max', $mapping);
+
+        $this->assertEquals(false, $mapping['nullable']);
+        $this->assertEquals(false, $mapping['readonly']);
+        $this->assertEquals(true, $mapping['mandatory']);
+        $this->assertEquals(5, $mapping['min']);
+        $this->assertEquals(10, $mapping['max']);
+    }
+
+    /**
+     * @depends can_load_mapping_for_class
+     * @test
+     *
+     * @param ClassMetadata $class
      *
      * @return ClassMetadata
      */
@@ -455,7 +475,7 @@ class User
     public $version;
 
     /**
-     * @Property(name="username", type="string")
+     * @Property(name="username", type="string", mandatory=true, min=5, max=10)
      */
     public $name;
 

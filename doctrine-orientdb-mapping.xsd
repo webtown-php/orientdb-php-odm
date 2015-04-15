@@ -151,6 +151,10 @@
         <xs:attribute name="name" type="xs:NMTOKEN"/>
         <xs:attribute name="type" type="xs:NMTOKEN" default="string"/>
         <xs:attribute name="nullable" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="mandatory" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="readonly" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="min" type="xs:integer" use="optional" />
+        <xs:attribute name="max" type="xs:integer" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="embedded">

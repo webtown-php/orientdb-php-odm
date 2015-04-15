@@ -155,17 +155,17 @@ class XmlDriver extends FileDriver
         if (isset($xmlRoot->{'document-listeners'})) {
             /** @var SimpleXMLElement $listenerElement */
             foreach ($xmlRoot->{'document-listeners'}->{'document-listener'} as $listenerElement) {
-                $className = (string) $listenerElement['class'];
+                $className = (string)$listenerElement['class'];
                 // Evaluate the listener using naming convention.
-                if($listenerElement->count() === 0) {
+                if ($listenerElement->count() === 0) {
                     DocumentListenerBuilder::bindDocumentListener($metadata, $className);
 
                     continue;
                 }
 
                 foreach ($listenerElement as $callbackElement) {
-                    $eventName   = (string) $callbackElement['type'];
-                    $methodName  = (string) $callbackElement['method'];
+                    $eventName  = (string)$callbackElement['type'];
+                    $methodName = (string)$callbackElement['method'];
 
                     $metadata->addDocumentListener($eventName, $className, $methodName);
                 }
@@ -279,19 +279,27 @@ class XmlDriver extends FileDriver
         return $cascades;
     }
 
+    private static $_booleanAttributes = ['nullable', 'mandatory', 'readonly'];
+    private static $_intAttributes = ['min', 'max'];
 
     private function readFields(ClassMetadata $metadata, \SimpleXMLElement $xmlRoot) {
         foreach ($xmlRoot->{'field'} as $field) {
             $mapping = [
-                'type'     => 'string',
-                'nullable' => false,
+                'type'      => 'string',
+                'nullable'  => false,
+                'mandatory' => false,
+                'readonly'  => false,
+                'min'       => null,
+                'max'       => null,
             ];
 
-            $booleanAttributes = ['nullable'];
             foreach ($field->attributes() as $key => $value) {
-                $mapping[$key] = (string)$value;
-                if (in_array($key, $booleanAttributes)) {
-                    $mapping[$key] = ('true' === $mapping[$key]) ? true : false;
+                if (in_array($key, self::$_booleanAttributes)) {
+                    $mapping[$key] = ('true' === (string)$value) ? true : false;
+                } else if (in_array($key, self::$_intAttributes)) {
+                    $mapping[$key] = (int)$value;
+                } else {
+                    $mapping[$key] = (string)$value;
                 }
             }
 
