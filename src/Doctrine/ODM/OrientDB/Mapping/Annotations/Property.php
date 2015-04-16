@@ -35,7 +35,7 @@ class Property extends PropertyBase
     /**
      * @var bool
      */
-    public $nullable = false;
+    public $nullable = true;
 
     /**
      * @var int

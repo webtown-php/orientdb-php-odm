@@ -2,7 +2,7 @@
 
 namespace Doctrine\ODM\OrientDB;
 
-class LockException extends OrientDBException
+class LockException extends ODMOrientDbException
 {
     private $documents;
 

@@ -2,25 +2,19 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
-use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\LikedE;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\PersonV;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\PostV;
-use PHPUnit\TestCase;
+use Doctrine\ODM\OrientDB\Tests\Models\Graph\LikedE;
+use Doctrine\ODM\OrientDB\Tests\Models\Graph\PersonV;
+use Doctrine\ODM\OrientDB\Tests\Models\Graph\PostV;
 
 /**
  * Tests
  * @group integration
  */
-class PersistenceWithRelatedToViaTest extends TestCase
+class PersistenceWithRelatedToViaTest extends AbstractIntegrationTest
 {
-    /**
-     * @var DocumentManager
-     */
-    protected $manager;
-
     protected function setUp() {
-        $this->manager = $this->createDocumentManager();
+        $this->useModelSet('graph');
+        parent::setUp();
     }
 
     /**
@@ -30,27 +24,27 @@ class PersistenceWithRelatedToViaTest extends TestCase
     public function persist_vertices() {
         $j       = new PersonV();
         $j->name = "Jennifer";
-        $this->manager->persist($j);
+        $this->dm->persist($j);
 
         $s       = new PersonV();
         $s->name = "Sydney";
-        $this->manager->persist($s);
+        $this->dm->persist($s);
 
         $c       = new PersonV();
         $c->name = "Cameron";
-        $this->manager->persist($c);
+        $this->dm->persist($c);
 
         $p        = new PostV();
         $p->title = "The Title";
-        $this->manager->persist($p);
+        $this->dm->persist($p);
 
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
-        $this->assertInstanceOf(PersonV::class, $this->manager->findByRid($j->rid));
-        $this->assertInstanceOf(PersonV::class, $this->manager->findByRid($s->rid));
-        $this->assertInstanceOf(PersonV::class, $this->manager->findByRid($c->rid));
-        $this->assertInstanceOf(PostV::class, $this->manager->findByRid($p->rid));
+        $this->assertInstanceOf(PersonV::class, $this->dm->findByRid($j->rid));
+        $this->assertInstanceOf(PersonV::class, $this->dm->findByRid($s->rid));
+        $this->assertInstanceOf(PersonV::class, $this->dm->findByRid($c->rid));
+        $this->assertInstanceOf(PostV::class, $this->dm->findByRid($p->rid));
 
         return [$j->rid, $s->rid, $c->rid, $p->rid];
     }
@@ -62,12 +56,12 @@ class PersistenceWithRelatedToViaTest extends TestCase
      * @param string[] $rids
      */
     public function add_LikedE_to_PostV($rids) {
-        /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
-        /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Graph\PersonV $j */
+        $j = $this->dm->findByRid($rids[0]);
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Graph\PersonV $s */
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PostV $p */
-        $p = $this->manager->findByRid($rids[3]);
+        $p = $this->dm->findByRid($rids[3]);
 
         $e              = new LikedE();
         $e->description = "d1";
@@ -75,17 +69,17 @@ class PersistenceWithRelatedToViaTest extends TestCase
         $e->in          = $p;
 
         $p->liked->add($e);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
-        /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
-        /** @var PostV $s */
-        $p = $this->manager->findByRid($rids[3]);
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Graph\PersonV $j */
+        $j = $this->dm->findByRid($rids[0]);
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Graph\PostV $s */
+        $p = $this->dm->findByRid($rids[3]);
 
         $this->assertCount(1, $p->liked);
 
-        /** @var LikedE $e */
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Graph\LikedE $e */
         $e = $p->liked->first();
         $this->assertEquals('d1', $e->description);
         $this->assertSame($p, $e->in);
@@ -100,15 +94,15 @@ class PersistenceWithRelatedToViaTest extends TestCase
      */
     public function delete_vertices($rids) {
         foreach ($rids as $rid) {
-            $v = $this->manager->findByRid($rid);
-            $this->manager->remove($v);
+            $v = $this->dm->findByRid($rid);
+            $this->dm->remove($v);
         }
 
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         foreach ($rids as $rid) {
-            $v = $this->manager->findByRid($rid);
+            $v = $this->dm->findByRid($rid);
             $this->assertNull($v);
         }
     }

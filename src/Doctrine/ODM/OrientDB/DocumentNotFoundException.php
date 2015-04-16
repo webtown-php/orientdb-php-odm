@@ -19,7 +19,7 @@
 
 namespace Doctrine\ODM\OrientDB;
 
-class DocumentNotFoundException extends OrientDBException
+class DocumentNotFoundException extends ODMOrientDbException
 {
     const MESSAGE = 'The object can not be converted to a POPO mapped by the ODM.';
 

@@ -34,6 +34,11 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
     private $evm;
 
     /**
+     * @var array
+     */
+    private $localOClassCache = [];
+
+    /**
      * Tries to find the PHP class mapping Doctrine\OrientDB's $OClass in each of the
      * directories where the documents are stored.
      *
@@ -44,6 +49,10 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
      * @throws OClassNotFoundException
      */
     public function getMetadataForOClass($OClass) {
+        if (isset($this->localOClassCache[$OClass])) {
+            return $this->getMetadataFor($this->localOClassCache[$OClass]);
+        }
+
         $cache = $this->getCacheDriver();
         if (!($cached = $cache->fetch('oclassmap' . $this->cacheSalt))) {
             $cached = [];
@@ -164,6 +173,8 @@ class ClassMetadataFactory extends AbstractClassMetadataFactory
         }
 
         $this->validateRuntimeMetadata($class, $parent);
+
+        $this->localOClassCache[$class->orientClass] = $class->name;
     }
 
     /**

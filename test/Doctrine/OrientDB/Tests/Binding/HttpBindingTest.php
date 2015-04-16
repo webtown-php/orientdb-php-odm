@@ -22,33 +22,33 @@ use PHPUnit\TestCase;
 class HttpBindingTest extends TestCase
 {
     public function testConnectToDatabase() {
-        $binding = $this->createHttpBinding(array(
+        $binding = self::createHttpBinding([
             'odb.username' => TEST_ODB_USER,
             'odb.password' => TEST_ODB_PASSWORD,
             'odb.database' => null,
-        ));
+        ]);
 
         $this->assertHttpStatus(200, $binding->connect(TEST_ODB_DATABASE));
     }
 
     public function testConnectToDatabaseWithWrongCredentials() {
-        $binding = $this->createHttpBinding(array(
+        $binding = self::createHttpBinding([
             'odb.username' => 'invalid',
             'odb.password' => 'invalid',
-        ));
+        ]);
 
         $this->assertHttpStatus(401, $binding->connect('INVALID_DB'));
     }
 
     public function testDisconnectFromTheServer() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $response = $binding->disconnect()->getInnerResponse();
         $this->assertEquals('Logged out', $response->getBody());
     }
 
     public function testClassMethods() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $this->assertHttpStatus(500, $binding->getClass('OMG'), 'Get a non existing class');
         $this->assertHttpStatus(201, $binding->postClass('OMG'), 'Create a class');
@@ -56,22 +56,18 @@ class HttpBindingTest extends TestCase
     }
 
     public function testClusterMethod() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
-        $this->assertHttpStatus(500, $binding->cluster('Address'));
-        $this->assertHttpStatus(200, $binding->cluster('Address', 1));
+        $this->assertHttpStatus(500, $binding->cluster('ORole'));
+        $this->assertHttpStatus(200, $binding->cluster('ORole', 1));
 
-        $result = json_decode($binding->cluster('Address', 1)->getInnerResponse()->getBody(), true);
-        $this->assertSame('Address', $result['result'][0]['@class'], 'The cluster is wrong');
-
-        $result = json_decode($binding->cluster('Country', 10)->getInnerResponse()->getBody(), true);
-        $this->assertSame('Country', $result['result'][0]['@class'], 'The cluster is wrong');
-        $this->assertCount(10, $result['result'], 'The limit is wrong');
+        $result = json_decode($binding->cluster('ORole', 1)->getInnerResponse()->getBody(), true);
+        $this->assertSame('ORole', $result['result'][0]['@class'], 'The cluster is wrong');
     }
 
     public function testServerMethod() {
 
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->getServer());
     }
@@ -80,22 +76,41 @@ class HttpBindingTest extends TestCase
      * @test
      */
     public function can_get_existing_database() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $this->assertInstanceOf('\stdClass', $res = $binding->getDatabase(TEST_ODB_DATABASE), 'Get information about an existing database');
     }
 
     /**
      * @test
+     */
+    public function databaseExists_returns_true_for_existing_database() {
+        $binding = self::createHttpBinding();
+
+        $this->assertTrue($binding->databaseExists(TEST_ODB_DATABASE), 'database should exist');
+    }
+
+    /**
+     * @test
+     */
+    public function databaseExists_returns_false_for_nonexistent_database() {
+        $binding = self::createHttpBinding();
+
+        $this->assertFalse($binding->databaseExists('INVALID_DB'), 'database should not exist');
+    }
+
+
+    /**
+     * @test
      * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
      */
     public function will_throw_exception_for_invalid_database() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
         $binding->getDatabase('INVALID_DB');
     }
 
     public function testListDatabasesMethod() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
         $this->assertInternalType('array', $binding->listDatabases());
     }
 
@@ -103,7 +118,7 @@ class HttpBindingTest extends TestCase
      * @test
      */
     public function can_create_database() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $db = $binding->createDatabase(TEST_ODB_DATABASE . '_temporary');
         $this->assertInstanceOf('\stdClass', $db, 'Create new database');
@@ -116,7 +131,7 @@ class HttpBindingTest extends TestCase
      * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
      */
     public function will_throw_exception_for_existing_database() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
         $binding->createDatabase(TEST_ODB_DATABASE . '_temporary');
     }
 
@@ -125,7 +140,7 @@ class HttpBindingTest extends TestCase
      * @depends can_create_database
      */
     public function can_delete_existing_database() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
         $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
     }
 
@@ -135,12 +150,12 @@ class HttpBindingTest extends TestCase
      * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
      */
     public function will_throw_exception_for_nonexistent_database() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
         $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
     }
 
     public function testCommandMethod() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->command('SELECT FROM Address'), 'Execute a simple select');
         $this->assertHttpStatus(200, $binding->command("SELECT FROM City WHERE name = 'Rome'"), 'Execute a select with WHERE condition');
@@ -150,7 +165,7 @@ class HttpBindingTest extends TestCase
     }
 
     public function testQueryMethod() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $this->assertHttpStatus(200, $binding->query('SELECT FROM Address'), 'Executes a SELECT');
         $this->assertHttpStatus(200, $binding->query('SELECT FROM Address', null, 10), 'Executes a SELECT with LIMIT');
@@ -195,7 +210,7 @@ class HttpBindingTest extends TestCase
     }
 
     public function testDocumentMethods() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $this->assertHttpStatus(500, $binding->getDocument('991'), 'Retrieves a document with an invalid RID');
         $this->assertHttpStatus(404, $binding->getDocument('9:10000'), 'Retrieves a non existing document');
@@ -204,7 +219,7 @@ class HttpBindingTest extends TestCase
     }
 
     public function testCreateDocument() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $document = json_encode(array('@class' => 'Address', 'name' => 'Pippo'));
 
@@ -223,7 +238,7 @@ class HttpBindingTest extends TestCase
      * @param $rid
      */
     public function testDocumentExists($rid) {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $binding->getAdapter()->getClient()->restart();
 
@@ -235,7 +250,7 @@ class HttpBindingTest extends TestCase
      * @depends testCreateDocument
      */
     public function testUpdateAnExistingRecord($rid) {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $binding->getAdapter()->getClient()->restart();
 
@@ -254,7 +269,7 @@ class HttpBindingTest extends TestCase
      * @depends testUpdateAnExistingRecord
      */
     public function testDeleteADocument($rid) {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $binding->getAdapter()->getClient()->restart();
 
@@ -269,7 +284,7 @@ class HttpBindingTest extends TestCase
      * @param $rid
      */
     public function testDocumentDoesNotExist($rid) {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
 
         $binding->getAdapter()->getClient()->restart();
 
@@ -278,7 +293,7 @@ class HttpBindingTest extends TestCase
     }
 
     public function testGetDatabaseName() {
-        $binding = $this->createHttpBinding();
+        $binding = self::createHttpBinding();
         $this->assertEquals(TEST_ODB_DATABASE, $binding->getDatabaseName());
     }
 

@@ -1,43 +1,59 @@
 <?php
 
-/**
- * ManagerTest class
- *
- * @package    Doctrine\ODM\OrientDB
- * @subpackage Test
- * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
- */
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\Address;
 use Doctrine\ODM\OrientDB\Tests\Models\Standard\Comment;
 use Doctrine\ODM\OrientDB\Tests\Models\Standard\Profile;
-use PHPUnit\TestCase;
 
 /**
  * @group integration
  */
-class DocumentManagerTest extends TestCase
+class DocumentManagerTest extends AbstractIntegrationTest
 {
     public $postId;
     public $addressId;
     public $profileId;
 
     public function setup() {
+        $this->useModelSet('standard');
+        parent::setUp();
         $this->postId    = $this->getClassId('Post');
         $this->addressId = $this->getClassId('Address');
         $this->profileId = $this->getClassId('Profile');
+
+        // load some data
+        $sql = [
+            'let r1 = INSERT INTO Comment SET body="hi"',
+            'let r2 = INSERT INTO Comment SET body="hello"',
+            'let r3 = INSERT INTO Post SET id=10',
+            'UPDATE $r3 ADD comments = $r1, comments = $r2',
+
+            'let r4 = INSERT INTO City SET name="Rome"',
+            'let r5 = INSERT INTO Address SET street="Street", city=$r4',
+
+            'return { "n1": $r1.@rid, "n2": $r2 }'
+        ];
+
+        $batch   = [
+            'transaction' => false,
+            'operations'  => [
+                [
+                    'type'     => 'script',
+                    'language' => 'sql',
+                    'script'   => $sql
+                ]
+            ]
+        ];
+        $response = $this->dm->getBinding()->batch(json_encode($batch));
     }
 
     /**
      * @group integration
      */
     public function testGettingARelatedCollectionViaLazyLoading() {
-        $manager = $this->createDocumentManager([
-            'mismatches_tolerance' => true,
-        ]);
+        $manager = $this->createDocumentManager();
 
         $post     = $manager->findByRid($this->postId . ':0', '*:0');
         $comments = $post->getComments();
@@ -49,7 +65,6 @@ class DocumentManagerTest extends TestCase
         $dm = $this->createDocumentManager();
         /** @var Profile $profile */
         $profile = $dm->find(Profile::class, $this->profileId . ':0');
-        $phones  = $profile->getPhones()->toArray();
     }
 
     /**
@@ -66,9 +81,7 @@ class DocumentManagerTest extends TestCase
      * @group integration
      */
     public function testFindingARecordWithAFetchPlan() {
-        $manager = $this->createDocumentManager([
-            'mismatches_tolerance' => true,
-        ]);
+        $manager = $this->createDocumentManager();
 
         $post = $manager->findByRid($this->postId . ':0', '*:-1');
 
@@ -92,9 +105,7 @@ class DocumentManagerTest extends TestCase
      * @group integration
      */
     public function testGettingARelatedCollection() {
-        $manager = $this->createDocumentManager([
-            'mismatches_tolerance' => true,
-        ]);
+        $manager = $this->createDocumentManager();
 
         $post     = $manager->findByRid($this->postId . ':0');
         $comments = $post->getComments();

@@ -85,6 +85,15 @@ interface BindingInterface
     public function getDatabase($database = null);
 
     /**
+     * Indicates whether the specified database exists
+     *
+     * @param string $database
+     *
+     * @return bool
+     */
+    public function databaseExists($database = null);
+
+    /**
      * Deletes an existing database.
      *
      * @api

@@ -3,34 +3,42 @@
 namespace Doctrine\ODM\OrientDB\Tests\Integration\Persister;
 
 
+use Doctrine\ODM\OrientDB\Tests\Integration\AbstractIntegrationTest;
 use Doctrine\ODM\OrientDB\Tests\Models\Standard\Post;
-use PHPUnit\TestCase;
 
 /**
  * @group integration
  */
-class DocumentPersisterTest extends TestCase
+class DocumentPersisterTest extends AbstractIntegrationTest
 {
     /**
      * @var int
      */
     private $postId;
 
+    private $rid;
+
     /**
      * @before
      */
     public function before() {
         $this->postId = $this->getClassId('Post');
+        $b            = $this->dm->getBinding();
+        $this->rid    = $b->command('INSERT INTO Post set id=10, title=20')->getData()->result[0]->{'@rid'};
+    }
+
+    protected function setUp() {
+        $this->useModelSet('standard');
+        parent::setUp();
     }
 
     /**
      * @test
      */
     public function exists_returns_true() {
-        $dm        = $this->createDocumentManager();
-        $dp        = $dm->getUnitOfWork()->getDocumentPersister(Post::class);
+        $dp        = $this->dm->getUnitOfWork()->getDocumentPersister(Post::class);
         $post      = new Post();
-        $post->rid = "#{$this->postId}:0";
+        $post->rid = $this->rid;
         $res       = $dp->exists($post);
         $this->assertTrue($res);
     }
@@ -39,9 +47,8 @@ class DocumentPersisterTest extends TestCase
      * @test
      */
     public function load_existing_document() {
-        $dm  = $this->createDocumentManager();
-        $dp  = $dm->getUnitOfWork()->getDocumentPersister(Post::class);
-        $rid = "#{$this->postId}:0";
+        $dp  = $this->dm->getUnitOfWork()->getDocumentPersister(Post::class);
+        $rid = $this->rid;
         /** @var Post $res */
         $res = $dp->load($rid);
         $this->assertInstanceOf(Post::class, $res);
@@ -52,8 +59,7 @@ class DocumentPersisterTest extends TestCase
      * @test
      */
     public function exists_returns_false() {
-        $dm        = $this->createDocumentManager();
-        $dp        = $dm->getUnitOfWork()->getDocumentPersister(Post::class);
+        $dp        = $this->dm->getUnitOfWork()->getDocumentPersister(Post::class);
         $post      = new Post();
         $post->rid = "#{$this->postId}:999999999";
         $res       = $dp->exists($post);

@@ -500,7 +500,7 @@ class UnitOfWork implements PropertyChangedListener
                     break;
                 }
             default:
-                throw OrientDBException::invalidDocumentState($documentState);
+                throw ODMOrientDbException::invalidDocumentState($documentState);
         }
 
         $this->cascadePersist($document, $visited);
@@ -669,7 +669,7 @@ class UnitOfWork implements PropertyChangedListener
      * @param object $document
      * @param array  $visited
      *
-     * @throws OrientDBException
+     * @throws ODMOrientDbException
      */
     private function doRemove($document, array &$visited) {
         $oid = spl_object_hash($document);
@@ -701,9 +701,9 @@ class UnitOfWork implements PropertyChangedListener
                 $this->scheduleForDelete($document);
                 break;
             case self::STATE_DETACHED:
-                throw OrientDBException::detachedDocumentCannotBeRemoved();
+                throw ODMOrientDbException::detachedDocumentCannotBeRemoved();
             default:
-                throw OrientDBException::invalidDocumentState($documentState);
+                throw ODMOrientDbException::invalidDocumentState($documentState);
         }
     }
 

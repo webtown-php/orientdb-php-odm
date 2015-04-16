@@ -2,7 +2,7 @@
 
 namespace Doctrine\ODM\OrientDB;
 
-class OrientDBException extends \Exception
+class ODMOrientDbException extends \Exception
 {
     /**
      * @return $this
@@ -22,7 +22,7 @@ class OrientDBException extends \Exception
     /**
      * @param $state
      *
-     * @return OrientDBException
+     * @return ODMOrientDbException
      */
     public static function invalidDocumentState($state) {
         return new self(sprintf('invalid document state "%s"', $state));

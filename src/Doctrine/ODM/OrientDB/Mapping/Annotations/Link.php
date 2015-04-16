@@ -13,5 +13,5 @@ class Link extends LinkPropertyBase
     /**
      * @var bool
      */
-    public $nullable = false;
+    public $nullable = true;
 }

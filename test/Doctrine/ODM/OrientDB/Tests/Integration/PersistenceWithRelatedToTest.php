@@ -2,24 +2,18 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
-use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\PersonV;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\PostV;
-use PHPUnit\TestCase;
+use Doctrine\ODM\OrientDB\Tests\Models\Graph\PersonV;
+use Doctrine\ODM\OrientDB\Tests\Models\Graph\PostV;
 
 /**
  * Tests
  * @group integration
  */
-class PersistenceWithRelatedToTest extends TestCase
+class PersistenceWithRelatedToTest extends AbstractIntegrationTest
 {
-    /**
-     * @var DocumentManager
-     */
-    protected $manager;
-
     protected function setUp() {
-        $this->manager = $this->createDocumentManager();
+        $this->useModelSet('graph');
+        parent::setUp();
     }
 
     /**
@@ -29,27 +23,27 @@ class PersistenceWithRelatedToTest extends TestCase
     public function persist_vertices() {
         $j       = new PersonV();
         $j->name = "Jennifer";
-        $this->manager->persist($j);
+        $this->dm->persist($j);
 
         $s       = new PersonV();
         $s->name = "Sydney";
-        $this->manager->persist($s);
+        $this->dm->persist($s);
 
         $c       = new PersonV();
         $c->name = "Cameron";
-        $this->manager->persist($c);
+        $this->dm->persist($c);
 
         $p        = new PostV();
         $p->title = "The Title";
-        $this->manager->persist($p);
+        $this->dm->persist($p);
 
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
-        $this->assertInstanceOf(PersonV::class, $this->manager->findByRid($j->rid));
-        $this->assertInstanceOf(PersonV::class, $this->manager->findByRid($s->rid));
-        $this->assertInstanceOf(PersonV::class, $this->manager->findByRid($c->rid));
-        $this->assertInstanceOf(PostV::class, $this->manager->findByRid($p->rid));
+        $this->assertInstanceOf(PersonV::class, $this->dm->findByRid($j->rid));
+        $this->assertInstanceOf(PersonV::class, $this->dm->findByRid($s->rid));
+        $this->assertInstanceOf(PersonV::class, $this->dm->findByRid($c->rid));
+        $this->assertInstanceOf(PostV::class, $this->dm->findByRid($p->rid));
 
         return [$j->rid, $s->rid, $c->rid, $p->rid];
     }
@@ -64,23 +58,23 @@ class PersistenceWithRelatedToTest extends TestCase
      */
     public function add_follows_and_also_included_in_related_followers($rids) {
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $j->follows->add($s);
         $j->follows->add($c);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $this->assertCount(2, $j->follows);
         $this->assertContains($s, $j->follows);
@@ -102,21 +96,21 @@ class PersistenceWithRelatedToTest extends TestCase
      * @param string[] $rids
      */
     public function remove_follows($rids) {
-        /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Graph\PersonV $j */
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $j->follows->removeElement($c);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $this->assertCount(1, $j->follows);
         $this->assertContains($s, $j->follows);
@@ -137,23 +131,23 @@ class PersistenceWithRelatedToTest extends TestCase
      */
     public function add_followers($rids) {
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $j->followers->add($s);
         $j->followers->add($c);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $this->assertCount(2, $j->followers);
         $this->assertContains($s, $j->followers);
@@ -178,18 +172,18 @@ class PersistenceWithRelatedToTest extends TestCase
      */
     public function clear_does_remove_all_followers($rids) {
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
 
         $j->followers->clear();
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PersonV $s */
-        $c = $this->manager->findByRid($rids[2]);
+        $c = $this->dm->findByRid($rids[2]);
 
         $this->assertCount(0, $j->followers);
 
@@ -208,23 +202,23 @@ class PersistenceWithRelatedToTest extends TestCase
      */
     public function add_likes_to_PersonV_and_PostV($rids) {
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PostV $s */
-        $p = $this->manager->findByRid($rids[3]);
+        $p = $this->dm->findByRid($rids[3]);
 
         $j->likes->add($s);
         $j->likes->add($p);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var PersonV $j */
-        $j = $this->manager->findByRid($rids[0]);
+        $j = $this->dm->findByRid($rids[0]);
         /** @var PersonV $s */
-        $s = $this->manager->findByRid($rids[1]);
+        $s = $this->dm->findByRid($rids[1]);
         /** @var PostV $s */
-        $p = $this->manager->findByRid($rids[3]);
+        $p = $this->dm->findByRid($rids[3]);
 
         $this->assertCount(2, $j->likes);
         $this->assertContains($s, $j->likes);
@@ -239,15 +233,15 @@ class PersistenceWithRelatedToTest extends TestCase
      */
     public function delete_vertices($rids) {
         foreach ($rids as $rid) {
-            $v = $this->manager->findByRid($rid);
-            $this->manager->remove($v);
+            $v = $this->dm->findByRid($rid);
+            $this->dm->remove($v);
         }
 
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         foreach ($rids as $rid) {
-            $v = $this->manager->findByRid($rid);
+            $v = $this->dm->findByRid($rid);
             $this->assertNull($v);
         }
     }

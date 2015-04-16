@@ -3,7 +3,7 @@
 namespace Doctrine\ODM\OrientDB;
 
 
-class ConfigurationException extends OrientDBException
+class ConfigurationException extends ODMOrientDbException
 {
     public static function missingKey($key) {
         return new self(sprintf('%s must be set in the configuration.', $key));

@@ -189,7 +189,6 @@ interface HttpBindingInterface extends BindingInterface
      */
     public function batch($batch, $database = null);
 
-
     /**
      * Sets the username and password used to authenticate to the server.
      *

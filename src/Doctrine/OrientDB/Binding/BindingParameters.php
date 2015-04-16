@@ -103,7 +103,7 @@ class BindingParameters
      *
      * @return BindingParameters
      */
-    public static function fromArray(Array $parameters) {
+    public static function fromArray(array $parameters) {
         $host = isset($parameters['host']) ? $parameters['host'] : self::DEFAULT_HOST;
         $port = isset($parameters['port']) ? $parameters['port'] : self::DEFAULT_PORT;
         $user = isset($parameters['username']) ? $parameters['username'] : null;

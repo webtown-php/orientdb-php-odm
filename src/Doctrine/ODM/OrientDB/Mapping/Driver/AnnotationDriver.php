@@ -149,7 +149,7 @@ class AnnotationDriver extends AbstractAnnotationDriver
             foreach ($pas as $ann) {
                 $mapping = [
                     'fieldName' => $property->getName(),
-                    'nullable'  => false,
+                    'nullable'  => true,
                 ];
 
                 if ($ann instanceof PropertyBase) {

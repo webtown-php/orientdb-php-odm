@@ -142,7 +142,7 @@ abstract class AbstractMappingDriverTest extends TestCase
         $this->assertArrayHasKey('min', $mapping);
         $this->assertArrayHasKey('max', $mapping);
 
-        $this->assertEquals(false, $mapping['nullable']);
+        $this->assertEquals(true, $mapping['nullable']);
         $this->assertEquals(false, $mapping['readonly']);
         $this->assertEquals(true, $mapping['mandatory']);
         $this->assertEquals(5, $mapping['min']);

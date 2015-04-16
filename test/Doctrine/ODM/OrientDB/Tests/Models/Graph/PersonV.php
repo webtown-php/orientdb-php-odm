@@ -1,6 +1,6 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Graph;
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 
 /**

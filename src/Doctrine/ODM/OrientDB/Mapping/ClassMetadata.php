@@ -289,7 +289,7 @@ class ClassMetadata implements DoctrineMetadata
      * @param string $className
      */
     public function __construct($className) {
-        $this->name   = $className;
+        $this->name         = $className;
         $this->instantiator = new Instantiator();
     }
 
@@ -759,6 +759,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapLink(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'link';
         $mapping['association'] = self::LINK;
         $mapping['reference']   = true;
         $this->_mapField($mapping);
@@ -776,6 +777,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapLinkList(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'linklist';
         $mapping['association'] = self::LINK_LIST;
         $mapping['reference']   = true;
         $this->_mapField($mapping);
@@ -794,6 +796,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapLinkSet(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'linkset';
         $mapping['association'] = self::LINK_SET;
         $mapping['reference']   = true;
         $this->_mapField($mapping);
@@ -812,6 +815,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapLinkMap(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'linkmap';
         $mapping['association'] = self::LINK_MAP;
         $mapping['reference']   = true;
         $this->_mapField($mapping);
@@ -831,6 +835,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapRelatedToLinkBag(array $mapping) {
         $this->_validateFieldMapping($mapping);
 
+        $mapping['type']          = 'linkbag';
         $mapping['association']   = self::LINK_BAG_EDGE;
         $mapping['reference']     = true;
         $mapping['cascade']       = ['persist'];
@@ -852,7 +857,7 @@ class ClassMetadata implements DoctrineMetadata
     public function mapVertexLink($mapping, $direction) {
         $mapping = array_merge([
             'name'        => $direction,
-            'type'        => 'object',
+            'type'        => 'link',
             'nullable'    => false,
             'association' => self::LINK,
             'reference'   => true,
@@ -874,6 +879,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapEmbedded(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'embedded';
         $mapping['association'] = self::EMBED;
         $mapping['embedded']    = true;
         $this->_mapField($mapping);
@@ -891,6 +897,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapEmbeddedList(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'embeddedlist';
         $mapping['association'] = self::EMBED_LIST;
         $mapping['embedded']    = true;
         $this->_mapField($mapping);
@@ -908,6 +915,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapEmbeddedSet(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'embeddedset';
         $mapping['association'] = self::EMBED_SET;
         $mapping['embedded']    = true;
         $this->_mapField($mapping);
@@ -925,6 +933,7 @@ class ClassMetadata implements DoctrineMetadata
      */
     public function mapEmbeddedMap(array $mapping) {
         $this->_validateFieldMapping($mapping);
+        $mapping['type']        = 'embeddedmap';
         $mapping['association'] = self::EMBED_MAP;
         $mapping['embedded']    = true;
         $this->_mapField($mapping);
@@ -1046,8 +1055,7 @@ class ClassMetadata implements DoctrineMetadata
      *
      * @todo Construct meaningful string representation.
      */
-    public function __toString()
-    {
+    public function __toString() {
         return __CLASS__ . '@' . spl_object_hash($this);
     }
 
@@ -1064,8 +1072,7 @@ class ClassMetadata implements DoctrineMetadata
      *
      * @return array The names of all the fields that should be serialized.
      */
-    public function __sleep()
-    {
+    public function __sleep() {
         // This metadata is always serialized/cached.
         $serialized = [
             'fieldMappings',

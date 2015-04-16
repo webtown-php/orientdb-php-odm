@@ -2,27 +2,19 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Integration;
 
-use Doctrine\ODM\OrientDB\DocumentManager;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\EmailAddressLink as EmailAddress;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\PersonLink as Person;
-use Doctrine\ODM\OrientDB\Tests\Models\Standard\PhoneLink as Phone;
-use PHPUnit\TestCase;
+use Doctrine\ODM\OrientDB\Tests\Models\Linked\EmailAddress as EmailAddress;
+use Doctrine\ODM\OrientDB\Tests\Models\Linked\Person as Person;
+use Doctrine\ODM\OrientDB\Tests\Models\Linked\Phone as Phone;
 
 /**
  * @group integration
  */
-class PersistenceWithLinkedDocumentTest extends TestCase
+class LinkedDocumentPersistenceTest extends AbstractIntegrationTest
 {
-    /**
-     * @var DocumentManager
-     */
-    protected $manager;
-
     protected function setUp() {
-        $this->manager = $this->createDocumentManager();
+        $this->useModelSet('linked');
+        parent::setUp();
     }
-
-    #region embedded persistence tests
 
     /**
      * @test
@@ -37,20 +29,20 @@ class PersistenceWithLinkedDocumentTest extends TestCase
 
         $d->email = $e;
 
-        $this->manager->persist($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->persist($d);
+        $this->dm->flush();
+        $this->dm->clear();
         $this->assertNotNull($d->rid, 'Person RID is null');
         $this->assertNotNull($e->rid, 'Email RID is null');
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($d->rid);
+        $d = $this->dm->findByRid($d->rid);
         $this->assertNotNull($d, 'missing Person');
         $this->assertEquals('Sydney', $d->name);
         $this->assertNotNull($d->email, 'email is null');
 
         /** @var EmailAddress $e */
-        $e = $this->manager->findByRid($e->rid);
+        $e = $this->dm->findByRid($e->rid);
         $this->assertNotNull($e);
 
         $this->assertSame($e, $d->email);
@@ -71,15 +63,15 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function update_top_level_and_linked_document($rid) {
         /** @var Person $d */
-        $d               = $this->manager->findByRid($rid);
+        $d               = $this->dm->findByRid($rid);
         $d->name         = 'Cameron';
         $d->email->email = 'cam@gmail.com';
 
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Cameron', $d->name);
         $this->assertNotNull($d->email);
         $this->assertEquals('cam@gmail.com', $d->email->email);
@@ -95,20 +87,20 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function update_linked_document_to_null($rid) {
         /** @var Person $d */
-        $d        = $this->manager->findByRid($rid);
+        $d        = $this->dm->findByRid($rid);
         $erid     = $d->email->rid;
         $d->email = null;
 
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Cameron', $d->name);
         $this->assertNull($d->email);
 
-        $this->assertNull($this->manager->findByRid($erid));
+        $this->assertNull($this->dm->findByRid($erid));
     }
 
     /**
@@ -118,18 +110,14 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      * @param string $rid
      */
     public function delete_document_with_linked($rid) {
-        $document = $this->manager->findByRid($rid);
-        $this->manager->remove($document);
-        $this->manager->flush();
+        $document = $this->dm->findByRid($rid);
+        $this->dm->remove($document);
+        $this->dm->flush();
         unset($document);
-        $this->manager->clear();
+        $this->dm->clear();
 
-        $this->assertNull($this->manager->findByRid($rid));
+        $this->assertNull($this->dm->findByRid($rid));
     }
-
-    #endregion
-
-    #region embedded list persistence test
 
     /**
      * @test
@@ -148,13 +136,13 @@ class PersistenceWithLinkedDocumentTest extends TestCase
 
         $d->emails = [$e1, $e2];
 
-        $this->manager->persist($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->persist($d);
+        $this->dm->flush();
+        $this->dm->clear();
         $this->assertNotNull($d->rid);
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($d->rid);
+        $d = $this->dm->findByRid($d->rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertCount(2, $d->emails);
 
@@ -171,15 +159,15 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function update_with_linked_list_document($rid) {
         /** @var Person $d */
-        $d                   = $this->manager->findByRid($rid);
+        $d                   = $this->dm->findByRid($rid);
         $d->emails[0]->email = 'cam@gmail.com';
 
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertCount(2, $d->emails);
         $this->assertEquals('cam@gmail.com', $d->emails[0]->email);
@@ -197,15 +185,15 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function remove_item_from_linked_list_document($rid) {
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         unset($d->emails[0]);
 
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertCount(1, $d->emails);
         $this->assertEquals('syd-home@gmail.com', $d->emails[0]->email);
@@ -223,22 +211,22 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function clear_linked_list_document($rid) {
         /** @var Person $d */
-        $d    = $this->manager->findByRid($rid);
+        $d    = $this->dm->findByRid($rid);
         $erid = $d->emails->first()->rid;
-        $this->manager->clear();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $d->emails->clear();
 
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertCount(0, $d->emails);
 
-        $this->assertNull($this->manager->findByRid($erid));
+        $this->assertNull($this->dm->findByRid($erid));
 
         return $rid;
     }
@@ -250,18 +238,14 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      * @param string $rid
      */
     public function delete_with_linked_list_document($rid) {
-        $d = $this->manager->findByRid($rid);
-        $this->manager->remove($d);
-        $this->manager->flush();
+        $d = $this->dm->findByRid($rid);
+        $this->dm->remove($d);
+        $this->dm->flush();
         unset($d);
-        $this->manager->clear();
+        $this->dm->clear();
 
-        $this->assertNull($this->manager->findByRid($rid));
+        $this->assertNull($this->dm->findByRid($rid));
     }
-
-    #endregion
-
-    #region embedded map persistence test
 
     /**
      * @test
@@ -281,13 +265,13 @@ class PersistenceWithLinkedDocumentTest extends TestCase
             'work' => $e2,
         ];
 
-        $this->manager->persist($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->persist($d);
+        $this->dm->flush();
+        $this->dm->clear();
         $this->assertNotNull($d->rid);
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($d->rid);
+        $d = $this->dm->findByRid($d->rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertCount(2, $d->phones);
         $actual = $d->phones->getKeys();
@@ -303,15 +287,15 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function update_existing_item_in_linked_map_document($rid) {
         /** @var Person $d */
-        $d                        = $this->manager->findByRid($rid);
+        $d                        = $this->dm->findByRid($rid);
         $d->phones['home']->phone = '4804442000';
 
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertArrayHasKey('home', $d->phones);
         $this->assertEquals('4804442000', $d->phones['home']->phone);
@@ -323,17 +307,17 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function update_add_new_key_to_existing_linked_map_document($rid) {
         /** @var Person $d */
-        $d                   = $this->manager->findByRid($rid);
+        $d                   = $this->dm->findByRid($rid);
         $p                   = new Phone();
         $p->phone            = '4801112222';
         $d->phones['mobile'] = $p;
 
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertCount(3, $d->phones);
         $this->assertArrayHasKey('mobile', $d->phones);
@@ -348,14 +332,14 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      */
     public function update_remove_existing_key_from_existing_linked_map_document($rid) {
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         unset($d->phones['mobile']);
         unset($d);
-        $this->manager->flush();
-        $this->manager->clear();
+        $this->dm->flush();
+        $this->dm->clear();
 
         /** @var Person $d */
-        $d = $this->manager->findByRid($rid);
+        $d = $this->dm->findByRid($rid);
         $this->assertEquals('Sydney', $d->name);
         $this->assertCount(2, $d->phones);
         $this->assertArrayNotHasKey('mobile', $d->phones);
@@ -368,14 +352,12 @@ class PersistenceWithLinkedDocumentTest extends TestCase
      * @param $rid
      */
     public function delete_with_linked_map_document($rid) {
-        $d = $this->manager->findByRid($rid);
-        $this->manager->remove($d);
-        $this->manager->flush();
+        $d = $this->dm->findByRid($rid);
+        $this->dm->remove($d);
+        $this->dm->flush();
         unset($d);
-        $this->manager->clear();
+        $this->dm->clear();
 
-        $this->assertNull($this->manager->findByRid($rid));
+        $this->assertNull($this->dm->findByRid($rid));
     }
-
-    #endregion
-} 
+}

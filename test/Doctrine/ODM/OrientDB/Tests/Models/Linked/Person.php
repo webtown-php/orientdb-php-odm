@@ -1,10 +1,10 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Linked;
 use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
 
 /**
- * @Document(oclass="Person")
+ * @Document(oclass="LinkedPerson")
  */
 class Person
 {
@@ -26,19 +26,25 @@ class Person
     public $name;
 
     /**
-     * @Embedded(targetDoc="EmailAddress", nullable=true)
+     * @Link(targetDoc="EmailAddress", nullable=true, cascade={"persist"}, orphanRemoval=true)
      * @var EmailAddress
      */
     public $email;
 
     /**
-     * @EmbeddedList(targetDoc="EmailAddress")
+     * @Link(targetDoc="EmailAddress", nullable=true, cascade={"persist"})
+     * @var EmailAddress
+     */
+    public $emailNoOrphan;
+
+    /**
+     * @LinkList(targetDoc="EmailAddress", cascade={"persist"}, orphanRemoval=true)
      * @var EmailAddress[]|PersistentCollection
      */
     public $emails;
 
     /**
-     * @EmbeddedMap(targetDoc="Phone")
+     * @LinkMap(targetDoc="Phone", cascade={"persist"}, orphanRemoval=true)
      * @var Phone[]|PersistentCollection
      */
     public $phones;

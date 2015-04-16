@@ -2,7 +2,7 @@
 
 namespace Doctrine\OrientDB\Types;
 
-class LinkSetType extends Type
+class LinkSetType extends ComplexType
 {
 
 }

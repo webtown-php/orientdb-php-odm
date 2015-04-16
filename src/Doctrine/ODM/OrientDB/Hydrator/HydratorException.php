@@ -2,9 +2,9 @@
 
 namespace Doctrine\ODM\OrientDB\Hydrator;
 
-use Doctrine\ODM\OrientDB\OrientDBException;
+use Doctrine\ODM\OrientDB\ODMOrientDbException;
 
-class HydratorException extends OrientDBException
+class HydratorException extends ODMOrientDbException
 {
 
 }

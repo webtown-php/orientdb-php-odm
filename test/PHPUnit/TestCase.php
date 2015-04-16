@@ -10,7 +10,6 @@
 namespace PHPUnit;
 
 use Doctrine\Common\Cache\ArrayCache;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\ODM\OrientDB\Configuration;
 use Doctrine\ODM\OrientDB\DocumentManager;
@@ -26,9 +25,7 @@ use Prophecy\Prophet;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
-    const COLLECTION_CLASS = ArrayCollection::class;
-
-    protected function getBindingParameters($options) {
+    protected static function getBindingParameters($options) {
         $parameters = array();
 
         array_walk($options, function ($value, $key) use (&$parameters) {
@@ -40,8 +37,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return BindingParameters::fromArray($parameters);
     }
 
-    protected function createHttpBinding(array $opts = []) {
-        $opts = array_merge(array(
+    protected static function createHttpBinding(array $opts = []) {
+        $opts = array_merge([
             'http.adapter' => null,
             'http.restart' => false,
             'http.timeout' => TEST_ODB_TIMEOUT,
@@ -50,14 +47,14 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'odb.username' => TEST_ODB_USER,
             'odb.password' => TEST_ODB_PASSWORD,
             'odb.database' => TEST_ODB_DATABASE,
-        ), $opts);
+        ], $opts);
 
         if (!isset($opts['adapter'])) {
             $client          = new CurlClient($opts['http.restart'], $opts['http.timeout']);
             $opts['adapter'] = new CurlClientAdapter($client);
         }
 
-        $parameters = $this->getBindingParameters($opts);
+        $parameters = self::getBindingParameters($opts);
         $binding    = new HttpBinding($parameters, $opts['adapter']);
 
         return $binding;
@@ -69,7 +66,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      * @return String
      */
     public function getClassId($className) {
-        return $this->createHttpBinding()->getClass($className)->getData()->clusters[0];
+        return self::createHttpBinding()->getClass($className)->getData()->clusters[0];
     }
 
 
@@ -88,14 +85,18 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param array $opts
-     * @param array $paths
+     * @param array  $opts
+     * @param array  $paths
      *
      * @return DocumentManager
      */
     protected function createDocumentManager(array $opts = [], $paths = []) {
-        $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
-        $binding    = new HttpBinding($parameters);
+        if (isset($opts['binding'])) {
+            $binding = $opts['binding'];
+        } else {
+            $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
+            $binding    = new HttpBinding($parameters);
+        }
 
         return $this->createDocumentManagerWithBinding($binding, $opts, $paths);
     }
@@ -110,7 +111,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function createDocumentManagerWithBinding(HttpBindingInterface $binding, array $opts = [], $paths = []) {
         $config = $this->getConfiguration($opts);
         if (empty($paths)) {
-            $paths = [__DIR__ . '/../Doctrine/ODM/OrientDB/Tests/Models/Standard'];
+            $paths = [__DIR__ . '/../Doctrine/ODM/OrientDB/Tests/Models'];
         }
         $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver($paths));
         $config->setMetadataCacheImpl(new ArrayCache());

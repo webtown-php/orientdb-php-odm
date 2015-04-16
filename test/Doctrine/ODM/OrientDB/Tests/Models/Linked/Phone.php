@@ -1,9 +1,9 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Linked;
 
 /**
- * @EmbeddedDocument(oclass="Phone")
+ * @Document(oclass="LinkedPhone")
  */
 class Phone
 {

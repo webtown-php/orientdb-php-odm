@@ -19,7 +19,7 @@
 
 namespace Doctrine\ODM\OrientDB;
 
-class OClassNotFoundException extends OrientDBException
+class OClassNotFoundException extends ODMOrientDbException
 {
     const MESSAGE = 'Unable to find a PHP class mapped for "%s".';
 

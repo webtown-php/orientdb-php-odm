@@ -1,11 +1,11 @@
 <?php
 
-namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
+namespace Doctrine\ODM\OrientDB\Tests\Models\Embedded;
 
 /**
- * @Document(oclass="EmailAddressLink")
+ * @EmbeddedDocument(oclass="EmbeddedEmailAddress")
  */
-class EmailAddressLink
+class EmailAddress
 {
     /**
      * @RID

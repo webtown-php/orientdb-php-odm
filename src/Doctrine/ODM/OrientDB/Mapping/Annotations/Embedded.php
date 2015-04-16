@@ -11,5 +11,5 @@ class Embedded extends EmbeddedPropertyBase
     /**
      * @var bool
      */
-    public $nullable = false;
+    public $nullable = true;
 }

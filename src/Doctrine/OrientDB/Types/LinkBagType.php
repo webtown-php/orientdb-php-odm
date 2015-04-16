@@ -2,7 +2,7 @@
 
 namespace Doctrine\OrientDB\Types;
 
-class LinkBagType extends Type
+class LinkBagType extends ComplexType
 {
 
 }

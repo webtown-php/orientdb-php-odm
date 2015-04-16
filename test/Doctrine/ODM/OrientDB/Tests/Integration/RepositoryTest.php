@@ -33,9 +33,7 @@ class RepositoryTest extends TestCase
      * @return \Doctrine\ODM\OrientDB\DocumentRepository
      */
     protected function createRepository($class) {
-        $manager = $this->createDocumentManager(array(
-            'mismatches_tolerance' => true,
-        ));
+        $manager = $this->createDocumentManager();
 
         $repository = $manager->getRepository($class);
 
@@ -53,7 +51,7 @@ class RepositoryTest extends TestCase
         $class      = 'Doctrine\ODM\OrientDB\Tests\Models\Standard\Post';
         $repository = $this->createRepository($class);
 
-        /** @var \Doctrine\ODM\OrientDB\Tests\Models\Blog\Post $post */
+        /** @var Post $post */
         $post = $repository->findWithPlan($this->postId . ':0', '*:0');
         $this->assertInstanceOf(PersistentCollection::class, $post->getComments());
 

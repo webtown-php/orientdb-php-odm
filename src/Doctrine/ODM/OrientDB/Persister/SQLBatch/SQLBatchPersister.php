@@ -6,7 +6,7 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ODM\OrientDB\LockException;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
-use Doctrine\ODM\OrientDB\OrientDBException;
+use Doctrine\ODM\OrientDB\ODMOrientDbException;
 use Doctrine\ODM\OrientDB\Persister\CommitOrderCalculator;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\UnitOfWork;
@@ -422,7 +422,7 @@ class SQLBatchPersister implements PersisterInterface
      * @param object        $document
      *
      * @return \stdClass $insertData
-     * @throws OrientDBException
+     * @throws ODMOrientDbException
      */
     public function prepareData(ClassMetadata $class, UnitOfWork $uow, $document) {
         $insertData = new \stdClass();
@@ -518,7 +518,7 @@ class SQLBatchPersister implements PersisterInterface
 
         $rid = $rmd->getIdentifierValue($ref);
         if ($rid === null) {
-            throw new OrientDBException('missing reference');
+            throw new ODMOrientDbException('missing reference');
         }
 
         static $rid_type;

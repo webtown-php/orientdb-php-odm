@@ -38,5 +38,10 @@ class MapPoint
     /**
      * @Property(type="double")
      */
+    public $x;
+
+    /**
+     * @Property(type="double")
+     */
     public $y;
 }

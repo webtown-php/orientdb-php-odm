@@ -2,7 +2,7 @@
 
 namespace Doctrine\OrientDB\Types;
 
-class EmbeddedMapType extends Type
+class EmbeddedMapType extends ComplexType
 {
 
 }

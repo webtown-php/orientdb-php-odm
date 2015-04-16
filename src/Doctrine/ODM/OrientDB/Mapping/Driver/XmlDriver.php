@@ -286,7 +286,7 @@ class XmlDriver extends FileDriver
         foreach ($xmlRoot->{'field'} as $field) {
             $mapping = [
                 'type'      => 'string',
-                'nullable'  => false,
+                'nullable'  => true,
                 'mandatory' => false,
                 'readonly'  => false,
                 'min'       => null,

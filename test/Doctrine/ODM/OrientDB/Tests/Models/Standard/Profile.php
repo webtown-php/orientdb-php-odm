@@ -20,8 +20,6 @@
 
 namespace Doctrine\ODM\OrientDB\Tests\Models\Standard;
 
-use Doctrine\ODM\OrientDB\Collections\PersistentCollection;
-
 /**
  * @Document(oclass="Profile")
  */
@@ -47,26 +45,4 @@ class Profile
      * @var Profile[]
      */
     public $followers;
-
-    /**
-     * @EmbeddedList(targetDoc="Phone")
-     * @var Phone[]
-     */
-    public $phones;
-
-    /**
-     * @return Phone[]|\Doctrine\ODM\OrientDB\Collections\PersistentCollection
-     */
-    public function getPhones() {
-        return $this->phones;
-    }
-
-    /**
-     * @return Profile[]|PersistentCollection
-     */
-    public function getFollowers() {
-        return $this->followers;
-    }
-
-
 }

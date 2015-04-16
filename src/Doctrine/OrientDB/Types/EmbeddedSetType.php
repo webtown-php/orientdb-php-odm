@@ -2,7 +2,7 @@
 
 namespace Doctrine\OrientDB\Types;
 
-class EmbeddedSetType extends Type
+class EmbeddedSetType extends ComplexType
 {
 
 }

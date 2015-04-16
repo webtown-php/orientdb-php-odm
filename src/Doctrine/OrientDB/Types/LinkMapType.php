@@ -2,7 +2,7 @@
 
 namespace Doctrine\OrientDB\Types;
 
-class LinkMapType extends Type
+class LinkMapType extends ComplexType
 {
 
 }

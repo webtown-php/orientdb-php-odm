@@ -2,9 +2,9 @@
 
 namespace Doctrine\ODM\OrientDB\Persister\SQLBatch;
 
-use Doctrine\ODM\OrientDB\OrientDBException;
+use Doctrine\ODM\OrientDB\ODMOrientDbException;
 
-class SQLBatchException extends OrientDBException
+class SQLBatchException extends ODMOrientDbException
 {
 
 }

@@ -83,6 +83,6 @@ class CurlClientAdapterResult implements HttpBindingResultInterface
      * {@inheritdoc}
      */
     protected function isValidRid($body) {
-        return preg_match('/#\d+:\d+/', $body);
+        return preg_match('/#\d+:\d+/S', $body);
     }
 }

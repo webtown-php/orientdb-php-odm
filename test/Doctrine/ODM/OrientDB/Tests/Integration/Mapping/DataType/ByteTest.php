@@ -1,27 +1,14 @@
 <?php
 
-/**
- * ByteTest
- *
- * @package    Doctrine\ODM\OrientDB
- * @subpackage Test
- * @author     Alessandro Nadalin <alessandro.nadalin@gmail.com>
- * @author     David Funaro <ing.davidino@gmail.com>
- * @version
- */
-
 namespace Doctrine\ODM\OrientDB\Tests\Integration\Mapping\DataType;
-
-use PHPUnit\TestCase;
 
 /**
  * @group integration
  */
-class ByteTest extends TestCase
+class ByteTest extends AbstractDataTypeTest
 {
     public function testHydrationOfAByteProperty() {
-        $manager = $this->createDocumentManager();
-        $role    = $manager->findByRid("#4:0");
+        $role = $this->dm->findByRid("#4:0");
 
         $this->assertInternalType('integer', $role->mode);
     }
