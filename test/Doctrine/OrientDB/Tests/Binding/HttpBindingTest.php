@@ -33,17 +33,6 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(200, $binding->connect(TEST_ODB_DATABASE));
     }
 
-    /**
-     * @test
-     */
-    public function testy() {
-        $c = new PhpOrient(TEST_ODB_HOST, TEST_ODB_PORT);
-        $res = $c->connect(TEST_ODB_USER, TEST_ODB_PASSWORD);
-        $map = $c->dbOpen('ODMTest', TEST_ODB_USER, TEST_ODB_PASSWORD);
-        $rec = $c->recordLoad(new ID('#19:0'));
-        $res = $c->query('select from Post', 20, '*:2');
-    }
-
     public function testConnectToDatabaseWithWrongCredentials() {
         $binding = self::createHttpBinding([
             'odb.username' => 'invalid',
