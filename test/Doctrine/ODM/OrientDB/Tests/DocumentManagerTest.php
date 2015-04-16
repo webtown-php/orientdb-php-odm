@@ -16,8 +16,7 @@ namespace Doctrine\ODM\OrientDB\Tests;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact\Address;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
-use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use PHPUnit\TestCase;
 use Prophecy\Argument as Arg;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -32,18 +31,10 @@ class DocumentManagerTest extends TestCase
             "out": ["#20:1"]
         }');
 
-        /** @var HttpBindingResultInterface|ObjectProphecy $result */
-        $result = $this->prophesize(HttpBindingResultInterface::class);
-        $result->isValid()
-               ->willReturn(true);
-        $result->getData()
-               ->willReturn($rawResult);
-
-
-        /** @var HttpBindingInterface|ObjectProphecy $binding */
-        $binding = $this->prophesize(HttpBindingInterface::class);
+        /** @var BindingInterface|ObjectProphecy $binding */
+        $binding = $this->prophesize(BindingInterface::class);
         $binding->getDocument(Arg::any(), Arg::any())
-                ->willReturn($result->reveal());
+                ->willReturn($rawResult);
 
         $data = <<<JSON
 {

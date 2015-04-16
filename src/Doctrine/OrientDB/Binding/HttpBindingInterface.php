@@ -96,31 +96,6 @@ interface HttpBindingInterface extends BindingInterface
     public function disconnect();
 
     /**
-     * Retrieves a record from the database. An optional fetch plan can be used to
-     * specify how to retrieve the graph and limit its depth.
-     *
-     * @api
-     *
-     * @param string $rid
-     * @param string $fetchPlan
-     *
-     * @param string $database
-     *
-     * @return HttpBindingResultInterface
-     */
-    public function getDocument($rid, $fetchPlan = null, $database = null);
-
-    /**
-     * Determines if a document exists for the specified $rid
-     *
-     * @param string $rid
-     * @param string $database
-     *
-     * @return bool
-     */
-    public function documentExists($rid, $database = null);
-
-    /**
      * Stores a new document in the database.
      *
      * @api
@@ -157,17 +132,6 @@ interface HttpBindingInterface extends BindingInterface
      * @return BindingResultInterface
      */
     public function deleteDocument($rid, $version = null, $database = null);
-
-
-    /**
-     * Sends a batch to the database.
-     *
-     * @param      $batch
-     * @param null $database
-     *
-     * @return \Doctrine\OrientDB\Binding\Adapter\CurlClientAdapterResult|\Doctrine\OrientDB\Binding\BindingResultInterface
-     */
-    public function batch($batch, $database = null);
 
     /**
      * Sets the username and password used to authenticate to the server.

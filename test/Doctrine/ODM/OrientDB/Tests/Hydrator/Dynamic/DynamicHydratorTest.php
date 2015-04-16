@@ -86,7 +86,7 @@ JSON;
             "contact": "#1:1"
         }';
         $binding->getDocument(Arg::is("#2:1"), Arg::any())
-                ->willReturn($this->newBindingStub($rawResult)->reveal());
+                ->willReturn(json_decode($rawResult));
 
         $rawResult = '[{
             "@type": "d", "@rid": "#3:1", "@version": 1, "@class": "LinkedPhone",

@@ -71,12 +71,9 @@ class SQLBatchPersisterWithEmbeddedDocumentTest extends TestCase
 JSON
         );
 
-        $ri = $this->prophesize(BindingResultInterface::class);
-        $ri->getData()
-           ->willReturn($res);
         $b = $this->prophesize(HttpBindingInterface::class);
-        $b->batch(Arg::any())
-          ->willReturn($ri->reveal());
+        $b->sqlBatch(Arg::any())
+          ->willReturn($res);
 
         $p = new SQLBatchPersister($this->metadataFactory, $b->reveal());
         $p->process($uow->reveal());

@@ -25,7 +25,6 @@ use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
 use Doctrine\OrientDB\Binding\Exception\BindingException;
 use Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException;
 use Doctrine\OrientDB\OrientDBException as OrientException;
-use Doctrine\OrientDB\Query\Command\Select;
 
 class HttpBinding implements HttpBindingInterface
 {
@@ -304,11 +303,10 @@ class HttpBinding implements HttpBindingInterface
     /**
      * @inheritdoc
      */
-    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null) {
-        $database = $database ?: $this->database;
-        $this->ensureDatabase($database);
+    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS) {
+        $this->ensureDatabase($this->database);
 
-        $location = $this->getLocation('command', $database, array($language, $query));
+        $location = $this->getLocation('command', $this->database, [$language, $query]);
 
         return $this->adapter->request('POST', $location);
     }
@@ -316,8 +314,8 @@ class HttpBinding implements HttpBindingInterface
     /**
      * @inheritdoc
      */
-    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null) {
-        $location = $this->getQueryLocation($database ?: $this->database, $query, $limit, $fetchPlan, $language);
+    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS) {
+        $location = $this->getQueryLocation($this->database, $query, $limit, $fetchPlan, $language);
 
         return $this->adapter->request('GET', $location);
     }
@@ -325,22 +323,32 @@ class HttpBinding implements HttpBindingInterface
     /**
      * @inheritdoc
      */
-    public function getDocument($rid, $fetchPlan = null, $database = null) {
-        $location = $this->getDocumentLocation($database ?: $this->database, $rid, $fetchPlan);
+    public function getDocument($rid, $fetchPlan = null) {
+        $location = $this->getDocumentLocation($this->database, $rid, $fetchPlan);
 
-        return $this->adapter->request('GET', $location);
+        $result = $this->adapter->request('GET', $location);
+        $res = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 200:
+                return $result->getData();
+
+            case 404:
+                return null;
+
+            default:
+                throw new BindingException('invalid RID');
+        }
     }
 
     /**
      * Determines if a document exists for the specified $rid
      *
      * @param string $rid
-     * @param string $database
      *
      * @return bool
      */
-    public function documentExists($rid, $database = null) {
-        $location = $this->getDocumentLocation($database ?: $this->database, $rid);
+    public function documentExists($rid) {
+        $location = $this->getDocumentLocation($this->database, $rid);
 
         return $this->adapter->request('HEAD', $location)->getInnerResponse()->getStatusCode() === 204;
     }
@@ -412,10 +420,22 @@ class HttpBinding implements HttpBindingInterface
     /**
      * @inheritdoc
      */
-    public function batch($batch, $database = null) {
-        $location = $this->getLocation('batch', $database ?: $this->database);
+    public function sqlBatch($cmd, $transaction = true) {
+        $location = $this->getLocation('batch', $this->database);
 
-        return $this->adapter->request('POST', $location, array(), $batch);
+        $batch   = [
+            'transaction' => $transaction,
+            'operations'  => [
+                [
+                    'type'     => 'script',
+                    'language' => 'sql',
+                    'script'   => $cmd
+                ]
+            ]
+        ];
+
+
+        return $this->adapter->request('POST', $location, array(), json_encode($batch))->getData();
     }
 
     /**

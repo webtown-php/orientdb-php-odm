@@ -31,22 +31,8 @@ class SchemaTool
     public function createSchema(array $classes) {
         $sql = $this->getCreateSchemaSql($classes);
 
-        $b      = $this->_dm->getBinding();
-        $batch  = [
-            'transaction' => false,
-            'operations'  => [
-                [
-                    'type'     => 'script',
-                    'language' => 'sql',
-                    'script'   => $sql
-                ]
-            ]
-        ];
-        $result = $b->batch(json_encode($batch));
-        $res    = $result->getInnerResponse();
-        if (in_array($res->getStatusCode(), [200, 204])) {
-            return;
-        }
+        $b = $this->_dm->getBinding();
+        $b->sqlBatch($sql, false);
     }
 
     /**
@@ -88,7 +74,7 @@ class SchemaTool
         $processedClasses = [];
 
         $children = [];
-        $schema = new OSchema();
+        $schema   = new OSchema();
         foreach ($classes as $class) {
             if ($this->processingNotRequired($class, $processedClasses)) {
                 continue;
@@ -105,7 +91,7 @@ class SchemaTool
         }
 
         /**
-         * @var OClass $child
+         * @var OClass        $child
          * @var ClassMetadata $parentClass
          */
         foreach ($children as list($child, $parentClass)) {

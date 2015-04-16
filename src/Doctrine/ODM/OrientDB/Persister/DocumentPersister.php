@@ -8,7 +8,6 @@ use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Query\QueryBuilder;
 
 class DocumentPersister
 {
@@ -20,7 +19,7 @@ class DocumentPersister
     private $dm;
 
     /**
-     * @var \Doctrine\OrientDB\Binding\HttpBindingInterface
+     * @var \Doctrine\OrientDB\Binding\BindingInterface
      */
     private $binding;
 
@@ -79,8 +78,8 @@ class DocumentPersister
      */
     public function load($rid, $fetchPlan = '*:0', $document = null) {
         $result = $this->binding->getDocument($rid, $fetchPlan);
-        if ($result->isValid()) {
-            return $this->createDocument($result->getData(), $document);
+        if ($result) {
+            return $this->createDocument($result, $document);
         }
 
         return null;

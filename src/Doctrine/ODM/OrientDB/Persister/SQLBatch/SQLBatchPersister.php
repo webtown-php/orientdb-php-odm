@@ -10,7 +10,7 @@ use Doctrine\ODM\OrientDB\ODMOrientDbException;
 use Doctrine\ODM\OrientDB\Persister\CommitOrderCalculator;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Types\Type;
 
 class SQLBatchPersister implements PersisterInterface
@@ -21,7 +21,7 @@ class SQLBatchPersister implements PersisterInterface
     private $metadataFactory;
 
     /**
-     * @var HttpBindingInterface
+     * @var BindingInterface
      */
     private $binding;
 
@@ -35,7 +35,7 @@ class SQLBatchPersister implements PersisterInterface
      */
     private $varId = 0;
 
-    public function __construct(ClassMetadataFactory $mdf, HttpBindingInterface $binding) {
+    public function __construct(ClassMetadataFactory $mdf, BindingInterface $binding) {
         $this->metadataFactory = $mdf;
         $this->binding         = $binding;
     }
@@ -355,17 +355,7 @@ class SQLBatchPersister implements PersisterInterface
      * @throws SQLBatchException
      */
     private function executeQueries(array $queries) {
-        $batch   = [
-            'transaction' => true,
-            'operations'  => [
-                [
-                    'type'     => 'script',
-                    'language' => 'sql',
-                    'script'   => $queries
-                ]
-            ]
-        ];
-        $results = $this->binding->batch(json_encode($batch))->getData()->result;
+        $results = $this->binding->sqlBatch($queries)->result;
         if (!is_array($results) || count($results) !== 1) {
             throw new SQLBatchException('unexpected response from server when executing batch request');
         }

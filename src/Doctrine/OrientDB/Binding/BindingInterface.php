@@ -43,11 +43,11 @@ interface BindingInterface
      *
      * @param string $query
      * @param string $language
-     * @param string $database
      *
      * @return BindingResultInterface
+     *
      */
-    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null);
+    public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS);
 
     /**
      * Executes a raw query on the given database.
@@ -63,11 +63,11 @@ interface BindingInterface
      * @param int    $limit Maximum number of records (default is 20).
      * @param string $fetchPlan
      * @param string $language
-     * @param string $database
      *
      * @return BindingResultInterface
+     *
      */
-    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null);
+    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS);
 
     /**
      * Returns the name of the database the binding is
@@ -129,4 +129,35 @@ interface BindingInterface
      * @return \stdClass
      */
     public function createDatabase($database, $storage = 'memory', $type = 'document');
+
+    /**
+     * Retrieves a record from the database. An optional fetch plan can be used to
+     * specify how to retrieve the graph and limit its depth.
+     *
+     * @api
+     *
+     * @param string $rid
+     * @param string $fetchPlan
+     *
+     * @return mixed|null
+     *
+     */
+    public function getDocument($rid, $fetchPlan = null);
+
+    /**
+     * Determines if a document exists for the specified $rid
+     *
+     * @param string $rid
+     *
+     * @return bool
+     */
+    public function documentExists($rid);
+
+    /**
+     * @param string $cmd
+     * @param bool   $transaction
+     *
+     * @return mixed
+     */
+    public function sqlBatch($cmd, $transaction = true);
 }

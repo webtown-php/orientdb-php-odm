@@ -33,6 +33,17 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(200, $binding->connect(TEST_ODB_DATABASE));
     }
 
+    /**
+     * @test
+     */
+    public function testy() {
+        $c = new PhpOrient(TEST_ODB_HOST, TEST_ODB_PORT);
+        $res = $c->connect(TEST_ODB_USER, TEST_ODB_PASSWORD);
+        $map = $c->dbOpen('ODMTest', TEST_ODB_USER, TEST_ODB_PASSWORD);
+        $rec = $c->recordLoad(new ID('#19:0'));
+        $res = $c->query('select from Post', 20, '*:2');
+    }
+
     public function testConnectToDatabaseWithWrongCredentials() {
         $binding = self::createHttpBinding([
             'odb.username' => 'invalid',
@@ -211,13 +222,32 @@ class HttpBindingTest extends TestCase
         $binding->deleteClass('MyClass');
     }
 
-    public function testDocumentMethods() {
+    /**
+     * @test
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
+     */
+    public function getDocument_with_invalid_cluster_throws_exception() {
+        $binding = self::createHttpBinding();
+        $binding->getDocument('999:0');
+    }
+
+    /**
+     * @test
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
+     */
+    public function getDocument_with_invalid_RID_throws_exception() {
+        $binding = self::createHttpBinding();
+        $binding->getDocument('991');
+    }
+
+    /**
+     * @test
+     */
+    public function getDocument_returns_expected_result() {
         $binding = self::createHttpBinding();
 
-        $this->assertHttpStatus(500, $binding->getDocument('991'), 'Retrieves a document with an invalid RID');
-        $this->assertHttpStatus(404, $binding->getDocument('9:10000'), 'Retrieves a non existing document');
-        $this->assertHttpStatus(500, $binding->getDocument('999:0'), 'Retrieves a document from a non existing cluster');
-        $this->assertHttpStatus(200, $binding->getDocument('1:0'), 'Retrieves a valid document');
+        $this->assertNull($binding->getDocument('9:10000'), 'Retrieves a non existing document');
+        $this->assertNotNull($binding->getDocument('1:0'), 'Retrieves a valid document');
     }
 
     public function testCreateDocument() {
@@ -256,12 +286,12 @@ class HttpBindingTest extends TestCase
 
         $binding->getAdapter()->getClient()->restart();
 
-        $_document = json_decode($binding->getDocument($rid)->getInnerResponse()->getBody(), true);
-        $document  = json_encode(array('@rid' => $rid, '@class' => 'Address', 'name' => 'Test', '@version' => $_document['@version']));
+        $_document = $binding->getDocument($rid);
+        $document  = json_encode(array('@rid' => $rid, '@class' => 'Address', 'name' => 'Test', '@version' => $_document->{'@version'}));
         $putResult = $binding->putDocument($rid, $document);
 
         $this->assertEquals(200, $putResult->getInnerResponse()->getStatusCode(), "Wrong Status Code");
-        $document = json_encode(array('@rid' => 898989, '@class' => 'Address', 'name' => 'Test', '@version' => $_document['@version']));
+        $document = json_encode(array('@rid' => 898989, '@class' => 'Address', 'name' => 'Test', '@version' => $_document->{'@version'}));
         $this->assertHttpStatus(500, $binding->putDocument('9991', $document), 'Updates an invalid document');
 
         return $rid;
@@ -316,30 +346,5 @@ class HttpBindingTest extends TestCase
         $binding    = new HttpBinding($parameters, $adapter);
 
         $binding->query("SELECT OMNOMNOMN", 2, "*:1 field1:3");
-    }
-
-    public function testOptionalDatabaseArgumentDoesNotSwitchCurrentDatabase() {
-        $host     = TEST_ODB_HOST;
-        $port     = TEST_ODB_HTTP_PORT;
-        $database = TEST_ODB_DATABASE;
-
-        $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
-        $adapter->expects($this->at(0))
-                ->method('request')
-                ->with('POST', "http://$host:$port/command/$database/sql/SELECT%201", null, null);
-        $adapter->expects($this->at(1))
-                ->method('request')
-                ->with('POST', "http://$host:$port/command/HIJACKED/sql/SELECT%202", null, null);
-        $adapter->expects($this->at(2))
-                ->method('request')
-                ->with('POST', "http://$host:$port/command/$database/sql/SELECT%203", null, null);
-
-        $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_HTTP_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
-        $binding    = new HttpBinding($parameters);
-        $binding->setAdapter($adapter);
-
-        $binding->command('SELECT 1');
-        $binding->command('SELECT 2', HttpBinding::LANGUAGE_SQLPLUS, "HIJACKED");
-        $binding->command('SELECT 3');
     }
 }

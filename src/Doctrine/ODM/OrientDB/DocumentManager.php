@@ -17,14 +17,13 @@ use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
 use Doctrine\ODM\OrientDB\Hydrator\HydratorFactoryInterface;
-use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
+use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory as MetadataFactory;
 use Doctrine\ODM\OrientDB\Mapping\ClusterMap;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\OrientDBException;
-use Doctrine\OrientDB\Types\Rid;
 
 /**
  * Manager class.
@@ -43,7 +42,7 @@ class DocumentManager implements ObjectManager
     protected $configuration;
 
     /**
-     * @var HttpBindingInterface
+     * @var BindingInterface
      */
     protected $binding;
 
@@ -83,13 +82,13 @@ class DocumentManager implements ObjectManager
      * Instantiates a new DocumentMapper, injecting the $mapper that will be used to
      * hydrate record retrieved through the $binding.
      *
-     * @param HttpBindingInterface $binding
-     * @param Configuration        $configuration
-     * @param EventManager         $eventManager
+     * @param BindingInterface $binding
+     * @param Configuration    $configuration
+     * @param EventManager     $eventManager
      *
      * @throws ConfigurationException
      */
-    public function __construct(HttpBindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null) {
+    public function __construct(BindingInterface $binding, Configuration $configuration = null, EventManager $eventManager = null) {
         $this->binding       = $binding;
         $this->configuration = $configuration;
         $this->eventManager  = $eventManager ?: new EventManager();
@@ -377,7 +376,7 @@ class DocumentManager implements ObjectManager
     /**
      * Returns the binding instance used to communicate OrientDB.
      *
-     * @return HttpBindingInterface
+     * @return BindingInterface
      */
     public function getBinding() {
         return $this->binding;

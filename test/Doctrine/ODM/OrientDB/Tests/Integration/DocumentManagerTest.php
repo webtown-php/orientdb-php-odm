@@ -36,17 +36,7 @@ class DocumentManagerTest extends AbstractIntegrationTest
             'return { "n1": $r1.@rid, "n2": $r2 }'
         ];
 
-        $batch   = [
-            'transaction' => false,
-            'operations'  => [
-                [
-                    'type'     => 'script',
-                    'language' => 'sql',
-                    'script'   => $sql
-                ]
-            ]
-        ];
-        $response = $this->dm->getBinding()->batch(json_encode($batch));
+        $this->dm->getBinding()->sqlBatch($sql, false);
     }
 
     /**
