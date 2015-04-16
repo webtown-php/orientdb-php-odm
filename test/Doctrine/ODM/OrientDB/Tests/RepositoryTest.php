@@ -41,7 +41,7 @@ class RepositoryTest extends TestCase
 
         $binding = $this->getMock(HttpBindingInterface::class);
         $binding->expects($this->any())
-                ->method('execute')
+                ->method('query')
                 ->will($this->returnValue($result));
 
         $manager  = $this->prepareManager($binding);

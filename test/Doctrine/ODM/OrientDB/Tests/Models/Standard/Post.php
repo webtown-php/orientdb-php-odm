@@ -46,7 +46,7 @@ class Post
     public $id;
 
     /**
-     * @Property(type="integer")
+     * @Property(type="string")
      */
     public $title;
 

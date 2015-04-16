@@ -26,7 +26,6 @@ use Doctrine\OrientDB\Binding\Exception\BindingException;
 use Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException;
 use Doctrine\OrientDB\OrientDBException as OrientException;
 use Doctrine\OrientDB\Query\Command\Select;
-use Doctrine\OrientDB\Query\CommandInterface;
 
 class HttpBinding implements HttpBindingInterface
 {
@@ -216,7 +215,7 @@ class HttpBinding implements HttpBindingInterface
     /**
      * @inheritdoc
      */
-    public function getServer() {
+    public function getServerInfo() {
         $location = $this->getLocation('server');
 
         return $this->adapter->request('GET', $location);
@@ -300,17 +299,6 @@ class HttpBinding implements HttpBindingInterface
         $location = $this->getLocation('listDatabases');
 
         return $this->adapter->request('GET', $location)->getData()->databases;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function execute(CommandInterface $cmd, $fetchPlan = null) {
-        if ($cmd instanceof Select) {
-            return $this->query($cmd->getRaw(), -1, $fetchPlan);
-        }
-
-        return $this->command($cmd->getRaw());
     }
 
     /**

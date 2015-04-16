@@ -44,15 +44,15 @@ class ClusterMapTest extends TestCase
     }
 
     protected function prepareMap() {
-        return array('Test' => array(1, 2));
+        return array('Test' => [1, 2]);
     }
 
     protected function prepareGeneration($binding, $cache) {
         $data            = new \stdClass();
         $class           = new \stdClass();
-        $class->clusters = array(1, 2);
+        $class->clusters = [1, 2];
         $class->name     = 'Test';
-        $data->classes   = array($class);
+        $data->classes   = [$class];
 
         $binding->expects($this->once())
                 ->method('getDatabase')
@@ -72,7 +72,7 @@ class ClusterMapTest extends TestCase
         $cache   = $this->createCache(true);
 
         $clusterMap = new ClusterMap($binding, $cache);
-        $this->assertEquals('Test', $clusterMap->identifyClass(new Rid('1:0')));
+        $this->assertEquals('Test', $clusterMap->identifyClass('#1:0'));
     }
 
     public function testIdentifyClassWithoutCache() {
@@ -81,7 +81,7 @@ class ClusterMapTest extends TestCase
         $this->prepareGeneration($binding, $cache);
 
         $clusterMap = new ClusterMap($binding, $cache);
-        $this->assertEquals('Test', $clusterMap->identifyClass(new Rid('1:0')));
+        $this->assertEquals('Test', $clusterMap->identifyClass('#1:0'));
     }
 
     /**
@@ -92,7 +92,7 @@ class ClusterMapTest extends TestCase
         $cache   = $this->createCache(true);
 
         $clusterMap = new ClusterMap($binding, $cache);
-        $clusterMap->identifyClass(new Rid('10:0'));
+        $clusterMap->identifyClass('#10:0');
     }
 
 } 

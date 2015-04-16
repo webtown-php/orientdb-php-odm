@@ -43,7 +43,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'http.restart' => false,
             'http.timeout' => TEST_ODB_TIMEOUT,
             'odb.host'     => TEST_ODB_HOST,
-            'odb.port'     => TEST_ODB_PORT,
+            'odb.port'     => TEST_ODB_HTTP_PORT,
             'odb.username' => TEST_ODB_USER,
             'odb.password' => TEST_ODB_PASSWORD,
             'odb.database' => TEST_ODB_DATABASE,
@@ -94,7 +94,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         if (isset($opts['binding'])) {
             $binding = $opts['binding'];
         } else {
-            $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
+            $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_HTTP_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
             $binding    = new HttpBinding($parameters);
         }
 

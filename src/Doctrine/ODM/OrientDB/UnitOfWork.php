@@ -18,7 +18,6 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Persister\PersisterInterface;
 use Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Proxy\Proxy;
-use Doctrine\OrientDB\Query\CommandInterface;
 use Doctrine\OrientDB\Types\Type;
 
 class UnitOfWork implements PropertyChangedListener
@@ -348,16 +347,16 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * @param CommandInterface $cmd
+     * @param string $query
      * @param null             $fetchPlan
      *
      * @return bool|ArrayCollection
      */
-    public function execute(CommandInterface $cmd, $fetchPlan = null) {
+    public function query($query, $fetchPlan = null) {
         $binding = $this->dm->getBinding();
-        $results = $binding->execute($cmd, $fetchPlan)->getResult();
+        $results = $binding->query($query, -1, $fetchPlan)->getResult();
 
-        if (is_array($results) && $cmd->canHydrate()) {
+        if (is_array($results)) {
             $documents = [];
             foreach ($results as $data) {
                 $documents [] = $this->getOrCreateDocument($data);

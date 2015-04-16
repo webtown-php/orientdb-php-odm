@@ -37,7 +37,7 @@ class CurlClient
      */
     public function __construct($restart = false, $timeout = 10) {
         $this->restart = $restart;
-        $this->cookies = array();
+        $this->cookies = [];
         $this->curl    = $this->createCurlHandle();
 
         $this->setTimeout($timeout);
@@ -67,7 +67,7 @@ class CurlClient
      * @return string
      */
     protected function getRequestCookies() {
-        $pairs = array();
+        $pairs = [];
 
         foreach ($this->cookies as $k => $v) {
             $pairs[] = "$k=$v";
@@ -86,11 +86,11 @@ class CurlClient
      * @throws ConnectionFailedException
      */
     public function execute($method, $location) {
-        curl_setopt_array($this->curl, array(
+        curl_setopt_array($this->curl, [
             CURLOPT_URL           => $location,
             CURLOPT_COOKIE        => $this->getRequestCookies(),
             CURLOPT_CUSTOMREQUEST => $method,
-        ));
+        ]);
 
         if (!$response = curl_exec($this->curl)) {
             $err = curl_error($this->curl);
@@ -102,7 +102,7 @@ class CurlClient
         $response      = new CurlClientResponse($response);
         $this->cookies = array_merge($this->cookies, $response->getCookies());
 
-        if ($this->restart == true) {
+        if ($this->restart === true) {
             $this->restart();
         }
 
@@ -114,7 +114,10 @@ class CurlClient
      *
      * @param  String $location
      *
+     * @param null    $body
+     *
      * @return CurlClientResponse
+     * @throws ConnectionFailedException
      */
     public function delete($location, $body = null) {
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, "DELETE");
@@ -156,7 +159,7 @@ class CurlClient
     public function post($location, $body) {
         curl_setopt($this->curl, CURLOPT_POST, 1);
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, $body);
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
         return $this->execute('POST', $location);
     }
@@ -172,7 +175,7 @@ class CurlClient
     public function put($location, $body) {
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'PUT');
         curl_setopt($this->curl, CURLOPT_POSTFIELDS, $body);
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
         return $this->execute('PUT', $location);
     }
@@ -190,11 +193,11 @@ class CurlClient
     /**
      * Sets an HTTP header to send within the request.
      *
-     * @param type $header
-     * @param type $value
+     * @param string $header
+     * @param mixed  $value
      */
     public function setHeader($header, $value) {
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array("$header: $value"));
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, ["$header: $value"]);
     }
 
     /**
@@ -203,7 +206,7 @@ class CurlClient
     public function restart() {
         curl_close($this->curl);
 
-        $this->cookies = array();
+        $this->cookies = [];
         $this->curl    = $this->createCurlHandle();
     }
 
@@ -213,10 +216,10 @@ class CurlClient
      * @return array
      */
     protected function getDefaultCurlOptions() {
-        return array(
+        return [
             CURLOPT_HEADER         => true,
             CURLOPT_RETURNTRANSFER => true,
-        );
+        ];
     }
 
     /**

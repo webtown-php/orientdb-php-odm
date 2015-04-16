@@ -71,6 +71,8 @@ class Fixtures
             'Comment'          => null,
             'Post'             => [
                 'p' => [
+                    'id'       => 'INTEGER',
+                    'title'    => 'STRING',
                     'comments' => [
                         'type'  => 'LINKLIST',
                         'class' => 'Comment',
@@ -155,12 +157,12 @@ class Fixtures
                     'name' => 'STRING',
                 ],
             ],
-            'FollowedE'         => [
+            'FollowedE'        => [
                 'extends' => 'E',
             ],
             'LikedE'           => [
                 'extends' => 'E',
-                'p' => [
+                'p'       => [
                     'description' => 'STRING',
                 ],
             ],
@@ -258,14 +260,14 @@ class Fixtures
         }
 
         //Insert Post
-        $templatePost = '{"@class": "Post", "id":"%d","title": "%d", "body": "Body %d", "comments":["#' . $this->Comment . ':3"] }';
+        $templatePost = '{"@class": "Post", "id":%d,"title": "%d", "body": "Body %d", "comments":["#' . $this->Comment . ':3"] }';
         for ($i = 0; $i <= 5; $i++) {
             $this->client
                 ->post('/document/' . $this->dbname, $this->contentType, sprintf($templatePost, $i, $i, $i))
                 ->send();
         }
         $this->client
-            ->post('/document/' . $this->dbname, $this->contentType, '{"@class": "Post", "id":"6","title": "titolo 6", "body": "Body 6", "comments":["#' . $this->Comment . ':2"] }')
+            ->post('/document/' . $this->dbname, $this->contentType, '{"@class": "Post", "id":6,"title": "titolo 6", "body": "Body 6", "comments":["#' . $this->Comment . ':2"] }')
             ->send();
 
         //Insert MapPoint

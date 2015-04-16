@@ -158,25 +158,37 @@ class DocumentRepository implements ObjectRepository
      * @throws OrientDBException
      */
     public function findBy(array $criteria, array $orderBy = [], $limit = null, $offset = null, $fetchPlan = '*:0') {
-        $select = QueryBuilder::select([$this->metadata->getOrientClass()]);
+        $parts[] = sprintf('SELECT FROM %s', $this->metadata->getOrientClass());
 
-        foreach ($criteria as $key => $value) {
-            $select->andWhere("$key = ?", $value);
+        if ($criteria) {
+            $where = [];
+            foreach ($criteria as $key => $value) {
+                $value   = json_encode($value);
+                $where[] = "$key = $value";
+            }
+            $parts[] = sprintf('WHERE %s', implode(' AND ', $where));
         }
 
-        foreach ($orderBy as $key => $order) {
-            $select->orderBy("$key $order");
+        if ($orderBy) {
+            $orders = [];
+            foreach ($orderBy as $key => $order) {
+                $orders[] = "$key $order";
+            }
+
+            $parts[] = sprintf('ORDER BY %s', implode(', ', $orders));
         }
 
         if ($limit) {
-            $select->limit($limit);
+            $parts[] = "LIMIT " . $limit;
         }
 
-        $collection = $this->dm->execute($select, $fetchPlan);
+        $select = implode(' ', $parts);
+
+        $collection = $this->dm->query($select, $fetchPlan);
 
         if (!$collection instanceof ArrayCollection) {
             throw new OrientDBException(
-                "Problems executing the query \"{$select->getRaw()}\". " .
+                "Problems executing the query \"{$parts->getRaw()}\". " .
                 "The server returned $collection instead of ArrayCollection."
             );
         }

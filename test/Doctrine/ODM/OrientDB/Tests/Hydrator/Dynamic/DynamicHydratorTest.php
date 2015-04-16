@@ -100,7 +100,7 @@ JSON;
             "primary": false
         }]';
 
-        $binding->execute(Arg::any(), Arg::any())
+        $binding->query(Arg::any())
                 ->willReturn($this->newBindingStub($rawResult, true)->reveal());
 
         $this->manager         = $this->createDocumentManagerWithBinding($binding->reveal(), [], ['test/Doctrine/ODM/OrientDB/Tests/Document/Stub']);

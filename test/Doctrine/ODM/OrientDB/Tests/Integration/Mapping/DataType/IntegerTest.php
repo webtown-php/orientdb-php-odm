@@ -26,10 +26,4 @@ class IntegerTest extends AbstractDataTypeTest
         $post = $this->dm->findByRid($this->rid);
         $this->assertInternalType('integer', $post->id);
     }
-
-    public function testMismatchedAttributesAreConvertedIfTheMapperToleratesMismatches() {
-        /** @var Post $post */
-        $post = $this->dm->findByRid($this->rid);
-        $this->assertInternalType('integer', $post->title);
-    }
 }

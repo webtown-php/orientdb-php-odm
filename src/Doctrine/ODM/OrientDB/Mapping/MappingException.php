@@ -22,8 +22,8 @@ class MappingException extends \Exception
         return new self(sprintf('missing OrientDB class for %s', $class));
     }
 
-    public static function noClusterForRid(Rid $rid) {
-        return new self(sprintf('there is no cluster for %s.', $rid->getValue()));
+    public static function noClusterForRid($rid) {
+        return new self(sprintf('there is no cluster for %s.', $rid));
     }
 
     public static function noMappingForProperty($property, $document) {

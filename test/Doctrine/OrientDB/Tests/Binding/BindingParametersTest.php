@@ -14,6 +14,9 @@ namespace Doctrine\OrientDB\Tests\Binding;
 use Doctrine\OrientDB\Binding\BindingParameters;
 use PHPUnit\TestCase;
 
+/**
+ * @group functional
+ */
 class BindingParametersTest extends TestCase
 {
     public function testDefaultParameters() {
@@ -27,10 +30,10 @@ class BindingParametersTest extends TestCase
     }
 
     public function testCustomParameters() {
-        $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
+        $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_HTTP_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
 
         $this->assertSame(TEST_ODB_HOST, $parameters->getHost());
-        $this->assertSame(TEST_ODB_PORT, $parameters->getPort());
+        $this->assertSame(TEST_ODB_HTTP_PORT, $parameters->getPort());
         $this->assertSame(TEST_ODB_USER, $parameters->getUsername());
         $this->assertSame(TEST_ODB_PASSWORD, $parameters->getPassword());
         $this->assertSame(TEST_ODB_DATABASE, $parameters->getDatabase());
@@ -115,7 +118,7 @@ class BindingParametersTest extends TestCase
     public function testParametersFromCompleteArray() {
         $config = array(
             'host'     => TEST_ODB_HOST,
-            'port'     => TEST_ODB_PORT,
+            'port'     => TEST_ODB_HTTP_PORT,
             'username' => TEST_ODB_USER,
             'password' => TEST_ODB_PASSWORD,
             'database' => TEST_ODB_DATABASE,
@@ -124,14 +127,14 @@ class BindingParametersTest extends TestCase
         $parameters = BindingParameters::fromArray($config);
 
         $this->assertSame(TEST_ODB_HOST, $parameters->getHost());
-        $this->assertSame(TEST_ODB_PORT, $parameters->getPort());
+        $this->assertSame(TEST_ODB_HTTP_PORT, $parameters->getPort());
         $this->assertSame(TEST_ODB_USER, $parameters->getUsername());
         $this->assertSame(TEST_ODB_PASSWORD, $parameters->getPassword());
         $this->assertSame(TEST_ODB_DATABASE, $parameters->getDatabase());
     }
 
     /**
-     * @expectedException InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Invalid parameters type
      */
     public function testParametersCreateAcceptsOnlyStringsOrArrays() {

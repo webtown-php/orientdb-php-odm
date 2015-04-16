@@ -22,7 +22,6 @@
 namespace Doctrine\OrientDB\Binding;
 
 use Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException;
-use Doctrine\OrientDB\Query\CommandInterface;
 
 interface BindingInterface
 {
@@ -35,8 +34,7 @@ interface BindingInterface
      * @api
      * @return BindingResultInterface
      */
-    public function getServer();
-
+    public function getServerInfo();
 
     /**
      * Executes a raw command on the given database.
@@ -52,17 +50,24 @@ interface BindingInterface
     public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null);
 
     /**
-     * Executes an SQL query on the server.
+     * Executes a raw query on the given database.
      *
-     * The second argument specifies when to use COMMAND or QUERY as the
-     * underlying command.
+     * Results can be limited with the $limit parameter and a fetch plan can be used to
+     * specify how to retrieve the graph and limit its depth.
      *
-     * @param CommandInterface $cmd       .
-     * @param string           $fetchPlan Optional fetch plan for the query.
+     * It differs from the command because OrientDB defines a query as a SELECT only.
+     *
+     * @api
+     *
+     * @param string $query SQL or Gremlin query.
+     * @param int    $limit Maximum number of records (default is 20).
+     * @param string $fetchPlan
+     * @param string $language
+     * @param string $database
      *
      * @return BindingResultInterface
      */
-    public function execute(CommandInterface $cmd, $fetchPlan = null);
+    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null);
 
     /**
      * Returns the name of the database the binding is

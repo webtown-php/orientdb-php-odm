@@ -6,7 +6,6 @@ namespace Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Cache\Cache;
 use Doctrine\OrientDB\Binding\BindingInterface;
-use Doctrine\OrientDB\Types\Rid;
 
 /**
  * Class ClusterMap
@@ -38,14 +37,14 @@ class ClusterMap
      * Tries to identify the class of an rid by matching it against
      * the clusters in the database
      *
-     * @param Rid $rid
+     * @param string $rid
      *
      * @throws MappingException
      * @return string
      */
-    public function identifyClass(Rid $rid) {
+    public function identifyClass($rid) {
         $map       = $this->getMap();
-        $splitRid  = explode(':', ltrim($rid->getValue(), '#'));
+        $splitRid  = explode(':', ltrim($rid, '#'));
         $clusterId = $splitRid[0];
 
         foreach ($map as $class => $clusters) {

@@ -12,6 +12,7 @@
 
 namespace Doctrine\ODM\OrientDB;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydratorFactory;
@@ -23,7 +24,6 @@ use Doctrine\ODM\OrientDB\Proxy\Proxy;
 use Doctrine\ODM\OrientDB\Proxy\ProxyFactory;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\OrientDBException;
-use Doctrine\OrientDB\Query\CommandInterface;
 use Doctrine\OrientDB\Types\Rid;
 
 /**
@@ -131,19 +131,15 @@ class DocumentManager implements ObjectManager
     }
 
     /**
-     * Executes a $query against OrientDB.
+     * Execute a SELECT query
      *
-     * This method should be used to execute queries which should not return a
-     * result (UPDATE, INSERT) or to retrieve multiple objects: to retrieve a
-     * single record look at ->find*() methods.
+     * @param string $query
+     * @param string $fetchPlan
      *
-     * @param CommandInterface $cmd
-     * @param string           $fetchPlan
-     *
-     * @return array|Mixed
+     * @return bool|ArrayCollection
      */
-    public function execute(CommandInterface $cmd, $fetchPlan = null) {
-        return $this->uow->execute($cmd, $fetchPlan);
+    public function query($query, $fetchPlan = null) {
+        return $this->uow->query($query, $fetchPlan);
     }
 
     /**
@@ -155,7 +151,7 @@ class DocumentManager implements ObjectManager
      * @return Proxy
      */
     public function getReference($rid) {
-        $oclass = $this->clusterMap->identifyClass(new RID($rid));
+        $oclass = $this->clusterMap->identifyClass($rid);
         $md     = $this->metadataFactory->getMetadataForOClass($oclass);
 
         if ($document = $this->uow->tryGetById($rid, $md)) {
@@ -206,7 +202,7 @@ class DocumentManager implements ObjectManager
      * @throws OClassNotFoundException|OrientDBException
      */
     public function findByRid($rid, $fetchPlan = '*:0') {
-        $class = $this->clusterMap->identifyClass(new Rid($rid));
+        $class = $this->clusterMap->identifyClass($rid);
         $md    = $this->metadataFactory->getMetadataForOClass($class);
 
         return $this->findWithPlan($md->name, $rid, $fetchPlan);

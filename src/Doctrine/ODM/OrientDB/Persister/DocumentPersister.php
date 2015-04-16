@@ -148,11 +148,10 @@ class DocumentPersister
         $mapping = $collection->getMapping();
         $useKey  = boolval($mapping['association'] & ClassMetadata::ASSOCIATION_USE_KEY);
         if (is_string(reset($rows))) {
-            $cmd = QueryBuilder::select(array_values($rows));
             if ($useKey) {
                 $keys = array_flip($rows);
             }
-            $results = $this->binding->execute($cmd)->getResult();
+            $results = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_values($rows))))->getResult();
         } else {
             // data was already loaded
             $results = $rows;
@@ -207,14 +206,14 @@ class DocumentPersister
 
         // load edges and their immediate children (*:1)
         if ($edgeRids) {
-            $cmd     = QueryBuilder::select($edgeRids);
-            $loaded  = $this->binding->execute($cmd, '*:1')->getResult();
+            $loaded  = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', $edgeRids)), -1, '*:1')
+                                     ->getResult();
             $results = array_merge($results, self::extractVertexes($loaded, $prop));
         }
 
         if ($rids) {
-            $cmd    = QueryBuilder::select(array_keys($rids));
-            $loaded = $this->binding->execute($cmd)->getResult();
+            $loaded = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_keys($rids))))
+                                    ->getResult();
             foreach ($loaded as $row) {
                 $rid = $row->{'@rid'};
                 foreach ($rids[$rid] as $edge) {

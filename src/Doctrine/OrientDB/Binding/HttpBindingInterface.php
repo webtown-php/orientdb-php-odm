@@ -96,26 +96,6 @@ interface HttpBindingInterface extends BindingInterface
     public function disconnect();
 
     /**
-     * Executes a raw query on the given database.
-     *
-     * Results can be limited with the $limit parameter and a fetch plan can be used to
-     * specify how to retrieve the graph and limit its depth.
-     *
-     * It differs from the command because OrientDB defines a query as a SELECT only.
-     *
-     * @api
-     *
-     * @param string $query SQL or Gremlin query.
-     * @param int    $limit Maximum number of records (default is 20).
-     * @param string $fetchPlan
-     * @param string $language
-     * @param string $database
-     *
-     * @return BindingResultInterface
-     */
-    public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS, $database = null);
-
-    /**
      * Retrieves a record from the database. An optional fetch plan can be used to
      * specify how to retrieve the graph and limit its depth.
      *

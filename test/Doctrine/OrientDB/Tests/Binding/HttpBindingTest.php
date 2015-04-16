@@ -14,6 +14,8 @@ namespace Doctrine\OrientDB\Tests\Binding;
 
 use Doctrine\OrientDB\Binding\BindingParameters;
 use Doctrine\OrientDB\Binding\HttpBinding;
+use PhpOrient\PhpOrient;
+use PhpOrient\Protocols\Binary\Data\ID;
 use PHPUnit\TestCase;
 
 /**
@@ -65,11 +67,11 @@ class HttpBindingTest extends TestCase
         $this->assertSame('ORole', $result['result'][0]['@class'], 'The cluster is wrong');
     }
 
-    public function testServerMethod() {
+    public function testServerInfoMethod() {
 
         $binding = self::createHttpBinding();
 
-        $this->assertHttpStatus(200, $binding->getServer());
+        $this->assertHttpStatus(200, $binding->getServerInfo());
     }
 
     /**
@@ -302,7 +304,7 @@ class HttpBindingTest extends TestCase
      */
     public function testFetchPlansAreProperlyEncoded() {
         $host     = TEST_ODB_HOST;
-        $port     = TEST_ODB_PORT;
+        $port     = TEST_ODB_HTTP_PORT;
         $database = TEST_ODB_DATABASE;
 
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
@@ -318,7 +320,7 @@ class HttpBindingTest extends TestCase
 
     public function testOptionalDatabaseArgumentDoesNotSwitchCurrentDatabase() {
         $host     = TEST_ODB_HOST;
-        $port     = TEST_ODB_PORT;
+        $port     = TEST_ODB_HTTP_PORT;
         $database = TEST_ODB_DATABASE;
 
         $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
@@ -332,7 +334,7 @@ class HttpBindingTest extends TestCase
                 ->method('request')
                 ->with('POST', "http://$host:$port/command/$database/sql/SELECT%203", null, null);
 
-        $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
+        $parameters = new BindingParameters(TEST_ODB_HOST, TEST_ODB_HTTP_PORT, TEST_ODB_USER, TEST_ODB_PASSWORD, TEST_ODB_DATABASE);
         $binding    = new HttpBinding($parameters);
         $binding->setAdapter($adapter);
 

@@ -16,7 +16,6 @@ namespace Doctrine\ODM\OrientDB\Tests;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact\Address;
-use Doctrine\OrientDB\Binding\BindingResultInterface;
 use Doctrine\OrientDB\Binding\HttpBindingInterface;
 use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use PHPUnit\TestCase;
