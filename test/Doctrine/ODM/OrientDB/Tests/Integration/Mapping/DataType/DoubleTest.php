@@ -16,7 +16,7 @@ class DoubleTest extends AbstractDataTypeTest
      */
     public function loadBefore() {
         $b         = $this->dm->getBinding();
-        $this->rid = $b->command('INSERT INTO MapPoint set x=5.5, y=10.10')->getData()->result[0]->{'@rid'};
+        $this->rid = $b->command('INSERT INTO MapPoint set x=5.5, y=10.10')->result[0]->{'@rid'};
     }
 
     public function testHydrationOfADoubleProperty() {

@@ -16,7 +16,7 @@ class LongTest extends AbstractDataTypeTest
      */
     public function loadBefore() {
         $b         = $this->dm->getBinding();
-        $this->rid = $b->command('INSERT INTO Profile set hash=null')->getData()->result[0]->{'@rid'};;
+        $this->rid = $b->command('INSERT INTO Profile set hash=null')->result[0]->{'@rid'};;
     }
 
     public function testHydrationOfALongProperty() {

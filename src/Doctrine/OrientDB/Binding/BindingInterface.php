@@ -32,7 +32,7 @@ interface BindingInterface
      * Gets the current server.
      *
      * @api
-     * @return BindingResultInterface
+     * @return mixed
      */
     public function getServerInfo();
 
@@ -44,7 +44,7 @@ interface BindingInterface
      * @param string $query
      * @param string $language
      *
-     * @return BindingResultInterface
+     * @return mixed
      *
      */
     public function command($query, $language = BindingInterface::LANGUAGE_SQLPLUS);
@@ -64,7 +64,7 @@ interface BindingInterface
      * @param string $fetchPlan
      * @param string $language
      *
-     * @return BindingResultInterface
+     * @return mixed
      *
      */
     public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS);

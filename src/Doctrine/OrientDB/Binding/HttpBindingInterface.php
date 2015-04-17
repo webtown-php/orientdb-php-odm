@@ -34,7 +34,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param string $class
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function deleteClass($class, $database = null);
 
@@ -46,7 +46,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param string $class
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function getClass($class, $database = null);
 
@@ -59,7 +59,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param string $body
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function postClass($class, $body = null, $database = null);
 
@@ -72,7 +72,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param   string  $database
      * @param   integer $limit
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function cluster($cluster, $limit = null, $database = null);
 
@@ -83,7 +83,7 @@ interface HttpBindingInterface extends BindingInterface
      *
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function connect($database);
 
@@ -91,7 +91,7 @@ interface HttpBindingInterface extends BindingInterface
      * Disconnect this instance from the server.
      *
      * @api
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function disconnect();
 
@@ -116,7 +116,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param string $document
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function putDocument($rid, $document, $database = null);
 
@@ -129,7 +129,7 @@ interface HttpBindingInterface extends BindingInterface
      * @param string $version
      * @param string $database
      *
-     * @return BindingResultInterface
+     * @return HttpBindingResultInterface
      */
     public function deleteDocument($rid, $version = null, $database = null);
 

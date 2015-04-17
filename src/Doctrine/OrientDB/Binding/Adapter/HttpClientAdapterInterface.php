@@ -19,7 +19,7 @@
 
 namespace Doctrine\OrientDB\Binding\Adapter;
 
-use Doctrine\OrientDB\Binding\BindingResultInterface;
+use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 
 interface HttpClientAdapterInterface
 {
@@ -31,7 +31,7 @@ interface HttpClientAdapterInterface
      * @param   array  $headers
      * @param   string $body
      *
-     * @return  BindingResultInterface
+     * @return  HttpBindingResultInterface
      */
     public function request($method, $location, array $headers = null, $body = null);
 

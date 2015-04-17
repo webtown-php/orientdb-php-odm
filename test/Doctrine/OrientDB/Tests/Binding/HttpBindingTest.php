@@ -12,17 +12,28 @@
 
 namespace Doctrine\OrientDB\Tests\Binding;
 
+use Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface;
 use Doctrine\OrientDB\Binding\BindingParameters;
+use Doctrine\OrientDB\Binding\Client\Http\CurlClientResponse;
 use Doctrine\OrientDB\Binding\HttpBinding;
-use PhpOrient\PhpOrient;
-use PhpOrient\Protocols\Binary\Data\ID;
+use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use PHPUnit\TestCase;
+use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 
 /**
  * @group integration
  */
 class HttpBindingTest extends TestCase
 {
+    private function assertHttpStatus($expected, HttpBindingResultInterface $result, $message = null) {
+        $response = $result->getInnerResponse();
+        $status   = $response->getStatusCode();
+        $message  = $message ?: $response->getBody();
+
+        $this->assertSame($expected, $status, $message);
+    }
+
     public function testConnectToDatabase() {
         $binding = self::createHttpBinding([
             'odb.username' => TEST_ODB_USER,
@@ -71,7 +82,8 @@ class HttpBindingTest extends TestCase
 
         $binding = self::createHttpBinding();
 
-        $this->assertHttpStatus(200, $binding->getServerInfo());
+        $this->assertNotNull($res = $binding->getServerInfo());
+
     }
 
     /**
@@ -156,22 +168,43 @@ class HttpBindingTest extends TestCase
         $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
     }
 
-    public function testCommandMethod() {
+    /**
+     * @test
+     */
+    public function command_returns_expected_results() {
         $binding = self::createHttpBinding();
 
-        $this->assertHttpStatus(200, $binding->command('SELECT FROM Address'), 'Execute a simple select');
-        $this->assertHttpStatus(200, $binding->command("SELECT FROM City WHERE name = 'Rome'"), 'Execute a select with WHERE condition');
-        $this->assertHttpStatus(200, $binding->command('SELECT FROM City WHERE name = "Rome"'), 'Execute another select with WHERE condition');
-        $this->assertHttpStatus(500, $binding->command('INVALID SQL'), 'Execute a wrong SQL command');
-        # HTTPTODO: status code should be 400 or 404
+        $this->assertNotNull($binding->command('SELECT FROM Address'), 'Execute a simple select');
+        $this->assertNotNull($binding->command("SELECT FROM City WHERE name = 'Rome'"), 'Execute a select with WHERE condition');
+        $this->assertNotNull($binding->command('SELECT FROM City WHERE name = "Rome"'), 'Execute another select with WHERE condition');
     }
 
-    public function testQueryMethod() {
+    /**
+     * @test
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
+     */
+    public function command_throws_exception_for_invalid_command() {
+        $binding = self::createHttpBinding();
+        $binding->command('INVALID SQL');
+    }
+
+    /**
+     * @test
+     */
+    public function query_returns_expected_results() {
         $binding = self::createHttpBinding();
 
-        $this->assertHttpStatus(200, $binding->query('SELECT FROM Address'), 'Executes a SELECT');
-        $this->assertHttpStatus(200, $binding->query('SELECT FROM Address', null, 10), 'Executes a SELECT with LIMIT');
-        $this->assertHttpStatus(500, $binding->query("UPDATE Profile SET online = false"), 'Tries to execute an UPDATE with the query command');
+        $this->assertNotNull($binding->query('SELECT FROM Address'), 'Executes a SELECT');
+        $this->assertNotNull($binding->query('SELECT FROM Address', null, 10), 'Executes a SELECT with LIMIT');
+    }
+
+    /**
+     * @test
+     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
+     */
+    public function query_throws_exception_for_update() {
+        $binding = self::createHttpBinding();
+        $binding->query("UPDATE Profile SET online = false");
     }
 
     public function testSettingAuthentication() {
@@ -256,6 +289,7 @@ class HttpBindingTest extends TestCase
 
     /**
      * @depends testCreateDocument
+     *
      * @param $rid
      */
     public function testDocumentExists($rid) {
@@ -302,6 +336,7 @@ class HttpBindingTest extends TestCase
 
     /**
      * @depends testDeleteADocument
+     *
      * @param $rid
      */
     public function testDocumentDoesNotExist($rid) {
@@ -326,13 +361,30 @@ class HttpBindingTest extends TestCase
         $port     = TEST_ODB_HTTP_PORT;
         $database = TEST_ODB_DATABASE;
 
-        $adapter = $this->getMock('Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface');
-        $adapter->expects($this->once())
-                ->method('request')
-                ->with('GET', "http://$host:$port/query/$database/sql/SELECT%20OMNOMNOMN/2/%2A%3A1%20field1%3A3", null, null);
+        /** @var HttpClientAdapterInterface|ObjectProphecy $adapter */
+        $adapter = $this->prophesize(HttpClientAdapterInterface::class);
+
+        $adapter->setAuthentication(null, null)
+                ->shouldBeCalled();
+
+        /** @var CurlClientResponse|ObjectProphecy $res */
+        $res = $this->prophesize(CurlClientResponse::class);
+        $res->getStatusCode()
+            ->willReturn(200);
+
+        /** @var HttpBindingResultInterface|ObjectProphecy $br */
+        $br = $this->prophesize(HttpBindingResultInterface::class);
+        $br->getInnerResponse()
+           ->willReturn($res->reveal());
+
+        $br->getData()
+           ->willReturn(json_decode('{"result":{}}'));
+
+        $adapter->request('GET', "http://$host:$port/query/$database/sql/SELECT%20OMNOMNOMN/2/%2A%3A1%20field1%3A3", null, null)
+                ->willReturn($br->reveal());
 
         $parameters = new BindingParameters($host, $port, null, null, $database);
-        $binding    = new HttpBinding($parameters, $adapter);
+        $binding    = new HttpBinding($parameters, $adapter->reveal());
 
         $binding->query("SELECT OMNOMNOMN", 2, "*:1 field1:3");
     }

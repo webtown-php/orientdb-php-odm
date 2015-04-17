@@ -15,8 +15,10 @@ namespace Doctrine\ODM\OrientDB\Tests;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\DocumentRepository;
 use Doctrine\ODM\OrientDB\Mapping;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use PHPUnit\TestCase;
+use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 
 class RepositoryTest extends TestCase
 {
@@ -33,18 +35,15 @@ class RepositoryTest extends TestCase
             "out": ["#20:1"]
         }]');
 
-        $result = $this->getMock('Doctrine\OrientDB\Binding\BindingResultInterface');
-        $result->expects($this->at(0))
-               ->method('getResult')
-               ->will($this->returnValue($rawResult));
+        /** @var BindingInterface|ObjectProphecy $binding */
+        $binding = $this->prophesize(BindingInterface::class);
+        $binding->query(Argument::cetera())
+                ->willReturn($rawResult);
 
+        $binding->getDatabaseName()
+                ->shouldBeCalled();
 
-        $binding = $this->getMock(HttpBindingInterface::class);
-        $binding->expects($this->any())
-                ->method('query')
-                ->will($this->returnValue($result));
-
-        $manager  = $this->prepareManager($binding);
+        $manager  = $this->prepareManager($binding->reveal());
         $uow      = $manager->getUnitOfWork();
         $metadata = $manager->getClassMetadata('Doctrine\ODM\OrientDB\Tests\Document\Stub\Contact\Address');
 
@@ -53,7 +52,7 @@ class RepositoryTest extends TestCase
         return $repository;
     }
 
-    protected function prepareManager(HttpBindingInterface $binding) {
+    protected function prepareManager(BindingInterface $binding) {
         $config = $this->getConfiguration();
         $config->setMetadataDriverImpl($config->newDefaultAnnotationDriver(['test/Doctrine/ODM/OrientDB/Tests/Document/Stub']));
 

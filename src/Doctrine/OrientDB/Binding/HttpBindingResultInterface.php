@@ -19,8 +19,22 @@
 
 namespace Doctrine\OrientDB\Binding;
 
-interface HttpBindingResultInterface extends BindingResultInterface
+interface HttpBindingResultInterface
 {
+    /**
+     * Returns the whole payload from the server response.
+     *
+     * @return mixed
+     */
+    public function getData();
+
+    /**
+     * Returns the result set from the server response.
+     *
+     * @return mixed
+     */
+    public function getResult();
+
     /**
      * Returns the inner response object returned by the underlying client.
      *

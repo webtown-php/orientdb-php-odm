@@ -217,7 +217,18 @@ class HttpBinding implements HttpBindingInterface
     public function getServerInfo() {
         $location = $this->getLocation('server');
 
-        return $this->adapter->request('GET', $location);
+        $result = $this->adapter->request('GET', $location);
+        $res    = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 200:
+                return $result->getData();
+
+            case 204:
+                return null;
+
+            default:
+                throw new BindingException($res->getBody());
+        }
     }
 
     /**
@@ -225,7 +236,7 @@ class HttpBinding implements HttpBindingInterface
      */
     public function getDatabase($database = null) {
         $database = $database ?: $this->database;
-        $info = $this->_getDatabase($database);
+        $info     = $this->_getDatabase($database);
         if ($info === false) {
             throw new InvalidDatabaseException(sprintf("database '%s' does not exist", $database));
         }
@@ -308,7 +319,18 @@ class HttpBinding implements HttpBindingInterface
 
         $location = $this->getLocation('command', $this->database, [$language, $query]);
 
-        return $this->adapter->request('POST', $location);
+        $result = $this->adapter->request('POST', $location);
+        $res    = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 200:
+                return $result->getData();
+
+            case 204:
+                return null;
+
+            default:
+                throw new BindingException(sprintf("invalid command '%s'", $query));
+        }
     }
 
     /**
@@ -317,7 +339,18 @@ class HttpBinding implements HttpBindingInterface
     public function query($query, $limit = null, $fetchPlan = null, $language = BindingInterface::LANGUAGE_SQLPLUS) {
         $location = $this->getQueryLocation($this->database, $query, $limit, $fetchPlan, $language);
 
-        return $this->adapter->request('GET', $location);
+        $result = $this->adapter->request('GET', $location);
+        $res    = $result->getInnerResponse();
+        switch ($res->getStatusCode()) {
+            case 200:
+                return $result->getData()->result;
+
+            case 204:
+                return null;
+
+            default:
+                throw new BindingException(sprintf("invalid query '%s'", $query));
+        }
     }
 
     /**
@@ -327,7 +360,7 @@ class HttpBinding implements HttpBindingInterface
         $location = $this->getDocumentLocation($this->database, $rid, $fetchPlan);
 
         $result = $this->adapter->request('GET', $location);
-        $res = $result->getInnerResponse();
+        $res    = $result->getInnerResponse();
         switch ($res->getStatusCode()) {
             case 200:
                 return $result->getData();
@@ -423,7 +456,7 @@ class HttpBinding implements HttpBindingInterface
     public function sqlBatch($cmd, $transaction = true) {
         $location = $this->getLocation('batch', $this->database);
 
-        $batch   = [
+        $batch = [
             'transaction' => $transaction,
             'operations'  => [
                 [

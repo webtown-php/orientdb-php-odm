@@ -7,8 +7,7 @@ use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Persister\SQLBatch\SQLBatchPersister;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub\Embedded\Contact;
 use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Binding\BindingResultInterface;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use PHPUnit\TestCase;
 use Prophecy\Argument as Arg;
 
@@ -71,7 +70,7 @@ class SQLBatchPersisterWithEmbeddedDocumentTest extends TestCase
 JSON
         );
 
-        $b = $this->prophesize(HttpBindingInterface::class);
+        $b = $this->prophesize(BindingInterface::class);
         $b->sqlBatch(Arg::any())
           ->willReturn($res);
 

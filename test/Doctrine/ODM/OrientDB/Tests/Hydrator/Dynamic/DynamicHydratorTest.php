@@ -7,8 +7,7 @@ use Doctrine\ODM\OrientDB\Hydrator\Dynamic\DynamicHydrator;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadataFactory;
 use Doctrine\ODM\OrientDB\Tests\Document\Stub;
 use Doctrine\ODM\OrientDB\UnitOfWork;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
-use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use PHPUnit\TestCase;
 use Prophecy\Argument as Arg;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -33,36 +32,11 @@ class DynamicHydratorTest extends TestCase
     private $uow;
 
     /**
-     * @param string $json
-     * @param bool   $useGetResult
-     *
-     * @return HttpBindingResultInterface|ObjectProphecy
-     */
-    private function newBindingStub($json, $useGetResult = false) {
-        $data = json_decode($json);
-        /** @var HttpBindingResultInterface|ObjectProphecy $stub */
-        $stub = $this->prophesize(HttpBindingResultInterface::class);
-
-        if ($useGetResult) {
-            $stub->getResult()
-                 ->willReturn($data);
-
-        } else {
-            $stub->isValid()
-                 ->willReturn(true);
-            $stub->getData()
-                 ->willReturn($data);
-        }
-
-        return $stub;
-    }
-
-    /**
      * @before
      */
     public function before() {
-        /** @var HttpBindingInterface|ObjectProphecy $binding */
-        $binding = $this->prophesize(HttpBindingInterface::class);
+        /** @var BindingInterface|ObjectProphecy $binding */
+        $binding = $this->prophesize(BindingInterface::class);
         $binding->getDatabaseName()
                 ->willReturn("ODM");
 
@@ -101,7 +75,7 @@ JSON;
         }]';
 
         $binding->query(Arg::any())
-                ->willReturn($this->newBindingStub($rawResult, true)->reveal());
+                ->willReturn(json_decode($rawResult));
 
         $this->manager         = $this->createDocumentManagerWithBinding($binding->reveal(), [], ['test/Doctrine/ODM/OrientDB/Tests/Document/Stub']);
         $this->uow             = $this->manager->getUnitOfWork();

@@ -150,7 +150,7 @@ class DocumentPersister
             if ($useKey) {
                 $keys = array_flip($rows);
             }
-            $results = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_values($rows))))->getResult();
+            $results = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_values($rows))));
         } else {
             // data was already loaded
             $results = $rows;
@@ -205,14 +205,12 @@ class DocumentPersister
 
         // load edges and their immediate children (*:1)
         if ($edgeRids) {
-            $loaded  = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', $edgeRids)), -1, '*:1')
-                                     ->getResult();
+            $loaded  = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', $edgeRids)), -1, '*:1');
             $results = array_merge($results, self::extractVertexes($loaded, $prop));
         }
 
         if ($rids) {
-            $loaded = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_keys($rids))))
-                                    ->getResult();
+            $loaded = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_keys($rids))));
             foreach ($loaded as $row) {
                 $rid = $row->{'@rid'};
                 foreach ($rids[$rid] as $edge) {

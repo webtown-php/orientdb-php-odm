@@ -24,7 +24,7 @@ class DocumentPersisterTest extends AbstractIntegrationTest
     public function before() {
         $this->postId = $this->getClassId('Post');
         $b            = $this->dm->getBinding();
-        $this->rid    = $b->command('INSERT INTO Post set id=10, title=20')->getData()->result[0]->{'@rid'};
+        $this->rid    = $b->command('INSERT INTO Post set id=10, title=20')->result[0]->{'@rid'};
     }
 
     protected function setUp() {

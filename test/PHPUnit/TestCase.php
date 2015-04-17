@@ -15,11 +15,10 @@ use Doctrine\ODM\OrientDB\Configuration;
 use Doctrine\ODM\OrientDB\DocumentManager;
 use Doctrine\ODM\OrientDB\Mapping;
 use Doctrine\OrientDB\Binding\Adapter\CurlClientAdapter;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Binding\BindingParameters;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClient;
 use Doctrine\OrientDB\Binding\HttpBinding;
-use Doctrine\OrientDB\Binding\HttpBindingInterface;
-use Doctrine\OrientDB\Binding\HttpBindingResultInterface;
 use Prophecy\Exception\Prediction\PredictionException;
 use Prophecy\Prophet;
 
@@ -102,13 +101,13 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param HttpBindingInterface $binding
+     * @param BindingInterface $binding
      * @param array                $opts
      * @param array                $paths
      *
      * @return DocumentManager
      */
-    protected function createDocumentManagerWithBinding(HttpBindingInterface $binding, array $opts = [], $paths = []) {
+    protected function createDocumentManagerWithBinding(BindingInterface $binding, array $opts = [], $paths = []) {
         $config = $this->getConfiguration($opts);
         if (empty($paths)) {
             $paths = [__DIR__ . '/../Doctrine/ODM/OrientDB/Tests/Models'];
@@ -129,14 +128,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             __DIR__ . '/../../src/Doctrine/ODM/OrientDB/Mapping/Annotations/DoctrineAnnotations.php');
 
         return new Mapping\Driver\AnnotationDriver($reader, (array)$paths);
-    }
-
-    public function assertHttpStatus($expected, HttpBindingResultInterface $result, $message = null) {
-        $response = $result->getInnerResponse();
-        $status   = $response->getStatusCode();
-        $message  = $message ?: $response->getBody();
-
-        $this->assertSame($expected, $status, $message);
     }
 
     public function assertCommandGives($expected, $got) {

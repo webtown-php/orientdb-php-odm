@@ -26,7 +26,7 @@ class InvalidQueryException extends OrientDBException
 {
     protected $result;
 
-    public function __construct($message, BindingResultInterface $result) {
+    public function __construct($message, HttpBindingResultInterface $result) {
         $this->result = $result;
 
         parent::__construct($message);

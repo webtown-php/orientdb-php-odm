@@ -354,7 +354,7 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function query($query, $fetchPlan = null) {
         $binding = $this->dm->getBinding();
-        $results = $binding->query($query, -1, $fetchPlan)->getResult();
+        $results = $binding->query($query, -1, $fetchPlan);
 
         if (is_array($results)) {
             $documents = [];
