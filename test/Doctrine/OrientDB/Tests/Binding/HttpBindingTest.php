@@ -13,6 +13,7 @@
 namespace Doctrine\OrientDB\Tests\Binding;
 
 use Doctrine\OrientDB\Binding\Adapter\HttpClientAdapterInterface;
+use Doctrine\OrientDB\Binding\BindingInterface;
 use Doctrine\OrientDB\Binding\BindingParameters;
 use Doctrine\OrientDB\Binding\Client\Http\CurlClientResponse;
 use Doctrine\OrientDB\Binding\HttpBinding;
@@ -24,7 +25,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 /**
  * @group integration
  */
-class HttpBindingTest extends TestCase
+class HttpBindingTest extends AbstractBindingInterfaceTest
 {
     private function assertHttpStatus($expected, HttpBindingResultInterface $result, $message = null) {
         $response = $result->getInnerResponse();
@@ -32,6 +33,13 @@ class HttpBindingTest extends TestCase
         $message  = $message ?: $response->getBody();
 
         $this->assertSame($expected, $status, $message);
+    }
+
+    /**
+     * @return BindingInterface
+     */
+    protected function getBinding() {
+        return self::createHttpBinding();
     }
 
     public function testConnectToDatabase() {
@@ -68,6 +76,7 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(204, $binding->deleteClass('OMG'), 'Delete a class');
     }
 
+
     public function testClusterMethod() {
         $binding = self::createHttpBinding();
 
@@ -76,135 +85,6 @@ class HttpBindingTest extends TestCase
 
         $result = json_decode($binding->cluster('ORole', 1)->getInnerResponse()->getBody(), true);
         $this->assertSame('ORole', $result['result'][0]['@class'], 'The cluster is wrong');
-    }
-
-    public function testServerInfoMethod() {
-
-        $binding = self::createHttpBinding();
-
-        $this->assertNotNull($res = $binding->getServerInfo());
-
-    }
-
-    /**
-     * @test
-     */
-    public function can_get_existing_database() {
-        $binding = self::createHttpBinding();
-
-        $this->assertInstanceOf('\stdClass', $res = $binding->getDatabase(TEST_ODB_DATABASE), 'Get information about an existing database');
-    }
-
-    /**
-     * @test
-     */
-    public function databaseExists_returns_true_for_existing_database() {
-        $binding = self::createHttpBinding();
-
-        $this->assertTrue($binding->databaseExists(TEST_ODB_DATABASE), 'database should exist');
-    }
-
-    /**
-     * @test
-     */
-    public function databaseExists_returns_false_for_nonexistent_database() {
-        $binding = self::createHttpBinding();
-
-        $this->assertFalse($binding->databaseExists('INVALID_DB'), 'database should not exist');
-    }
-
-
-    /**
-     * @test
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
-     */
-    public function will_throw_exception_for_invalid_database() {
-        $binding = self::createHttpBinding();
-        $binding->getDatabase('INVALID_DB');
-    }
-
-    public function testListDatabasesMethod() {
-        $binding = self::createHttpBinding();
-        $this->assertInternalType('array', $binding->listDatabases());
-    }
-
-    /**
-     * @test
-     */
-    public function can_create_database() {
-        $binding = self::createHttpBinding();
-
-        $db = $binding->createDatabase(TEST_ODB_DATABASE . '_temporary');
-        $this->assertInstanceOf('\stdClass', $db, 'Create new database');
-        $this->assertObjectHasAttribute('currentUser', $db);
-    }
-
-    /**
-     * @test
-     * @depends can_create_database
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
-     */
-    public function will_throw_exception_for_existing_database() {
-        $binding = self::createHttpBinding();
-        $binding->createDatabase(TEST_ODB_DATABASE . '_temporary');
-    }
-
-    /**
-     * @test
-     * @depends can_create_database
-     */
-    public function can_delete_existing_database() {
-        $binding = self::createHttpBinding();
-        $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
-    }
-
-    /**
-     * @test
-     * @depends can_delete_existing_database
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
-     */
-    public function will_throw_exception_for_nonexistent_database() {
-        $binding = self::createHttpBinding();
-        $binding->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
-    }
-
-    /**
-     * @test
-     */
-    public function command_returns_expected_results() {
-        $binding = self::createHttpBinding();
-
-        $this->assertNotNull($binding->command('SELECT FROM Address'), 'Execute a simple select');
-        $this->assertNotNull($binding->command("SELECT FROM City WHERE name = 'Rome'"), 'Execute a select with WHERE condition');
-        $this->assertNotNull($binding->command('SELECT FROM City WHERE name = "Rome"'), 'Execute another select with WHERE condition');
-    }
-
-    /**
-     * @test
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
-     */
-    public function command_throws_exception_for_invalid_command() {
-        $binding = self::createHttpBinding();
-        $binding->command('INVALID SQL');
-    }
-
-    /**
-     * @test
-     */
-    public function query_returns_expected_results() {
-        $binding = self::createHttpBinding();
-
-        $this->assertNotNull($binding->query('SELECT FROM Address'), 'Executes a SELECT');
-        $this->assertNotNull($binding->query('SELECT FROM Address', null, 10), 'Executes a SELECT with LIMIT');
-    }
-
-    /**
-     * @test
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
-     */
-    public function query_throws_exception_for_update() {
-        $binding = self::createHttpBinding();
-        $binding->query("UPDATE Profile SET online = false");
     }
 
     public function testSettingAuthentication() {
@@ -232,6 +112,8 @@ class HttpBindingTest extends TestCase
         $this->assertSame($adapter, $binding->getAdapter());
     }
 
+
+
     /**
      * @expectedException \Doctrine\OrientDB\OrientDBException
      */
@@ -242,34 +124,6 @@ class HttpBindingTest extends TestCase
         $binding    = new HttpBinding($parameters, $adapter);
 
         $binding->deleteClass('MyClass');
-    }
-
-    /**
-     * @test
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
-     */
-    public function getDocument_with_invalid_cluster_throws_exception() {
-        $binding = self::createHttpBinding();
-        $binding->getDocument('999:0');
-    }
-
-    /**
-     * @test
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\BindingException
-     */
-    public function getDocument_with_invalid_RID_throws_exception() {
-        $binding = self::createHttpBinding();
-        $binding->getDocument('991');
-    }
-
-    /**
-     * @test
-     */
-    public function getDocument_returns_expected_result() {
-        $binding = self::createHttpBinding();
-
-        $this->assertNull($binding->getDocument('9:10000'), 'Retrieves a non existing document');
-        $this->assertNotNull($binding->getDocument('1:0'), 'Retrieves a valid document');
     }
 
     public function testCreateDocument() {
@@ -320,6 +174,7 @@ class HttpBindingTest extends TestCase
         return $rid;
     }
 
+
     /**
      * @depends testUpdateAnExistingRecord
      */
@@ -332,25 +187,6 @@ class HttpBindingTest extends TestCase
         $this->assertHttpStatus(404, $binding->deleteDocument('999:1'), 'Deletes a non existing document');
         $this->assertHttpStatus(500, $binding->deleteDocument('9991'), 'Deletes an invalid document');
 
-    }
-
-    /**
-     * @depends testDeleteADocument
-     *
-     * @param $rid
-     */
-    public function testDocumentDoesNotExist($rid) {
-        $binding = self::createHttpBinding();
-
-        $binding->getAdapter()->getClient()->restart();
-
-        $res = $binding->documentExists($rid);
-        $this->assertFalse($res);
-    }
-
-    public function testGetDatabaseName() {
-        $binding = self::createHttpBinding();
-        $this->assertEquals(TEST_ODB_DATABASE, $binding->getDatabaseName());
     }
 
     /**
