@@ -18,7 +18,7 @@ class IntegerTest extends AbstractDataTypeTest
     public function loadBefore() {
         $this->postId = $this->getClassId('Post');
         $b            = $this->dm->getBinding();
-        $this->rid    = $b->command('INSERT INTO Post set id=10, title=20')->result[0]->{'@rid'};
+        $this->rid    = $b->command('INSERT INTO Post set id=10, title=20')['result'][0]['@rid'];
     }
 
     public function testHydrationOfAnIntegerProperty() {

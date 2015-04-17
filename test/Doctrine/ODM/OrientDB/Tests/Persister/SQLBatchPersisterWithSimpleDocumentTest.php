@@ -60,7 +60,7 @@ class SQLBatchPersisterWithSimpleDocumentTest extends TestCase
     "result":[]
 }
 JSON
-        );
+            , true);
 
         $b = $this->prophesize(BindingInterface::class);
         $b->sqlBatch(Arg::any())
@@ -99,7 +99,7 @@ JSON
     }]
 }
 JSON
-        );
+            , true);
 
         $b = $this->prophesize(BindingInterface::class);
         $b->sqlBatch(Arg::any())
@@ -144,7 +144,7 @@ JSON
     }]
 }
 JSON
-        );
+            , true);
 
         $b = $this->prophesize(BindingInterface::class);
         $b->sqlBatch(Arg::any())

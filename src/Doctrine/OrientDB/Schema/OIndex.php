@@ -5,7 +5,7 @@ namespace Doctrine\OrientDB\Schema;
 class OIndex extends OClassAsset
 {
     /**
-     * @var \stdClass
+     * @var array
      */
     private $_meta;
 
@@ -17,14 +17,14 @@ class OIndex extends OClassAsset
     /**
      * OProperty constructor.
      *
-     * @param OClass    $class
-     * @param \stdClass $meta
+     * @param OClass $class
+     * @param array  $meta
      */
-    public function __construct(OClass $class, \stdClass $meta) {
-        parent::__construct($meta->name, $class);
+    public function __construct(OClass $class, array $meta) {
+        parent::__construct($meta['name'], $class);
         $this->_meta = $meta;
-        if (strpos($meta->name, '.') !== false) {
-            $parts = explode('.', $meta->name);
+        if (strpos($meta['name'], '.') !== false) {
+            $parts = explode('.', $meta['name']);
             if ($parts[0] === $class->getName()) {
                 $this->_isAutomatic = true;
             }
@@ -35,14 +35,14 @@ class OIndex extends OClassAsset
      * @return string
      */
     public function getType() {
-        return $this->_meta->type;
+        return $this->_meta['type'];
     }
 
     /**
      * @return string[]
      */
     public function getFields() {
-        return $this->_meta->fields;
+        return $this->_meta['fields'];
     }
 
     /**

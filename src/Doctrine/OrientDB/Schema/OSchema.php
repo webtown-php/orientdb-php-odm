@@ -26,6 +26,27 @@ class OSchema extends SchemaAsset
         '@class',
         '@version',
     ];
+    private static $_classDefaults = [
+        'abstract' => false,
+    ];
+    /**
+     * @var OClass[]
+     */
+    private $_classes = [];
+
+    public function __construct(array $classes = []) {
+        foreach ($classes as $class) {
+            $this->_addClass($class);
+        }
+    }
+
+    protected function _addClass(OClass $class) {
+        if (isset($this->_classes[$class->getName()])) {
+            throw OSchemaException::classAlreadyExists($class->getName());
+        }
+
+        $this->_classes[$class->getName()] = $class;
+    }
 
     /**
      * returns true if the specified class name is a system class
@@ -64,21 +85,46 @@ class OSchema extends SchemaAsset
     }
 
     /**
-     * @var OClass[]
-     */
-    private $_classes = [];
-
-    public function __construct(array $classes = []) {
-        foreach ($classes as $class) {
-            $this->_addClass($class);
-        }
-    }
-
-    /**
      * @return OClass[]
      */
     public function getClasses() {
         return $this->_classes;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasClass($name) {
+        return isset($this->_classes[$name]);
+    }
+
+    /**
+     * @param string $name
+     * @param OClass $superClass
+     *
+     * @return OClass
+     * @throws OSchemaException
+     */
+    public function createClass($name, OClass $superClass = null) {
+        $meta         = self::$_classDefaults;
+        $meta['name'] = $name;
+
+        $class = new OClass($meta, $superClass);
+        $this->_addClass($class);
+
+        return $class;
+    }
+
+    public function createEdgeClass($name) {
+        $meta         = self::$_classDefaults;
+        $meta['name'] = $name;
+
+        $class = new OClass($meta, $this->getClass('E'));
+        $this->_addClass($class);
+
+        return $class;
     }
 
     /**
@@ -93,54 +139,6 @@ class OSchema extends SchemaAsset
         }
 
         return $this->_classes[$name];
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function hasClass($name) {
-        return isset($this->_classes[$name]);
-    }
-
-    private static $_classDefaults = [
-        'abstract' => false,
-    ];
-
-    /**
-     * @param string $name
-     * @param OClass $superClass
-     *
-     * @return OClass
-     * @throws OSchemaException
-     */
-    public function createClass($name, OClass $superClass = null) {
-        $meta       = (object)self::$_classDefaults;
-        $meta->name = $name;
-
-        $class = new OClass($meta, $superClass);
-        $this->_addClass($class);
-
-        return $class;
-    }
-
-    public function createEdgeClass($name) {
-        $meta       = (object)self::$_classDefaults;
-        $meta->name = $name;
-
-        $class = new OClass($meta, $this->getClass('E'));
-        $this->_addClass($class);
-
-        return $class;
-    }
-
-    protected function _addClass(OClass $class) {
-        if (isset($this->_classes[$class->getName()])) {
-            throw OSchemaException::classAlreadyExists($class->getName());
-        }
-
-        $this->_classes[$class->getName()] = $class;
     }
 
     /**

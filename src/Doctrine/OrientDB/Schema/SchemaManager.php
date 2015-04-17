@@ -41,37 +41,11 @@ class SchemaManager
      * @return string[]
      */
     public function listClassNames() {
-        $res = $this->_cn->getDatabase();
+        $res = $this->_cn->getDatabaseInfo();
 
         return array_map(function ($class) {
-            return $class->name;
-        }, $res->classes);
-    }
-
-    /**
-     * listClasses returns a list of available OrientDB classes for the current database
-     *
-     * @return OClass[]
-     */
-    public function listClasses() {
-        $res = $this->_cn->getDatabase();
-
-        /** @var OClass[] $hasSuper */
-        $hasSuper = [];
-        /** @var OClass[] $classes */
-        $classes = [];
-        foreach ($res->classes as $meta) {
-            $classes[$meta->name] = $c = new OClass($meta);
-            if (!empty($meta->superClass)) {
-                $hasSuper[] = $c;
-            }
-        }
-
-        foreach ($hasSuper as $c) {
-            $c->setSuperClass($classes[$c->getSuperClassName()]);
-        }
-
-        return $classes;
+            return $class['name'];
+        }, $res['classes']);
     }
 
     /**
@@ -83,5 +57,31 @@ class SchemaManager
         $classes = $this->listClasses();
 
         return isset($classes[$name]) ? $classes[$name] : null;
+    }
+
+    /**
+     * listClasses returns a list of available OrientDB classes for the current database
+     *
+     * @return OClass[]
+     */
+    public function listClasses() {
+        $res = $this->_cn->getDatabaseInfo();
+
+        /** @var OClass[] $hasSuper */
+        $hasSuper = [];
+        /** @var OClass[] $classes */
+        $classes = [];
+        foreach ($res['classes'] as $meta) {
+            $classes[$meta['name']] = $c = new OClass($meta);
+            if (!empty($meta->superClass)) {
+                $hasSuper[] = $c;
+            }
+        }
+
+        foreach ($hasSuper as $c) {
+            $c->setSuperClass($classes[$c->getSuperClassName()]);
+        }
+
+        return $classes;
     }
 }

@@ -19,6 +19,9 @@ abstract class AbstractBindingInterfaceTest extends TestCase
 
     protected function setUp() {
         $this->b = $this->getBinding();
+//        if ($this->b->databaseExists(TEST_ODB_DATABASE . '_temporary')) {
+//            $this->b->deleteDatabase(TEST_ODB_DATABASE . '_temporary');
+//        }
         parent::setUp();
     }
 
@@ -30,7 +33,7 @@ abstract class AbstractBindingInterfaceTest extends TestCase
      * @test
      */
     public function can_get_existing_database() {
-        $this->assertInstanceOf('\stdClass', $res = $this->b->getDatabase(TEST_ODB_DATABASE), 'Get information about an existing database');
+        $this->assertInternalType('array', $res = $this->b->getDatabaseInfo(), 'Get information about an existing database');
     }
 
     /**
@@ -47,15 +50,6 @@ abstract class AbstractBindingInterfaceTest extends TestCase
         $this->assertFalse($this->b->databaseExists('INVALID_DB'), 'database should not exist');
     }
 
-
-    /**
-     * @test
-     * @expectedException \Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException
-     */
-    public function will_throw_exception_for_invalid_database() {
-        $this->b->getDatabase('INVALID_DB');
-    }
-
     public function testListDatabasesMethod() {
         $this->assertInternalType('array', $this->b->listDatabases());
     }
@@ -65,8 +59,8 @@ abstract class AbstractBindingInterfaceTest extends TestCase
      */
     public function can_create_database() {
         $db = $this->b->createDatabase(TEST_ODB_DATABASE . '_temporary');
-        $this->assertInstanceOf('\stdClass', $db, 'Create new database');
-        $this->assertObjectHasAttribute('currentUser', $db);
+        $this->assertInternalType('array', $db, 'Create new database');
+        $this->assertArrayHasKey('currentUser', $db);
     }
 
     /**

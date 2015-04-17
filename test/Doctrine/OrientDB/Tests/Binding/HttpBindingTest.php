@@ -164,11 +164,11 @@ class HttpBindingTest extends AbstractBindingInterfaceTest
         $binding->getAdapter()->getClient()->restart();
 
         $_document = $binding->getDocument($rid);
-        $document  = json_encode(array('@rid' => $rid, '@class' => 'Address', 'name' => 'Test', '@version' => $_document->{'@version'}));
+        $document  = json_encode(['@rid' => $rid, '@class' => 'Address', 'name' => 'Test', '@version' => $_document['@version']]);
         $putResult = $binding->putDocument($rid, $document);
 
         $this->assertEquals(200, $putResult->getInnerResponse()->getStatusCode(), "Wrong Status Code");
-        $document = json_encode(array('@rid' => 898989, '@class' => 'Address', 'name' => 'Test', '@version' => $_document->{'@version'}));
+        $document = json_encode(['@rid' => 898989, '@class' => 'Address', 'name' => 'Test', '@version' => $_document['@version']]);
         $this->assertHttpStatus(500, $binding->putDocument('9991', $document), 'Updates an invalid document');
 
         return $rid;
@@ -214,7 +214,7 @@ class HttpBindingTest extends AbstractBindingInterfaceTest
            ->willReturn($res->reveal());
 
         $br->getData()
-           ->willReturn(json_decode('{"result":{}}'));
+           ->willReturn(json_decode('{"result":{}}', true));
 
         $adapter->request('GET', "http://$host:$port/query/$database/sql/SELECT%20OMNOMNOMN/2/%2A%3A1%20field1%3A3", null, null)
                 ->willReturn($br->reveal());

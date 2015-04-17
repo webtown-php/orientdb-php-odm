@@ -234,14 +234,20 @@ class HttpBinding implements HttpBindingInterface
     /**
      * @inheritdoc
      */
-    public function getDatabase($database = null) {
-        $database = $database ?: $this->database;
-        $info     = $this->_getDatabase($database);
+    public function getDatabaseInfo() {
+        $info     = $this->_getDatabase($this->database);
         if ($info === false) {
-            throw new InvalidDatabaseException(sprintf("database '%s' does not exist", $database));
+            throw new InvalidDatabaseException(sprintf("database '%s' does not exist", $this->database));
         }
 
         return $info;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getClusterMap() {
+        // TODO: Implement getClusterMap() method.
     }
 
     /**
@@ -308,7 +314,7 @@ class HttpBinding implements HttpBindingInterface
     public function listDatabases() {
         $location = $this->getLocation('listDatabases');
 
-        return $this->adapter->request('GET', $location)->getData()->databases;
+        return $this->adapter->request('GET', $location)->getData()['databases'];
     }
 
     /**
@@ -343,7 +349,7 @@ class HttpBinding implements HttpBindingInterface
         $res    = $result->getInnerResponse();
         switch ($res->getStatusCode()) {
             case 200:
-                return $result->getData()->result;
+                return $result->getData()['result'];
 
             case 204:
                 return null;

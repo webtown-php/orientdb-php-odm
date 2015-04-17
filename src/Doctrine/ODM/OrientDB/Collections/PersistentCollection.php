@@ -73,7 +73,7 @@ class PersistentCollection implements BaseCollection
     private $hints = [];
 
     /**
-     * @var mixed
+     * @var array
      */
     private $data;
 
@@ -114,12 +114,9 @@ class PersistentCollection implements BaseCollection
     }
 
     /**
-     * @param mixed $data
+     * @param array $data
      */
-    public function setData($data) {
-        if ($data instanceof \stdClass) {
-            $data = (array)$data;
-        }
+    public function setData(array $data) {
         $this->data = $data;
     }
 

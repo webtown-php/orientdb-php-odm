@@ -110,7 +110,6 @@ class DocumentPersister
                     $this->loadIndirectReferenceCollection($collection);
                 } else {
                     $this->loadReferenceCollection($collection);
-
                 }
                 break;
         }
@@ -159,7 +158,7 @@ class DocumentPersister
         foreach ($results as $key => $data) {
             $document = $this->uow->getOrCreateDocument($data);
             if ($useKey) {
-                $key = isset($keys) ? $keys[$data->{'@rid'}] : $key;
+                $key = isset($keys) ? $keys[$data['@rid']] : $key;
                 $collection->set($key, $document);
             } else {
                 $collection->add($document);
@@ -170,7 +169,7 @@ class DocumentPersister
     static private function &extractVertexes(array $rows, $prop) {
         $results = [];
         foreach ($rows as $row) {
-            $results[$row->{'@rid'}] = $row->{$prop};
+            $results[$row['@rid']] = $row[$prop];
         }
 
         return $results;
@@ -195,11 +194,11 @@ class DocumentPersister
             }
 
             // edge is loaded, so we
-            $edgeRid = $row->{'@rid'};
-            if (is_string($row->{$prop})) {
-                $rids[$row->{$prop}][] = $edgeRid;
+            $edgeRid = $row['@rid'];
+            if (is_string($row[$prop])) {
+                $rids[$row[$prop]][] = $edgeRid;
             } else {
-                $results[$edgeRid] = $rows->{$prop};
+                $results[$edgeRid] = $rows[$prop];
             }
         }
 
@@ -212,7 +211,7 @@ class DocumentPersister
         if ($rids) {
             $loaded = $this->binding->query(sprintf('SELECT FROM [%s]', implode(',', array_keys($rids))));
             foreach ($loaded as $row) {
-                $rid = $row->{'@rid'};
+                $rid = $row['@rid'];
                 foreach ($rids[$rid] as $edge) {
                     $results[$edge] = $row;
                 }
@@ -228,7 +227,7 @@ class DocumentPersister
     /**
      * Creates or fills a single document object from an query result.
      *
-     * @param object $result   The query result.
+     * @param array  $result   The query result.
      * @param object $document The document object to fill, if any.
      * @param array  $hints    Hints for document creation.
      *
@@ -240,7 +239,7 @@ class DocumentPersister
         }
 
         if ($document !== null) {
-            $this->uow->registerManaged($document, $result->{'@rid'}, null);
+            $this->uow->registerManaged($document, $result['@rid'], null);
         }
 
         return $this->uow->getOrCreateDocument($result, $hints);

@@ -19,7 +19,7 @@ class ProxyFactoryTest extends AbstractIntegrationTest
         parent::setUp();
 
         $b = $this->dm->getBinding();
-        $this->rid = $b->command('INSERT INTO City set name="Rome"')->result[0]->{'@rid'};
+        $this->rid = $b->command('INSERT INTO City set name="Rome"')['result'][0]['@rid'];
     }
 
     public function testGenerate() {

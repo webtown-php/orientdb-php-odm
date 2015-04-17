@@ -15,7 +15,7 @@ class StringTest extends AbstractDataTypeTest
      */
     public function loadBefore() {
         $b         = $this->dm->getBinding();
-        $this->rid = $b->command("INSERT INTO Country set name='Australia'")->result[0]->{'@rid'};;
+        $this->rid = $b->command("INSERT INTO Country set name='Australia'")['result'][0]['@rid'];
     }
 
     public function testHydratingAStringProperty() {

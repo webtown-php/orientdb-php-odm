@@ -33,7 +33,7 @@ class RepositoryTest extends TestCase
             "name": "Luca",
             "surname": "Garulli",
             "out": ["#20:1"]
-        }]');
+        }]', true);
 
         /** @var BindingInterface|ObjectProphecy $binding */
         $binding = $this->prophesize(BindingInterface::class);

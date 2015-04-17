@@ -25,7 +25,15 @@ use Prophecy\Prophet;
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     protected static function getBindingParameters($options) {
-        $parameters = array();
+        $options = array_merge([
+            'odb.host'     => TEST_ODB_HOST,
+            'odb.port'     => TEST_ODB_HTTP_PORT,
+            'odb.username' => TEST_ODB_USER,
+            'odb.password' => TEST_ODB_PASSWORD,
+            'odb.database' => TEST_ODB_DATABASE,
+        ], $options);
+
+        $parameters = [];
 
         array_walk($options, function ($value, $key) use (&$parameters) {
             if (0 === $pos = strpos($key, 'odb.')) {
@@ -41,11 +49,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'http.adapter' => null,
             'http.restart' => false,
             'http.timeout' => TEST_ODB_TIMEOUT,
-            'odb.host'     => TEST_ODB_HOST,
-            'odb.port'     => TEST_ODB_HTTP_PORT,
-            'odb.username' => TEST_ODB_USER,
-            'odb.password' => TEST_ODB_PASSWORD,
-            'odb.database' => TEST_ODB_DATABASE,
         ], $opts);
 
         if (!isset($opts['adapter'])) {
@@ -65,7 +68,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      * @return String
      */
     public function getClassId($className) {
-        return self::createHttpBinding()->getClass($className)->getData()->clusters[0];
+        return self::createHttpBinding()->getClass($className)->getData()['clusters'][0];
     }
 
 

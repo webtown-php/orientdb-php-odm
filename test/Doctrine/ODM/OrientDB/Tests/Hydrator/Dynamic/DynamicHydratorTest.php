@@ -50,8 +50,8 @@ class DynamicHydratorTest extends TestCase
 }
 JSON;
 
-        $binding->getDatabase()
-                ->willReturn(json_decode($data));
+        $binding->getDatabaseInfo()
+                ->willReturn(json_decode($data, true));
 
         $rawResult = '{
             "@type": "d", "@rid": "#2:1", "@version": 1, "@class": "LinkedEmailAddress",
@@ -60,7 +60,7 @@ JSON;
             "contact": "#1:1"
         }';
         $binding->getDocument(Arg::is("#2:1"), Arg::any())
-                ->willReturn(json_decode($rawResult));
+                ->willReturn(json_decode($rawResult, true));
 
         $rawResult = '[{
             "@type": "d", "@rid": "#3:1", "@version": 1, "@class": "LinkedPhone",
@@ -75,7 +75,7 @@ JSON;
         }]';
 
         $binding->query(Arg::any())
-                ->willReturn(json_decode($rawResult));
+                ->willReturn(json_decode($rawResult, true));
 
         $this->manager         = $this->createDocumentManagerWithBinding($binding->reveal(), [], ['test/Doctrine/ODM/OrientDB/Tests/Document/Stub']);
         $this->uow             = $this->manager->getUnitOfWork();
@@ -98,7 +98,7 @@ JSON;
     "active": true
 }
 JSON
-        );
+            , true);
 
         $hd = $dh->hydrate($c, $d);
 
@@ -137,7 +137,7 @@ JSON
     }
 }
 JSON
-        );
+            , true);
 
         $hd = $dh->hydrate($c, $d);
         $this->assertEquals(['rid', 'name', 'email', 'phones'], array_keys($hd));
@@ -182,7 +182,7 @@ JSON
     ]
 }
 JSON
-        );
+            , true);
 
         $hd = $dh->hydrate($c, $d);
         $this->assertEquals(['rid', 'name', 'phones'], array_keys($hd));
@@ -217,7 +217,7 @@ JSON
     "email": "#2:1"
 }
 JSON
-        );
+            , true);
 
         $hd = $dh->hydrate($c, $d);
         $this->uow->registerManaged($c, "#1:1", $hd);
@@ -265,7 +265,7 @@ JSON
     "phones": [ "#3:1", "#3:2" ]
 }
 JSON
-        );
+            , true);
 
         $hd = $dh->hydrate($c, $d);
         $this->assertEquals(['rid', 'name', 'phones'], array_keys($hd));

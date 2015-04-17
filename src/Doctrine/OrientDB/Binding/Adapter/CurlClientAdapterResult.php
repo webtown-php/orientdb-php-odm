@@ -43,7 +43,7 @@ class CurlClientAdapterResult implements HttpBindingResultInterface
         }
         $body = $this->response->getBody();
 
-        if (null === $json = json_decode($body)) {
+        if (null === $json = json_decode($body, true)) {
             if ($this->isValidRid($body)) {
                 return $body;
             } elseif ($body === "") {

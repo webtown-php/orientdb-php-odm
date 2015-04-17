@@ -4,93 +4,6 @@ namespace Doctrine\OrientDB\Schema;
 
 class OClass extends NamedAsset
 {
-    /**
-     * @var \stdClass
-     */
-    private $_meta;
-
-    /**
-     * @var OProperty[]
-     */
-    private $_properties = [];
-
-    /**
-     * @var OIndex[]
-     */
-    private $_indexes = [];
-
-    /**
-     * @var OClass
-     */
-    private $_superClass;
-
-    public function __construct(\stdClass $meta, OClass $superClass = null) {
-        parent::__construct($meta->name);
-
-        if (isset($meta->properties)) {
-            foreach ($meta->properties as $p) {
-                $prop = new OProperty($this, $p);
-                $this->_addProperty($prop);
-            }
-        }
-        if (isset($meta->indexes)) {
-            foreach ($meta->indexes as $p) {
-                $index = new OIndex($this, $p);
-                $this->_addIndex($index);
-            }
-        }
-        $this->_meta       = $meta;
-        $this->_superClass = $superClass;
-    }
-
-    /**
-     * @return OClass
-     */
-    public function getSuperClass() {
-        return $this->_superClass;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSuperClassName() {
-        return $this->_meta->superClass;
-    }
-
-    public function setSuperClass(OClass $value = null) {
-        $this->_superClass = $value;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAbstract() {
-        return $this->_meta->abstract;
-    }
-
-    /**
-     * @param bool $includeParent true to include parent properties
-     *
-     * @return OProperty[]
-     */
-    public function getProperties($includeParent = true) {
-        return isset($this->_superClass) && $includeParent
-            ? array_merge($this->_superClass->getProperties(), $this->_properties)
-            : $this->_properties;
-    }
-
-    /**
-     * @param string $name
-     * @param bool   $includeParent
-     *
-     * @return bool
-     */
-    public function hasProperty($name, $includeParent = true) {
-        $all = $this->getProperties($includeParent);
-
-        return isset($all[$name]);
-    }
-
     private static $_propertyDefaults = [
         'readonly'  => false,
         'mandatory' => false,
@@ -99,24 +12,40 @@ class OClass extends NamedAsset
         'max'       => null,
         'collate'   => 'default',
     ];
-
     /**
-     * @param string $name
-     * @param string $type
-     * @param array  $options
-     *
-     * @return OProperty
-     * @throws OSchemaException
+     * @var array
      */
-    public function addProperty($name, $type, array $options = []) {
-        $options    = array_merge(self::$_propertyDefaults, $options);
-        $meta       = (object)$options;
-        $meta->name = $name;
-        $meta->type = $type;
-        $prop       = new OProperty($this, $meta);
-        $this->_addProperty($prop);
+    private $_meta;
+    /**
+     * @var OProperty[]
+     */
+    private $_properties = [];
+    /**
+     * @var OIndex[]
+     */
+    private $_indexes = [];
+    /**
+     * @var OClass
+     */
+    private $_superClass;
 
-        return $prop;
+    public function __construct(array $meta, OClass $superClass = null) {
+        parent::__construct($meta['name']);
+
+        if (isset($meta['properties'])) {
+            foreach ($meta['properties'] as $p) {
+                $prop = new OProperty($this, $p);
+                $this->_addProperty($prop);
+            }
+        }
+        if (isset($meta['indexes'])) {
+            foreach ($meta['indexes'] as $p) {
+                $index = new OIndex($this, $p);
+                $this->_addIndex($index);
+            }
+        }
+        $this->_meta       = $meta;
+        $this->_superClass = $superClass;
     }
 
     protected function _addProperty(OProperty $property) {
@@ -128,15 +57,58 @@ class OClass extends NamedAsset
         $this->_properties[$name] = $property;
     }
 
+    protected function _addIndex(OIndex $index) {
+        $name = $index->getName();
+        if (isset($this->_properties[$name])) {
+            throw OSchemaException::indexAlreadyExists($name, $this->getName());
+        }
+
+        $this->_indexes[$name] = $index;
+    }
+
     /**
-     * @param bool $includeParent
-     *
-     * @return OIndex[]
+     * @return OClass
      */
-    public function getIndexes($includeParent = true) {
-        return isset($this->_superClass) && $includeParent
-            ? array_merge($this->_superClass->getIndexes(), $this->_indexes)
-            : $this->_indexes;
+    public function getSuperClass() {
+        return $this->_superClass;
+    }
+
+    public function setSuperClass(OClass $value = null) {
+        $this->_superClass = $value;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSuperClassName() {
+        return $this->_meta['superClass'];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAbstract() {
+        return $this->_meta['abstract'];
+    }
+
+    /**
+     * @param string $name
+     * @param string $type
+     * @param array  $options
+     *
+     * @return OProperty
+     * @throws OSchemaException
+     */
+    public function addProperty($name, $type, array $options = []) {
+        $meta    = [
+            'name' => $name,
+            'type' => $type,
+        ];
+        $options = array_merge(self::$_propertyDefaults, $options, $meta);
+        $prop    = new OProperty($this, $options);
+        $this->_addProperty($prop);
+
+        return $prop;
     }
 
     /**
@@ -149,6 +121,17 @@ class OClass extends NamedAsset
         $all = $this->getIndexes($includeParent);
 
         return isset($all[$name]);
+    }
+
+    /**
+     * @param bool $includeParent
+     *
+     * @return OIndex[]
+     */
+    public function getIndexes($includeParent = true) {
+        return isset($this->_superClass) && $includeParent
+            ? array_merge($this->_superClass->getIndexes(), $this->_indexes)
+            : $this->_indexes;
     }
 
     /**
@@ -192,7 +175,7 @@ class OClass extends NamedAsset
      * @throws OSchemaException
      */
     private function _createIndex($name, array $properties, $type) {
-        $meta = (object)[
+        $meta = [
             'name'   => $name,
             'type'   => $type,
             'fields' => $properties,
@@ -207,13 +190,27 @@ class OClass extends NamedAsset
         return new OIndex($this, $meta);
     }
 
-    protected function _addIndex(OIndex $index) {
-        $name = $index->getName();
-        if (isset($this->_properties[$name])) {
-            throw OSchemaException::indexAlreadyExists($name, $this->getName());
-        }
+    /**
+     * @param string $name
+     * @param bool   $includeParent
+     *
+     * @return bool
+     */
+    public function hasProperty($name, $includeParent = true) {
+        $all = $this->getProperties($includeParent);
 
-        $this->_indexes[$name] = $index;
+        return isset($all[$name]);
+    }
+
+    /**
+     * @param bool $includeParent true to include parent properties
+     *
+     * @return OProperty[]
+     */
+    public function getProperties($includeParent = true) {
+        return isset($this->_superClass) && $includeParent
+            ? array_merge($this->_superClass->getProperties(), $this->_properties)
+            : $this->_properties;
     }
 
     /**

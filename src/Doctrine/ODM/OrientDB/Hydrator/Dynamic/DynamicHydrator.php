@@ -49,7 +49,7 @@ class DynamicHydrator implements HydratorInterface
 
         foreach ($this->metadata->fieldMappings as $fieldName => $mapping) {
             $name          = $mapping['name'];
-            $propertyValue = property_exists($data, $name) ? $data->{$name} : null;
+            $propertyValue = isset($data[$name]) ? $data[$name] : null;
 
             if (!isset($mapping['association'])) {
                 if ($propertyValue === null) {
@@ -92,10 +92,10 @@ class DynamicHydrator implements HydratorInterface
 
             if ($mapping['association'] === ClassMetadata::EMBED) {
                 // an embed one must have @class, we would support generic JSON properties via another mapping type
-                if (!property_exists($propertyValue, self::ORIENT_PROPERTY_CLASS)) {
+                if (!isset($propertyValue[self::ORIENT_PROPERTY_CLASS])) {
                     throw new HydratorException(sprintf("missing @class for embedded property '%s'", $name));
                 }
-                $oclass           = $propertyValue->{self::ORIENT_PROPERTY_CLASS};
+                $oclass           = $propertyValue[self::ORIENT_PROPERTY_CLASS];
                 $embeddedMetadata = $this->dm->getMetadataFactory()->getMetadataForOClass($oclass);
                 $doc              = $embeddedMetadata->newInstance();
                 $embeddedData     = $this->dm->getHydratorFactory()->hydrate($doc, $propertyValue, $hints);

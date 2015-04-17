@@ -81,13 +81,17 @@ interface BindingInterface
      * Retrieves details regarding the specified database.
      *
      * @api
+     * @return array
      *
-     * @param string $database
-     *
-     * @return \stdClass
-     * @throws InvalidDatabaseException
      */
-    public function getDatabase($database = null);
+    public function getDatabaseInfo();
+
+    /**
+     * Return the class cluster map for the current database
+     *
+     * @return array
+     */
+    public function getClusterMap();
 
     /**
      * Indicates whether the specified database exists
@@ -126,7 +130,7 @@ interface BindingInterface
      * @param string $storage
      * @param string $type
      *
-     * @return \stdClass
+     * @return array
      */
     public function createDatabase($database, $storage = 'memory', $type = 'document');
 

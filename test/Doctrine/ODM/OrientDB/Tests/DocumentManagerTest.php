@@ -29,7 +29,7 @@ class DocumentManagerTest extends TestCase
             "name": "Luca",
             "surname": "Garulli",
             "out": ["#20:1"]
-        }');
+        }', true);
 
         /** @var BindingInterface|ObjectProphecy $binding */
         $binding = $this->prophesize(BindingInterface::class);
@@ -43,9 +43,9 @@ class DocumentManagerTest extends TestCase
     ]
 }
 JSON;
-        $data = json_decode($data);
+        $data = json_decode($data, true);
 
-        $binding->getDatabase(Arg::any())
+        $binding->getDatabaseInfo()
                 ->willReturn($data);
 
         $binding->getDatabaseName()

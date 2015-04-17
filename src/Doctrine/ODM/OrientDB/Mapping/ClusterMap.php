@@ -78,10 +78,10 @@ class ClusterMap
      */
     public function generateMap() {
         $map      = [];
-        $database = $this->binding->getDatabase();
+        $database = $this->binding->getDatabaseInfo();
 
-        foreach ($database->classes as $class) {
-            $map[$class->name] = $class->clusters;
+        foreach ($database['classes'] as $class) {
+            $map[$class['name']] = $class['clusters'];
         }
 
         $this->map = $map;

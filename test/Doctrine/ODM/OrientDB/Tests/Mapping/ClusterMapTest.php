@@ -44,18 +44,21 @@ class ClusterMapTest extends TestCase
     }
 
     protected function prepareMap() {
-        return array('Test' => [1, 2]);
+        return ['Test' => [1, 2]];
     }
 
     protected function prepareGeneration($binding, $cache) {
-        $data            = new \stdClass();
-        $class           = new \stdClass();
-        $class->clusters = [1, 2];
-        $class->name     = 'Test';
-        $data->classes   = [$class];
+        $data = [
+            'classes' => [
+                [
+                    'name' => 'Test',
+                    'clusters' => [1,2],
+                ]
+            ]
+        ];
 
         $binding->expects($this->once())
-                ->method('getDatabase')
+                ->method('getDatabaseInfo')
                 ->will($this->returnValue($data));
 
         $cache->expects($this->once())

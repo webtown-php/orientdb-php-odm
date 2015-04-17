@@ -68,7 +68,7 @@ class SQLBatchPersisterWithEmbeddedDocumentTest extends TestCase
     }]
 }
 JSON
-        );
+            , true);
 
         $b = $this->prophesize(BindingInterface::class);
         $b->sqlBatch(Arg::any())

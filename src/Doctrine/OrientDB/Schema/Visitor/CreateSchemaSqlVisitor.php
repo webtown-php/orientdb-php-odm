@@ -8,7 +8,6 @@ use Doctrine\OrientDB\Schema\OProperty;
 use Doctrine\OrientDB\Schema\OSchema;
 use Doctrine\OrientDB\Schema\OSchemaVisitorInterface;
 use Doctrine\OrientDB\Types\ComplexType;
-use Doctrine\OrientDB\Types\Type;
 
 class CreateSchemaSqlVisitor implements OSchemaVisitorInterface
 {

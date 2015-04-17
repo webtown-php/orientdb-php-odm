@@ -162,11 +162,11 @@ class SQLBatchPersister implements PersisterInterface
 
         $updated = $this->executeQueries($queries);
         foreach ($updated as $k => $val) {
-            if (isset($updatedDocs[$k]) && $val instanceof \stdClass) {
+            if (isset($updatedDocs[$k]) && isset($val['value'])) {
                 /** @var ClassMetadata $md */
                 list ($_, $doc, $md) = $updatedDocs[$k];
                 unset($updatedDocs[$k]);
-                $md->reflFields[$md->version]->setValue($doc, $val->value);
+                $md->reflFields[$md->version]->setValue($doc, $val['value']);
                 $uow->raisePostUpdate($md, $doc);
             }
         }
@@ -355,7 +355,7 @@ class SQLBatchPersister implements PersisterInterface
      * @throws SQLBatchException
      */
     private function executeQueries(array $queries) {
-        $results = $this->binding->sqlBatch($queries)->result;
+        $results = $this->binding->sqlBatch($queries)['result'];
         if (!is_array($results) || count($results) !== 1) {
             throw new SQLBatchException('unexpected response from server when executing batch request');
         }

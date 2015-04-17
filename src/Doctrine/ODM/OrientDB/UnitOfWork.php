@@ -422,16 +422,16 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * @param \stdClass $data
+     * @param array $data
      * @param array     $hints
      *
      * @return object
      */
-    public function getOrCreateDocument(\stdClass $data, array &$hints = []) {
+    public function getOrCreateDocument(array $data, array &$hints = []) {
         /** @var ClassMetadata $class */
-        $class = $this->dm->getMetadataFactory()->getMetadataForOClass($data->{'@class'});
+        $class = $this->dm->getMetadataFactory()->getMetadataForOClass($data['@class']);
 
-        $id = $data->{'@rid'};
+        $id = $data['@rid'];
         if (isset($this->identityMap[$class->name][$id])) {
             $document = $this->identityMap[$class->name][$id];
             $oid      = spl_object_hash($document);

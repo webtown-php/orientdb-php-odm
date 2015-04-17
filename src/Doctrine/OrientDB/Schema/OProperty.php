@@ -7,7 +7,7 @@ use Doctrine\OrientDB\Types\Type;
 class OProperty extends OClassAsset
 {
     /**
-     * @var \stdClass
+     * @var array
      */
     private $_meta;
 
@@ -19,14 +19,14 @@ class OProperty extends OClassAsset
     /**
      * OProperty constructor.
      *
-     * @param OClass    $class
-     * @param \stdClass $meta
+     * @param OClass $class
+     * @param array  $meta
      *
      */
-    public function __construct(OClass $class, \stdClass $meta) {
-        parent::__construct($meta->name, $class);
-        $this->_meta  = $meta;
-        $this->_type  = Type::getType(strtolower($meta->type));
+    public function __construct(OClass $class, array $meta) {
+        parent::__construct($meta['name'], $class);
+        $this->_meta = $meta;
+        $this->_type = Type::getType(strtolower($meta['type']));
     }
 
     /**
@@ -40,63 +40,63 @@ class OProperty extends OClassAsset
      * @return string
      */
     public function getLinkedClass() {
-        return isset($this->_meta->linkedClass) ? $this->_meta->linkedClass : null;
+        return isset($this->_meta['linkedClass']) ? $this->_meta['linkedClass'] : null;
     }
 
     /**
      * @return string
      */
     public function getLinkedType() {
-        return isset($this->_meta->linkedType) ? $this->_meta->linkedType : null;
+        return isset($this->_meta['linkedType']) ? $this->_meta['linkedType'] : null;
     }
 
     /**
      * @return bool
      */
     public function isMandatory() {
-        return $this->_meta->mandatory;
+        return $this->_meta['mandatory'];
     }
 
     /**
      * @return bool
      */
     public function isReadOnly() {
-        return $this->_meta->readonly;
+        return $this->_meta['readonly'];
     }
 
     /**
      * @return bool
      */
     public function isNotNull() {
-        return $this->_meta->notNull;
+        return $this->_meta['notNull'];
     }
 
     /**
      * @return int
      */
     public function getMin() {
-        return $this->_meta->min;
+        return $this->_meta['min'];
     }
 
     /**
      * @return int
      */
     public function getMax() {
-        return $this->_meta->max;
+        return $this->_meta['max'];
     }
 
     /**
      * @return string
      */
     public function getRegExp() {
-        return isset($this->_meta->regexp) ? $this->_meta->regexp : null;
+        return isset($this->_meta['regexp']) ? $this->_meta['regexp'] : null;
     }
 
     /**
      * @return int
      */
     public function getCollate() {
-        return $this->_meta->collate;
+        return $this->_meta['collate'];
     }
 
     /**
