@@ -2,9 +2,6 @@
 
 namespace Doctrine\ODM\OrientDB\Mapping;
 
-
-use Doctrine\OrientDB\Types\Rid;
-
 /**
  * Class MappingException
  *
