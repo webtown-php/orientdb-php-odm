@@ -26,7 +26,6 @@ use Doctrine\Common\Util\ClassUtils;
 use Doctrine\Common\Util\Inflector;
 use Doctrine\ODM\OrientDB\Mapping\ClassMetadata;
 use Doctrine\OrientDB\OrientDBException;
-use Doctrine\OrientDB\Query\QueryBuilder;
 use RuntimeException;
 
 class DocumentRepository implements ObjectRepository
@@ -188,8 +187,8 @@ class DocumentRepository implements ObjectRepository
 
         if (!$collection instanceof ArrayCollection) {
             throw new OrientDBException(
-                "Problems executing the query \"{$parts->getRaw()}\". " .
-                "The server returned $collection instead of ArrayCollection."
+                "Problems executing the query \"{$select}\". " .
+                "The server returned {$collection} instead of ArrayCollection."
             );
         }
 

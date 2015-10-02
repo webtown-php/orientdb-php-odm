@@ -2,7 +2,6 @@
 
 namespace Doctrine\OrientDB\Binding;
 
-use Doctrine\OrientDB\Binding\Exception\InvalidDatabaseException;
 use PhpOrient\PhpOrient;
 use PhpOrient\Protocols\Binary\Data\ID;
 use PhpOrient\Protocols\Binary\Data\Record;
@@ -29,6 +28,7 @@ class PhpOrientBinding implements BindingInterface
      * @inheritdoc
      */
     public function getServerInfo() {
+        // TODO: Implement and/or cleanup getServerInfo() method.
         /** @var Record $res */
         $res = $this->client->recordLoad(new ID(0,1))[0];
         $c = $res->classes;
@@ -40,6 +40,7 @@ class PhpOrientBinding implements BindingInterface
      * @inheritdoc
      */
     public function getDatabaseInfo() {
+        // TODO: Implement getDatabaseInfo() method.
         $res = $this->client->recordLoad(new ID(0,1));
         $this->clusterMap;
     }
